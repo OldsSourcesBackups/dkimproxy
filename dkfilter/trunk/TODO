@@ -4,6 +4,7 @@ Desired features:
    (the signing process must use the sending domain to determine what
    private key and selector should be used to sign the message)
  - sign/verify a message without having to read it completely into memory
+ - sign/verify in the same program
 
 Possible bugs:
  - the Mail::DomainKeys module frequently makes assumptions that it's in

@@ -183,10 +183,16 @@ sub verify {
 
 	$self->status("bad");
 
-	# FIXME: only needs to match the end of the domain
-	$prms{'Sender'}->host eq $self->domain or
+	# domain used in key should match domain of From: or Sender: header
+	my $senderdomain = $prms{'Sender'}->host;
+	my $keydomain = $self->domain;
+
+	unless ($senderdomain eq $keydomain ||
+		substr($senderdomain, -(length($keydomain) + 1)) eq ".$keydomain")
+	{
 		$self->errorstr("domain does not match address"),
 		return;
+	}
 
 	$self->public->granularity and
 		$prms{'Sender'}->user ne $self->public->granularity and

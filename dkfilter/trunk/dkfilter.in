@@ -143,7 +143,6 @@ sub handle_end_of_data
 	my ($server, $client) = @_;
 
 	my $fh = $server->{data};
-	use DKMessage;
 	my $mess;
 	my $result;
 	my $result_detail;
@@ -159,9 +158,10 @@ sub handle_end_of_data
 	};
 	if ($@)
 	{
-		syslog("warning", "verification error: $@");
+		my $E = $@;
+		syslog("warning", '%s', "verification error: $E");
 		$result = "temperror";
-		$result_detail = "$result ($@)";
+		$result_detail = "$result ($E)";
 	}
 
 	# check validation result

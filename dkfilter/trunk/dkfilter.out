@@ -27,6 +27,7 @@ use lib "/usr/local/dkfilter";
 use MSDW::SMTP::Server;
 use MSDW::SMTP::Client;
 use Sys::Syslog;
+use DKMessage;
 
 use Sys::Hostname;
 my $hostname = hostname;
@@ -166,7 +167,6 @@ sub handle_end_of_data
 	my ($server, $client) = @_;
 
 	my $fh = $server->{data};
-	use DKMessage;
 	my $mess;
 	my $result;
 	my $result_detail;

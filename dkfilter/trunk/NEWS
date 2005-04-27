@@ -1,0 +1,12 @@
+This file summarizes what's changed between releases of dkfilter.
+See the ChangeLog file for the details.
+
+Version 0.2 - released 2005-04-27
+ * fixed a minor logging bug
+ * include better reasons for why verification fails in the
+   Authentication-Results header
+ * now properly verifies a signature that uses a parent domain of the
+   domain in the from/sender address
+
+Version 0.1 - released 2005-04-26
+ * initial release

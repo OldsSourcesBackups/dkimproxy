@@ -6,8 +6,9 @@ DKFILTERUSER=dkfilter
 DKFILTERGROUP=dkfilter
 DKFILTERDIR=/usr/local/dkfilter
 
+HOSTNAME=`hostname -f`
 DOMAIN=`hostname -d`
-DKFILTER_IN_ARGS="127.0.0.1:10025 127.0.0.1:10026"
+DKFILTER_IN_ARGS="--hostname=$HOSTNAME 127.0.0.1:10025 127.0.0.1:10026"
 DKFILTER_OUT_ARGS="--keyfile=$DKFILTERDIR/private.key --selector=selector1 --domain=$DOMAIN 127.0.0.1:10027 127.0.0.1:10028"
 
 DKFILTER_IN_BIN="$DKFILTERDIR/dkfilter.in"

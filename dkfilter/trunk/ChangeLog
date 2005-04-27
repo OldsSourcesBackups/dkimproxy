@@ -1,0 +1,17 @@
+2005-04-27: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - added documentation
+ * dkfilter.in:
+   - error messages may not have been logged correctly; it should work
+     better now
+ * init-script.sh:
+   - determine FQDN hostname using `hostname -f` and pass it to the
+     inbound filter for use in Authentication-Results headers
+
+2005-04-26: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - if signature verification fails, put the reason in the syslog and
+     in the Authentication-Results header
+ * Mail/DomainKeys/Signature.pm:
+   - allow signatures that use a parent domain of the message's from/sender
+     domain

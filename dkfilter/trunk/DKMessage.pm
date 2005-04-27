@@ -123,49 +123,69 @@ sub verify
 		return "pass";
 	}
 
+	my $signature_problem;
+	if ($mess->signed)
+	{
+		# signature is invalid
+		$signature_problem = $mess->signature->errorstr;
+	}
+	else
+	{
+		$signature_problem = "no signature";
+	}
+
+	# FIXME - policy domain should be determined by signature, not the
+	# from/sender header... of course the signature should be checked that
+	# it matches the from/sender header
+	#
+	my $policydomain = $mess->senderdomain;
+
 	# unverified or not signed: check for a domain policy
-	my $senderdomain = $mess->senderdomain;
 	my $plcy = Mail::DomainKeys::Policy->fetch(
 		Protocol => "dns",
-		Domain => $senderdomain);
+		Domain => $policydomain);
 	unless ($plcy)
 	{
 		# no policy
 		$self->set_verify_result("neutral",
-			$mess->signed ? "signature failed, but no policy"
-				: "no signature");
+			"$signature_problem; no policy for $policydomain");
 		return "neutral";
 	}
 
 	# not signed and domain doesn't sign all
 	if ($plcy->signsome && !$mess->signed)
 	{
-		$self->set_verify_result("softfail", "no signature");
+		$self->set_verify_result("softfail",
+			"$signature_problem; not needed for $policydomain");
 		return "softfail";
 	}
 
 	# domain or key testing: add header and return
 	if ($mess->testing)
 	{
-		$self->set_verify_result("softfail", "key testing");
+		# FIXME: testing mode... maybe result should be "neutral" or better
+		$self->set_verify_result("softfail",
+			"$signature_problem; key testing");
 		return "softfail";
 	}
 	if ($plcy->testing)
 	{
-		$self->set_verify_result("softfail", "domain testing");
+		# FIXME: testing mode... maybe result should be "neutral" or better
+		$self->set_verify_result("softfail",
+			"$signature_problem; domain testing");
 		return "softfail";
 	}
 	
 	# last check to see if policy requires all mail to be signed
 	unless ($plcy->signall)
 	{
-		$self->set_verify_result("softfail", "not required by policy");
+		$self->set_verify_result("softfail",
+			"$signature_problem; not required for $policydomain");
 		return "softfail";
 	}
 
 	# should be correctly signed and it isn't: reject
-	$self->set_verify_result("fail",
-			$mess->signed ? "invalid signature" : "no signature");
+	$self->set_verify_result("fail", $signature_problem);
 	return "fail";
 }
 
@@ -339,3 +359,137 @@ sub signature_header
 
 
 1;
+__END__
+
+=head1 NAME
+
+DKMessage - signs and verifies DomainKeys
+
+=head1 SYNOPSIS
+
+  $fh = IO::File->new("<message.in");
+  $mess = DKMessage->new_from_handle($fh);
+
+  # verify the DomainKeys-Signature in $mess
+  $result = $mess->verify;
+
+  # or, sign the message in $mess
+  $result = $mess->sign;
+
+  # print out the modified message
+  $fh->seek(0, 0);
+  while (my $line = $mess->readline)
+  {
+      print $line;
+  }
+
+=head1 DESCRIPTION
+
+=over
+
+=item DKMessage->new_from_handle
+
+Reads a message and gets ready to sign or verify it.
+
+  my $mess = DKMessage->new_from_handle($file_handle);
+
+=item $mess->sign
+
+Signs the message. You must provide a few parameters...
+
+  $result = $mess->sign(
+              Method => $method,
+              Selector => $selector,
+              Domain => $domain,
+              KeyFile => $keyfile
+            );
+
+The B<Method> argument determines the canonicalization method, either
+C<simple> or C<nofws>.
+
+The B<Selector> argument specifies the name of the key being used to
+sign the message. This name is included in the resulting header and is
+used on the verifying end to lookup the public key in DNS.
+
+The B<Domain> argument specifies what domain is being signed for. It
+should match the domain in the Sender: or From: header.
+
+The B<KeyFile> argument is the filename of the file containing the private
+key used in signing the message.
+
+The return value will be a string, either "signed" if the message was
+successfully signed, or "skipped" if no signature can be added.
+
+=item $mess->verify
+
+Verifies the signature contained in $mess.
+
+  $result = $mess->verify;
+
+The return value is one of "neutral", "pass", "fail", or "softfail".
+B<neutral> means no signature found.
+B<pass> means the message has a valid signature.
+B<fail> means the message has an invalid or missing signature,
+and the sending domain signs all messages.
+B<softfail> means the message has an invalid or missing signature,
+and the sending domain signs at least some messages.
+
+=item $mess->result_detail
+
+Provides additional information about the result of the last operation
+(sign or verify).
+
+  $result_detail = $mess->result_detail;
+
+The return value of B<result_detail> is a human-readable string containing
+the result and possibly a short phrase describing the result.
+
+E.g. for result=neutral, the B<result_detail> method might return
+"neutral (no signature)", or for result=fail, it might return
+"fail (public key has been revoked)".
+
+=item $mess->info;
+
+Returns a list of message attributes helpful for identifying the message.
+
+  @info = $mess->info;
+  print join(", ", @info), "\n";
+
+This method is meant for helping to log singing and verifying results
+in the system log. By joining the results of this list together like
+above, you can get something like this:
+
+  from=<john.doe@example.org>, message-id=<39842729042@example.org>
+
+=item $mess->readline
+
+After signing or verifying a message, use this to read back the modified
+message.
+
+  while (my $line = $mess->readline)
+  {
+      print $line;
+  }
+
+Each line returned from B<readline> includes line termination characters
+(e.g. "\015\012"), so you do not need to transmit them for each line.
+The purpose of this method is to allow access to the modified message
+without requiring the entire message in memory.
+
+=back
+
+=head1 AUTHOR
+
+Jason Long - jlong@messiah.edu
+
+=head1 SEE ALSO
+
+See the documentation for smtpprox and Mail::DomainKeys. And of course,
+http://antispam.yahoo.com/domainkeys
+
+=head1 COPYRIGHT and LICENSE
+
+Copyright (c) 2005 Messiah College. This file is original work. It can
+be redistributed under the same terms as Perl itself.
+
+=cut
