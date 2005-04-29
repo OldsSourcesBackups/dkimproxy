@@ -68,11 +68,21 @@ sub load {
 	my %seen = (FROM => 0, SIGN => 0, SNDR => 0);
 
 	foreach my $hdr (@head) {
+		# all headers after the DomainKeys-Signature header are "signed"
 		$hdr->signed($seen{'SIGN'});
 
 		$hdr->key or
 			return;
 
+		# TODO:
+		#   signatures should be rejected if the header they are
+		#   authenticating is not found after the signature
+		#
+		# TODO:
+		#   duplicate From: headers or Sender: headers are illegal
+		#   (AFAIK), so they should cause a signature failure if
+		#   they are being used in the authentication process
+		#
 		if ($hdr->key =~ /^From$/i and !$seen{'FROM'}) {
 			my @list = parse Mail::Address($hdr->vunfolded);
 			$self->{'FROM'} = $list[0]; 

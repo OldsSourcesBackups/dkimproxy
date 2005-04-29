@@ -238,6 +238,12 @@ sub headerspec
 	return ();
 }
 
+sub senderdomain
+{
+	my $self = shift;
+	return $self->mess->senderdomain;
+}
+
 sub message_id
 {
 	my $self = shift;
@@ -460,6 +466,12 @@ in the system log. By joining the results of this list together like
 above, you can get something like this:
 
   from=<john.doe@example.org>, message-id=<39842729042@example.org>
+
+=item $mess->senderdomain
+
+Returns the domain part of the address that should be verified or signed
+for (either in From: header or Sender: header). If neither header is
+available, returns C<undef>.
 
 =item $mess->readline
 

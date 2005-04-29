@@ -72,6 +72,10 @@ sub fetch {
 	my $rslv = new Net::DNS::Resolver or
 		return;
 	
+	#
+	# TODO - return error if query fails ... i.e. reaction to query failure
+	# should be different than reaction to record does not exist
+	#
 	my $resp = $rslv->query($host, "TXT") or
 		return;
 

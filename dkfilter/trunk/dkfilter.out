@@ -35,6 +35,7 @@ my $syntax = "syntax: $0 [--children=16] [--minperchild=100] ".
              "[--maxperchild=200] [--debugtrace=undef] ".
 			 "[--reject-fail] [--reject-error] [--hostname=$hostname] " .
 			 "--keyfile=KEYFILE --selector=SELECTOR --domain=DOMAIN " .
+			 "[--method=simple|nofws] " .
              "listen.addr:port talk.addr:port\n";
 
 my $children = 16;
@@ -44,7 +45,8 @@ my $reject_fail = 1;
 my $reject_error = 1;
 my $keyfile;
 my $selector;
-my $domain;
+my $domain_arg;
+my $method = "simple";
 my $debugtrace = undef;
 GetOptions("children=n" => \$children,
 	   "minperchild=n" => \$minperchild,
@@ -54,7 +56,8 @@ GetOptions("children=n" => \$children,
 	   "hostname=s" => \$hostname,
 	   "keyfile=s" => \$keyfile,
 	   "selector=s" => \$selector,
-	   "domain=s" => \$domain,
+	   "domain=s" => \$domain_arg,
+	   "method=s" => \$method,
 	   "debugtrace=s" => \$debugtrace) or die $syntax;
 
 die $syntax unless @ARGV == 2;
@@ -76,10 +79,15 @@ unless (defined $selector)
 	print STDERR "Error: selector not specified\n";
 	die $syntax;
 }
-unless (defined $domain)
+unless (defined $domain_arg)
 {
 	print STDERR "Error: domain not specified\n";
 	die $syntax;
+}
+my @domains = split(/,\s*/, $domain_arg);
+unless ($method eq "simple" || $method eq "nofws")
+{
+	die "Error: invalid method; must be simple or nofws\n";
 }
 
 
@@ -173,8 +181,29 @@ sub handle_end_of_data
 	eval
 	{
 		$mess = DKMessage->new_from_handle($fh);
+
+		# determine what domain to use
+		my $domain;
+		if ($domain = lc $mess->senderdomain)
+		{
+			while ($domain)
+			{
+				if (grep { lc($_) eq $domain } @domains)
+				{
+					last;
+				}
+				# try the parent domain
+				(undef, $domain) = split(/\./, $domain);
+			}
+		}
+		unless ($domain)
+		{
+			# message has no senderdomain
+			$domain = $domains[0];
+		}
+
 		$result = $mess->sign(
-			Method => "simple",
+			Method => $method,
 			Selector => $selector,
 			Domain => $domain,
 			KeyFile => $keyfile
@@ -244,6 +273,7 @@ __END__
       --keyfile=filename
       --selector=SELECTOR
       --domain=DOMAIN
+      --method=simple|nofws
 
 =head1 DESCRIPTION
 
