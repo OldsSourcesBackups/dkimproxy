@@ -159,6 +159,7 @@ sub handle_end_of_data
 	if ($@)
 	{
 		my $E = $@;
+		chomp $E;
 		syslog("warning", '%s', "verification error: $E");
 		$result = "temperror";
 		$result_detail = "$result ($E)";

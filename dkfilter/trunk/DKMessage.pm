@@ -116,6 +116,10 @@ sub verify
 		return "neutral";
 	}
 
+	#
+	# TODO - catch errors and set the result appropriately
+	#
+
 	if ($mess->signed && $mess->verify)
 	{
 		# message is signed, and verification succeeded...

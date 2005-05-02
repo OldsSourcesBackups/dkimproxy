@@ -1,3 +1,13 @@
+2005-04-30: Jason Long <jlong@messiah.edu>
+ * Mail/DomainKeys/Key/Public.pm:
+   - use ALRM signal to catch a long-running DNS query; currently the timeout
+     is 10 seconds; if you're verifying in an After-Queue filter, it should
+     be safe to set this timeout higher
+ * Mail/DomainKeys/Policy.pm:
+   - use ALRM signal to catch a long-running DNS query
+ * dkfilter.in, dkfilter.out:
+   - fixed another glitch in the way errors were reported
+
 2005-04-29: Jason Long <jlong@messiah.edu>
  * DKMessage.pm:
    - added senderdomain method, to get the host part of the address used

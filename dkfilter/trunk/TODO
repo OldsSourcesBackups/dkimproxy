@@ -14,7 +14,8 @@ Possible bugs:
  - fix header parsing algorithm in Mail::DomainKeys::Message, as it may
    not do the right thing when headers are in the wrong order or duplicate
    headers occur
- - DNS errors should be handled differently than DNS record not found
+ - verification errors will prevent an Authentication-Results header from
+   being prepended to the message
 
 Possibly desired features:
  - support use of multiple selectors, multiple private keys

@@ -35,13 +35,38 @@ sub fetch {
 	($prms{'Protocol'} eq "dns") or
 		return;
 
+	# FIXME - why is there a preceding period here?
 	my $host = "._domainkey." . $prms{'Domain'};
 
 	my $rslv = new Net::DNS::Resolver or
 		return;
 	
-	my $resp = $rslv->query($host, "TXT") or
+	#
+	# perform DNS query for domain policy...
+	#   if the query takes too long, we should catch it and generate
+	#   an error
+	#
+	my $resp;
+	eval
+	{
+		# set a 10 second timeout
+		local $SIG{ALRM} = sub { die "DNS query timeout for $host\n" };
+		alarm 10;
+
+		$resp = $rslv->query($host, "TXT") or
+		alarm 0;
+	};
+	if ($@)
+	{
+		my $E = $@;
+		chomp $E;
+		die "$E\n";
+	}
+	unless ($resp)
+	{
+		# no response => NXDOMAIN
 		return;
+	}
 
 	foreach my $ans ($resp->answer) {
 		next unless $ans->type eq "TXT";

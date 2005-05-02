@@ -73,11 +73,30 @@ sub fetch {
 		return;
 	
 	#
-	# TODO - return error if query fails ... i.e. reaction to query failure
-	# should be different than reaction to record does not exist
+	# perform DNS query for public key...
+	#   if the query takes too long, we should generate an error
 	#
-	my $resp = $rslv->query($host, "TXT") or
+	my $resp;
+	eval
+	{
+		# set a 10 second timeout
+		local $SIG{ALRM} = sub { die "DNS query timeout for $host\n" };
+		alarm 10;
+
+		$resp = $rslv->query($host, "TXT");
+		alarm 0;
+	};
+	if ($@)
+	{
+		my $E = $@;
+		chomp $E;
+		die "$E\n";
+	}
+	unless ($resp)
+	{
+		# no response => NXDOMAIN
 		return;
+	}
 
 	foreach my $ans ($resp->answer) {
 		next unless $ans->type eq "TXT";
