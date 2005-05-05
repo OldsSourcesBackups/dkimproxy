@@ -1,3 +1,21 @@
+2005-05-05: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - put an eval { } block around the message verification call, to catch
+     and report errors (e.g. DNS errors) during verification
+   - for testing mode, changed results to "neutral"
+
+2005-05-04: Jason Long <jlong@messiah.edu>
+ * Mail/DomainKeys/Message.pm:
+   - fixed canonicalization methods so they can pass the canonicalization
+     torturetest
+   - added support for generating "h" tag (headers) in signature
+   - detect duplicate From: and Sender: headers, but currently nothing is
+     done about it when detected
+ * dkfilter.out:
+   - added command-line argument for turning on "headers" support (--headers)
+   - fixed bug where --reject-error was turned on by default (and there was
+     no way to turn it off)
+
 2005-04-30: Jason Long <jlong@messiah.edu>
  * Mail/DomainKeys/Key/Public.pm:
    - use ALRM signal to catch a long-running DNS query; currently the timeout

@@ -1,6 +1,18 @@
 This file summarizes what's changed between releases of dkfilter.
 See the ChangeLog file for the details.
 
+Version 0.5 - released 2005-05-05
+
+ * The "simple" and "nofws" canonicalization routines are now able to pass
+   the "torture tests" provided on http://domainkeys.sourceforge.net
+ * Support generation of "h" tag (headers) when creating a signature.
+   To use, add --headers to the command-line arguments of dkfilter.out.
+ * Failed signatures for domains in "testing mode" will result in a "neutral"
+   result, rather than "softfail".
+ * DNS time-outs now get reported in the Authentication-Results header,
+   unless "--reject-errors" is being used, in which case the message is
+   not even accepted.
+
 Version 0.4 - released 2005-05-02
 
  * DNS queries now have a 10-second timeout, which prevents the SMTP proxy

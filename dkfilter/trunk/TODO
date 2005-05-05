@@ -1,5 +1,6 @@
 Testing:
  - test what happens if DNS is unavailable when fetching key or domain policy
+ - use "torture tests" from domainkeys.sourceforge.net to test canonicalization
 
 Desired features:
  - sign/verify a message without having to read it completely into memory
@@ -11,11 +12,11 @@ Possible bugs:
    a Unix environment ... e.g. it uses "\r\n" where it should use "\015\012"
    (see perlport(1)'s discussion of Newlines)
  - smtpprox does the same thing, so maybe it's not an issue
- - fix header parsing algorithm in Mail::DomainKeys::Message, as it may
+ - check header parsing algorithm in Mail::DomainKeys::Message, as it may
    not do the right thing when headers are in the wrong order or duplicate
    headers occur
- - verification errors will prevent an Authentication-Results header from
-   being prepended to the message
+ - verification errors (e.g. DNS timeout) will prevent an
+   Authentication-Results header from being prepended to the message
 
 Possibly desired features:
  - support use of multiple selectors, multiple private keys

@@ -41,12 +41,13 @@ my $syntax = "syntax: $0 [--children=16] [--minperchild=100] ".
 my $children = 16;
 my $minperchild = 100;
 my $maxperchild = 200;
-my $reject_fail = 1;
-my $reject_error = 1;
+my $reject_fail = 0;  # not actually used in this filter
+my $reject_error = 0;
 my $keyfile;
 my $selector;
 my $domain_arg;
 my $method = "simple";
+my $headers = 0;
 my $debugtrace = undef;
 GetOptions("children=n" => \$children,
 	   "minperchild=n" => \$minperchild,
@@ -58,6 +59,7 @@ GetOptions("children=n" => \$children,
 	   "selector=s" => \$selector,
 	   "domain=s" => \$domain_arg,
 	   "method=s" => \$method,
+	   "headers" => \$headers,
 	   "debugtrace=s" => \$debugtrace) or die $syntax;
 
 die $syntax unless @ARGV == 2;
@@ -206,7 +208,8 @@ sub handle_end_of_data
 			Method => $method,
 			Selector => $selector,
 			Domain => $domain,
-			KeyFile => $keyfile
+			KeyFile => $keyfile,
+			Headers => $headers
 			);
 		$result_detail = $mess->result_detail;
 
@@ -275,6 +278,7 @@ __END__
       --selector=SELECTOR
       --domain=DOMAIN
       --method=simple|nofws
+      --headers
 
 =head1 DESCRIPTION
 

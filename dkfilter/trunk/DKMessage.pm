@@ -79,10 +79,27 @@ sub sign
 		return "skipped";
 	}
 
+	# determine headers to use
+	my @headers;
+	if ($prms{Headers})
+	{
+		# add all headers found in the message
+		foreach my $found_hdr (@{$mess->head})
+		{
+			push @headers, $found_hdr->key;
+		}
+	}
+
+	# TODO - check for existing DomainKey-Signature header. If present,
+	# a new signature should only be added if a Sender header has been
+	# added and it was not part of the original signature (i.e. a
+	# mailing list message)
+
 	my $sign = $mess->sign(
 		Method => $prms{Method},
 		Selector => $prms{Selector},
 		Domain => $domain,
+		Headers => join(":", @headers),
 		Private =>
 			Mail::DomainKeys::Key::Private->load(
 				File => $prms{KeyFile})
@@ -106,25 +123,45 @@ sub verify
 		die "can't verify a message that I already signed";
 	}
 
+	# catch errors
+	eval
+	{
+		# perform verification
+		my ($result, $detail) = $self->do_verify(%policy);
+
+		# set/return the result
+		$self->set_verify_result($result, $detail);
+		return $result;
+	};
+	if ($@)
+	{
+		# error occurred
+		my $E = $@;
+		chomp $E;
+
+		# set/return the result
+		$self->set_verify_result("temperror", $E);
+		return "temperror";
+	}
+}
+
+sub do_verify
+{
+	my $self = shift;
+	my %policy = @_;
+
 	my $mess = $self->mess;
 
 	# no sender domain means no verification 
 	unless ($mess->senderdomain)
 	{
-		$self->set_verify_result(
-			"neutral", "unable to determine sender domain");
-		return "neutral";
+		return ("neutral", "unable to determine sender domain");
 	}
-
-	#
-	# TODO - catch errors and set the result appropriately
-	#
 
 	if ($mess->signed && $mess->verify)
 	{
 		# message is signed, and verification succeeded...
-		$self->set_verify_result("pass");
-		return "pass";
+		return ("pass");
 	}
 
 	my $signature_problem;
@@ -151,46 +188,38 @@ sub verify
 	unless ($plcy)
 	{
 		# no policy
-		$self->set_verify_result("neutral",
+		return ("neutral",
 			"$signature_problem; no policy for $policydomain");
-		return "neutral";
-	}
-
-	# not signed and domain doesn't sign all
-	if ($plcy->signsome && !$mess->signed)
-	{
-		$self->set_verify_result("softfail",
-			"$signature_problem; not needed for $policydomain");
-		return "softfail";
 	}
 
 	# domain or key testing: add header and return
 	if ($mess->testing)
 	{
-		# FIXME: testing mode... maybe result should be "neutral" or better
-		$self->set_verify_result("softfail",
+		return ("neutral",
 			"$signature_problem; key testing");
-		return "softfail";
 	}
 	if ($plcy->testing)
 	{
-		# FIXME: testing mode... maybe result should be "neutral" or better
-		$self->set_verify_result("softfail",
+		return ("neutral",
 			"$signature_problem; domain testing");
-		return "softfail";
 	}
 	
+	# not signed and domain doesn't sign all
+	if ($plcy->signsome && !$mess->signed)
+	{
+		return ("softfail",
+			"$signature_problem; not needed for $policydomain");
+	}
+
 	# last check to see if policy requires all mail to be signed
 	unless ($plcy->signall)
 	{
-		$self->set_verify_result("softfail",
+		return ("softfail",
 			"$signature_problem; not required for $policydomain");
-		return "softfail";
 	}
 
 	# should be correctly signed and it isn't: reject
-	$self->set_verify_result("fail", $signature_problem);
-	return "fail";
+	return ("fail", $signature_problem);
 }
 
 sub set_sign_result
@@ -411,7 +440,8 @@ Signs the message. You must provide a few parameters...
               Method => $method,
               Selector => $selector,
               Domain => $domain,
-              KeyFile => $keyfile
+              KeyFile => $keyfile,
+			  [Headers => 1,]
             );
 
 The B<Method> argument determines the canonicalization method, either
@@ -426,6 +456,11 @@ should match the domain in the Sender: or From: header.
 
 The B<KeyFile> argument is the filename of the file containing the private
 key used in signing the message.
+
+The optional B<Headers> argument specifies whether or not to generate a
+C<h> tag for the DomainKey-Signature header. If a nonzero value is specified,
+an C<h> tag is generated containing all header field names found in the email.
+Otherwise, no C<h> tag is generated.
 
 The return value will be a string, either "signed" if the message was
 successfully signed, or "skipped" if no signature can be added.

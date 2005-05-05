@@ -83,19 +83,59 @@ sub load {
 		#   (AFAIK), so they should cause a signature failure if
 		#   they are being used in the authentication process
 		#
-		if ($hdr->key =~ /^From$/i and !$seen{'FROM'}) {
-			my @list = parse Mail::Address($hdr->vunfolded);
-			$self->{'FROM'} = $list[0]; 
-			$seen{'FROM'} = 1; 
-		} elsif ($hdr->key =~ /^Sender$/i and !$seen{'SNDR'}) {
-			my @list = parse Mail::Address($hdr->vunfolded);
-			$self->{'SNDR'} = $list[0];
-			$seen{'SNDR'} = 1;
-		} elsif ($hdr->key =~ /^DomainKey-Signature$/i and
-			not $seen{'SIGN'}) {
+		if ($hdr->key =~ /^From$/i)
+		{
+			unless ($seen{'FROM'})
+			{
+				my @list = parse Mail::Address($hdr->vunfolded);
+				$self->{'FROM'} = $list[0]; 
+				$seen{'FROM'} = 1; 
+			}
+			else
+			{
+				# oops ... duplicate From: header
+				warn "duplicate From: header";
+
+				# TODO - do something about it
+			}
+		}
+		elsif ($hdr->key =~ /^Sender$/i)
+		{
+			unless ($seen{'SNDR'})
+			{
+				my @list = parse Mail::Address($hdr->vunfolded);
+				$self->{'SNDR'} = $list[0];
+				$seen{'SNDR'} = 1;
+			}
+			else
+			{
+				# oops ... duplicate Sender: header
+				warn "duplicate Sender: header";
+
+				# TODO - do something about it
+			}
+		}
+		elsif ($hdr->key =~ /^DomainKey-Signature$/i and not $seen{'SIGN'})
+		{
+			# found a DomainKey-Signature header
 			$self->{'SIGN'} = parse Mail::DomainKeys::Signature(
 				String => $hdr->vunfolded);
 			$seen{'SIGN'} = 1;
+
+			# check for already-parsed From: or Sender: header
+			if ($seen{'SNDR'} || $seen{'FROM'})
+			{
+				# it appears there has been a From: or Sender: header
+				# prepended to the message AFTER the signature was
+				# generated, making the signature most likely invalid
+				#
+				# TODO - perhaps this signature should be ignored?
+				# TODO - perhaps all signatures should be ignored?
+				#
+				# TODO - this doesn't handle the case where a mailing-list
+				# added a Sender: header somewhere following the signature
+				# header
+			}
 		}
 	}
 
@@ -116,6 +156,12 @@ sub load {
 	bless $self, $type;
 }
 
+# $mess->gethline("From:Sender:Message-id:Subject:To");
+#
+# From the given headers, return a colon-separated list of headers that
+# actually appear in the message, in the order they appear in the message,
+# using the same capitalization as they appear in the message
+#
 sub gethline {
 	my($self, $headers) = @_;
 
@@ -151,7 +197,7 @@ sub nofws {
 	my $self = shift;
 	my $signing = shift || 0;
 
-	my $text;
+	my $text = "";
 
 
 	foreach my $hdr (@{$self->head}) {
@@ -164,17 +210,21 @@ sub nofws {
 		$text .= $line . "\r\n";
 	}
 
+	# delete trailing blank lines
+	foreach (reverse @{$self->{'BODY'}}) {
+		if (/^[\t\n\r\ ]*$/)
+		{
+			pop @{$self->{'BODY'}};
+		}
+		else
+		{
+			last;
+		}
+	}
+
 	# make sure there is a body before adding a seperator line
 	(scalar @{$self->{'BODY'}}) and
 		$text .= "\r\n";
-
-	# delete trailing blank lines
-	foreach (reverse @{$self->{'BODY'}}) {
-		/./ and
-			last;
-		/^$/ and
-			pop @{$self->{'BODY'}};
-	}
 
 	foreach my $lin (@{$self->{'BODY'}}) {
 		my $line = $lin;
@@ -189,7 +239,7 @@ sub simple {
 	my $self = shift;
 	my $signing = shift || 0;
 
-	my $text;
+	my $text = "";
 
 
 	foreach my $hdr (@{$self->head}) {
@@ -198,16 +248,11 @@ sub simple {
 		$self->signature->wantheader($hdr->key) or
 			next;
 		my $line = $hdr->line;
-		# $line =~ s/([^\r])\n/$1\r\n/g; # yuck
-		#$line =~ s/([^\r])\n/$1\r\n/g; # yuck
-		#chomp($line);
-		$line =~ s/[\r\n]+//g;
-		$text .= $line . "\r\n";
+		# FIXME -- this won't work if the local line terminator does not end
+		# with \n
+		$line =~ s/\r*\n+/\015\012/g;
+		$text .= $line;
 	}
-
-	# make sure there is a body before adding a seperator line
-	(scalar @{$self->{'BODY'}}) and
-		$text .= "\r\n";
 
 	# delete trailing blank lines
 	foreach (reverse @{$self->{'BODY'}}) {
@@ -217,14 +262,15 @@ sub simple {
 			pop @{$self->{'BODY'}};
 	}
 
+	# make sure there is a body before adding a seperator line
+	(scalar @{$self->{'BODY'}}) and
+		$text .= "\r\n";
+
 	foreach my $lin (@{$self->{'BODY'}}) {
 		my $line = $lin;
-		#$line eq "\n" and
-		#	$line = "\r\n";
-		#$line =~ s/([^\r])\n/$1\r\n/g; # yuck
-		#$text .= $line;
-		$line =~ s/[\r\n]+//g;
-		$text .= $line . "\r\n";
+		# remove local line terminating characters; replace with CRLF
+		$line =~ s/[\r\n]*$/\015\012/;
+		$text .= $line;
 	}
 
 	return $text;
