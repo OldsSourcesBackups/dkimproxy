@@ -23,14 +23,12 @@ sub new_from_handle
 	my $class = shift;
 	my ($handle) = @_;
 
+	my $mess = Mail::DomainKeys::Message->load(File => $handle)
+		or die "message parse error\n";
 	my $self = {
 		fh => $handle,
-		mess => Mail::DomainKeys::Message->load(File => $handle)
+		mess => $mess
 		};
-	unless (defined $self->{mess})
-	{
-		die "message parse error";
-	}
 	return bless $self, $class;
 }
 
@@ -71,8 +69,8 @@ sub sign
 			"skipped", "no sender/from header");
 		return "skipped";
 	}
-	if ($senderdomain ne $domain &&
-		substr($senderdomain, -(length($domain) + 1)) ne ".$domain")
+	if (lc($senderdomain) ne lc($domain) &&
+		lc(substr($senderdomain, -(length($domain) + 1))) ne lc(".$domain"))
 	{
 		$self->set_sign_result(
 			"skipped", "wrong sender domain");

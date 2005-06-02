@@ -1,3 +1,18 @@
+2005-05-11: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - bugfix - message-parse-error had caused "Odd number of elements..."
+     warning to be output by Perl
+
+2005-05-10: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - bugfix - use case-INsensitive comparision of sender domain name
+     to domain name used to sign
+ * dkfilter.out:
+   - bugfix - did not check parent domain correctly
+ * Mail/DomainKeys/Signature.pm:
+   - bugfix - use case-INsensitive comparision of sender domain name
+     to domain name found in signature
+
 2005-05-05: Jason Long <jlong@messiah.edu>
  * DKMessage.pm:
    - put an eval { } block around the message verification call, to catch

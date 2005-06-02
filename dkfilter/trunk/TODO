@@ -15,8 +15,13 @@ Possible bugs:
  - check header parsing algorithm in Mail::DomainKeys::Message, as it may
    not do the right thing when headers are in the wrong order or duplicate
    headers occur
- - verification errors (e.g. DNS timeout) will prevent an
-   Authentication-Results header from being prepended to the message
+ - h= tag in signature header contains multiple occurrences of same header
+   name
+ - if signature fails on an email using a subdomain of the key's domain,
+   policy lookup should be for key's domain, not sender domain (i.e.
+   sender domain should only be used if the key domain doesn't match,
+   or there is no signature)
+ - message parse error occurs on headers without colons
 
 Possibly desired features:
  - support use of multiple selectors, multiple private keys

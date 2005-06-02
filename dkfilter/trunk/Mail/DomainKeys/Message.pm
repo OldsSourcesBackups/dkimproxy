@@ -72,7 +72,7 @@ sub load {
 		$hdr->signed($seen{'SIGN'});
 
 		$hdr->key or
-			return;
+			die "message parse error - invalid header\n";
 
 		# TODO:
 		#   signatures should be rejected if the header they are

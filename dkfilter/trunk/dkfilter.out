@@ -195,7 +195,7 @@ sub handle_end_of_data
 					last;
 				}
 				# try the parent domain
-				(undef, $domain) = split(/\./, $domain);
+				(undef, $domain) = split(/\./, $domain, 2);
 			}
 		}
 		unless ($domain)

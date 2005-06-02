@@ -187,8 +187,9 @@ sub verify {
 	my $senderdomain = $prms{'Sender'}->host;
 	my $keydomain = $self->domain;
 
-	unless ($senderdomain eq $keydomain ||
-		substr($senderdomain, -(length($keydomain) + 1)) eq ".$keydomain")
+	unless (lc($senderdomain) eq lc($keydomain) ||
+		lc(substr($senderdomain, -(length($keydomain) + 1)))
+			eq lc(".$keydomain"))
 	{
 		$self->errorstr("domain does not match address"),
 		return;
