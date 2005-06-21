@@ -439,7 +439,7 @@ Signs the message. You must provide a few parameters...
               Selector => $selector,
               Domain => $domain,
               KeyFile => $keyfile,
-			  [Headers => 1,]
+              [Headers => 1,]
             );
 
 The B<Method> argument determines the canonicalization method, either

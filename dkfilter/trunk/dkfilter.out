@@ -100,25 +100,37 @@ my $server = MSDW::SMTP::Server->new(interface => $srcaddr, port => $srcport);
 my %children;
 use vars qw($please_die);
 $please_die = 0;
-$SIG{TERM} = sub { $please_die = 1; };
+$SIG{TERM} = sub { $please_die = 1; die "got TERM signal"; };
 
-# This block is the parent daemon, never does an accept, just herds
-# a pool of children who accept and service connections, and
-# occasionally kill themselves off
-PARENT: while (1) {
-    while (scalar(keys %children) >= $children) {
-	my $child = wait;
-	delete $children{$child} if exists $children{$child};
-	if ($please_die) { kill 15, keys %children; exit 0; }
-    }
-    my $pid = fork;
-    die "$0: fork failed: $!\n" unless defined $pid;
-    last PARENT if $pid == 0;
-    $children{$pid} = 1;
-    select(undef, undef, undef, 0.1);
-    if ($please_die) { kill 15, keys %children; exit 0; }
+# catch exception thrown by TERM signal handler
+eval
+{
+	# This block is the parent daemon, never does an accept, just herds
+	# a pool of children who accept and service connections, and
+	# occasionally kill themselves off
+	PARENT: while (1)
+	{
+		while (scalar(keys %children) >= $children)
+		{
+			# wait for a child process to exit
+			my $child = wait;
+			delete $children{$child} if exists $children{$child};
+		}
+		# start a new child process
+		my $pid = fork;
+		die "$0: fork failed: $!\n" unless defined $pid;
+		last PARENT if $pid == 0;
+		$children{$pid} = 1;
+		select(undef, undef, undef, 0.1);
+	}
+}; # end eval
+
+$SIG{TERM} = 'DEFAULT';
+if ($please_die)
+{
+	kill 15, keys %children;
+	exit 0;
 }
-
 # This block is a child service daemon. It inherited the bound
 # socket created by SMTP::Server->new, it will service a random
 # number of connection requests in [minperchild..maxperchild] then

@@ -1,7 +1,28 @@
+2005-06-16: Jason Long <jlong@messiah.edu>
+ * dkfilter.in, dkfilter.out:
+   - TERM signal handler now "dies", so that the wait system call is properly
+     interrupted... I suspect this only needs to happen on Perl 5.8.0+, and
+     indeed may not even work with older versions of Perl
+   - everything the server does is now enclosed in an eval { } block, so
+     that the TERM signal's "die" can be properly caught
+   - this fixes a bug where sending the parent process a TERM signal would
+     not cause the program to shut down as expected
+
+2005-06-07: Jason Long <jlong@messiah.edu>
+ * auto_responder.pl:
+   - this is a new Perl script for creating an auto-responding
+	 interoperability tester
+
+2005-06-03: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - minor cosmetic change to inline documentation
+
 2005-05-11: Jason Long <jlong@messiah.edu>
  * DKMessage.pm:
    - bugfix - message-parse-error had caused "Odd number of elements..."
      warning to be output by Perl
+
+ -- VERSION 0.6 --
 
 2005-05-10: Jason Long <jlong@messiah.edu>
  * DKMessage.pm:

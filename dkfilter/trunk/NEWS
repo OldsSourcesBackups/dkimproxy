@@ -1,6 +1,12 @@
 This file summarizes what's changed between releases of dkfilter.
 See the ChangeLog file for the details.
 
+Version 0.7 - released 2005-06-21
+
+ * Fixed a bug where the TERM signal was not properly handled.
+ * Includes auto_responder.pl, a Perl script for creating an auto-resonding
+   interoperability tester
+
 Version 0.6 - released 2005-06-02
 
  * Fixed a few bugs with message parsing and domain comparisons
