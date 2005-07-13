@@ -1,6 +1,17 @@
 This file summarizes what's changed between releases of dkfilter.
 See the ChangeLog file for the details.
 
+Version 0.8
+
+ * Implemented an autoconf/automake build system. The recommended install can
+   now be achieved with:
+     ./configure --prefix=/usr/local/dkfilter
+     make install
+ * The filter scripts, dkfilter.in and dkfilter.out, are now installed to
+   $(prefix)/bin, e.g. /usr/local/dkfilter/bin/. This is different than
+   before, so if upgrading make the appropriate adjustments to your startup
+   script.
+
 Version 0.7 - released 2005-06-21
 
  * Fixed a bug where the TERM signal was not properly handled.

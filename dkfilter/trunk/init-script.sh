@@ -11,8 +11,8 @@ DOMAIN=`hostname -d`
 DKFILTER_IN_ARGS="--hostname=$HOSTNAME 127.0.0.1:10025 127.0.0.1:10026"
 DKFILTER_OUT_ARGS="--keyfile=$DKFILTERDIR/private.key --selector=selector1 --domain=$DOMAIN --method=nofws --headers 127.0.0.1:10027 127.0.0.1:10028"
 
-DKFILTER_IN_BIN="$DKFILTERDIR/dkfilter.in"
-DKFILTER_OUT_BIN="$DKFILTERDIR/dkfilter.out"
+DKFILTER_IN_BIN="$DKFILTERDIR/bin/dkfilter.in"
+DKFILTER_OUT_BIN="$DKFILTERDIR/bin/dkfilter.out"
 
 case "$1" in
 	start)

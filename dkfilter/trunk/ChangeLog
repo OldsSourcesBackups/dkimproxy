@@ -1,3 +1,23 @@
+2005-07-12: Jason Long <jlong@messiah.edu>
+ * Makefile.am, configure.ac:
+   - yep, I implemented an autoconf/automake-style build system. Now it's
+     easy to install anywhere... just do ./configure --prefix=/anywhere &&
+	 make install.
+ * README, INSTALL:
+   - updated this documentation
+ * lib/, scripts/:
+   - library files have been moved to the lib subdirectory.
+   - program files have been moved to the scripts subdirectory. Furthermore,
+     program files are now installed under $prefix/bin, so startup scripts
+	 will need to be changed.
+ * init-script.sh:
+   - find filter scripts in /usr/local/dkfilter/bin
+
+2005-06-21: Jason Long <jlong@messiah.edu>
+ * Released version 0.7, now working on 0.8.
+
+ -- VERSION 0.7 --
+
 2005-06-16: Jason Long <jlong@messiah.edu>
  * dkfilter.in, dkfilter.out:
    - TERM signal handler now "dies", so that the wait system call is properly

@@ -1,11 +1,15 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -I../lib
+#
+# Copyright (c) 2005 Messiah College. This program is free software.
+# You can redistribute it and/or modify it under the terms of the
+# GNU Public License as found at http://www.fsf.org/copyleft/gpl.html.
+#
 
 use strict;
 use warnings;
 use IO::File;
 use MIME::Entity;
 
-use lib "/usr/local/dkfilter";
 use DKMessage;
 
 use constant FROM_ADDR => 'admin@dktest.jason.long.name';
@@ -72,7 +76,7 @@ $top->attach(
 		"\n",
 		"Attached you will find the original message as plain text.\n\n",
 		"Thank you for using the dkfilter Domain Key Auto Responder.\n",
-		"This Auto Responder tests the verification routines of dkfilter-0.6.\n",
+		"This Auto Responder tests the verification routines of dkfilter-0.8.\n",
 		"For more information about dkfilter, see http://jason.long.name/dkfilter/\n",
 		"\n",
 		"If you have any questions about this automated tester, or if you\n",

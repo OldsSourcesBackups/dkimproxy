@@ -27,7 +27,7 @@ sub load {
 			(ref $prms{'File'} eq "GLOB" or ref $prms{'File'} eq "IO::File")) {
 			$file = $prms{'File'};
 		} else {
-			croak "wrong type for File argument";
+			croak "wrong type " . ref($prms{"File"}) . " for File argument";
 		}
 	} else {
 		$file = \*STDIN;
