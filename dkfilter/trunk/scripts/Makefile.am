@@ -3,7 +3,8 @@ perl_scripts = \
 	auto_responder.pl \
 	dkverify.pl \
 	dkfilter.in \
-	dkfilter.out
+	dkfilter.out \
+	dkimfilter.out
 
 EXTRA_DIST = $(perl_scripts)
 

@@ -1,7 +1,18 @@
 This file summarizes what's changed between releases of dkfilter.
 See the ChangeLog file for the details.
 
-Version 0.8
+Version 0.9 - released 2005-10-28
+
+ * Started working on DKIM support. The signing process appears to be
+   more-or-less complete (at least until the next revision of the DKIM
+   drafts), but has received very little testing. I recommend against
+   putting this into production.
+ * DKIM verification support is rudimentary as well. Once again, I must
+   recommend against using it in production.
+ * No changes to the DomainKeys signing and verification, so there's
+   no reason for users to upgrade.
+
+Version 0.8 - released 2005-07-13
 
  * Implemented an autoconf/automake build system. The recommended install can
    now be achieved with:

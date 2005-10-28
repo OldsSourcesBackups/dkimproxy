@@ -1,3 +1,8 @@
+2005-07-13: Jason Long <jlong@messiah.edu>
+ * Released version 0.8, now working on 0.9.
+
+ -- VERSION 0.8 --
+
 2005-07-12: Jason Long <jlong@messiah.edu>
  * Makefile.am, configure.ac:
    - yep, I implemented an autoconf/automake-style build system. Now it's

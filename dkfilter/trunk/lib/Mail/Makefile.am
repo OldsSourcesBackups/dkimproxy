@@ -1,4 +1,4 @@
-SUBDIRS = DomainKeys
+SUBDIRS = DomainKeys DKIM
 
 maildir = $(perllibdir)/Mail
 mail_SCRIPTS = \

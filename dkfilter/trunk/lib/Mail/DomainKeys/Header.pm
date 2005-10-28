@@ -67,7 +67,7 @@ sub vunfolded {
 sub key {
 	my $self = shift;
 
-	$self->line =~ /^(\S+):\s/ and
+	$self->line =~ /^([^:\ ]+)\s*:/ and
 		return $1;
 	
 	return;
@@ -94,7 +94,7 @@ sub signed {
 sub value {
 	my $self = shift;
 
-	$self->line =~ /^\S+:\s(.*)/s and
+	$self->line =~ /^[^:\ ]+\s*:\s*(.*)/s and
 		return $1;
 
 	return;
