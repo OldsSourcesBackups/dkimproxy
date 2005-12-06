@@ -1,0 +1,290 @@
+#!/usr/bin/perl -I../lib
+#
+# Copyright (c) 2005 Messiah College. This program is free software.
+# You can redistribute it and/or modify it under the terms of the
+# GNU Public License as found at http://www.fsf.org/copyleft/gpl.html.
+#
+# Written by Jason Long, jlong@messiah.edu.
+
+#
+#   This code is Copyright (C) 2001 Morgan Stanley Dean Witter, and
+#   is distributed according to the terms of the GNU Public License
+#   as found at <URL:http://www.fsf.org/copyleft/gpl.html>.
+#
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+# Written by Bennett Todd <bet@rahul.net>
+
+use warnings;
+use strict;
+
+use Getopt::Long;
+use Pod::Usage;
+use IO::File;
+use Sys::Syslog;
+
+use Mail::DKIM::Signer;
+use MySmtpServer;
+
+my $reject_error = 0;
+my $keyfile;
+my $selector;
+my $domain_arg;
+my $method = "nowsp";
+my $debugtrace = undef;
+my $help;
+GetOptions(
+	   "reject-error" => \$reject_error,
+	   "keyfile=s" => \$keyfile,
+	   "selector=s" => \$selector,
+	   "domain=s" => \$domain_arg,
+	   "method=s" => \$method,
+	   "debugtrace=s" => \$debugtrace,
+	   "help|?" => \$help)
+	or pod2usage(2);
+pod2usage(1) if $help;
+pod2usage("Error: one or more required arguments are missing")
+		unless @ARGV == 2;
+
+my ($srcaddr, $srcport) = split /:/, $ARGV[0];
+my ($dstaddr, $dstport) = split /:/, $ARGV[1];
+unless (defined($srcport) and defined($dstport))
+{
+	pod2usage("Error: source or destination port is missing");
+}
+
+unless (defined $keyfile)
+{
+	pod2usage("Error: no keyfile specified");
+}
+unless (-r $keyfile)
+{
+	pod2usage("Error: cannot read keyfile $keyfile");
+}
+unless (defined $selector)
+{
+	pod2usage("Error: selector not specified");
+}
+unless (defined $domain_arg)
+{
+	pod2usage("Error: domain not specified");
+}
+my @domains = split(/,\s*/, $domain_arg);
+unless ($method eq "nowsp" || $method eq "simple" || $method eq "relaxed")
+{
+	die "Error: invalid method $method\n";
+}
+
+
+use base "MySmtpProxyServer";
+main->run(
+		host => $srcaddr,
+		port => $srcport,
+	);
+
+sub setup_client_socket
+{
+	# create an object for sending the outgoing SMTP commands
+	#  (and the signed message)
+    my $client = MSDW::SMTP::Client->new(
+			interface => $dstaddr,
+			port => $dstport);
+	return $client;
+}
+
+sub process_request
+{
+	my $self = shift;
+
+	# initialize syslog
+	openlog("dkimfilter.out", "cons,pid", "mail");
+
+	$self->SUPER::process_request;
+}
+
+# handle_end_of_data
+#
+# Called when the source finishes transmitting the message. This method
+# may filter the message and if desired, transmit the message to
+# $client. Alternatively, this method can respond to the server with
+# some sort of rejection (temporary or permanent).
+#
+# Usage: $result = handle_end_of_data($server, $client);
+#
+# Returns:
+#   nonzero if a message was transmitted to the next server and its response
+#     returned to the source server
+#   zero if the message was rejected and the connection to the next server
+#     should be dropped
+#
+sub handle_end_of_data
+{
+	my $self = shift;
+	my $server = $self->{smtp_server};
+	my $client = $self->{smtp_client};
+
+	my $fh = $server->{data};
+	my $dkim;
+	my $result;
+	my $result_detail;
+	eval
+	{
+		$dkim = Mail::DKIM::Signer->new_object(
+				Policy => "MySignerPolicy",
+				KeyFile => $keyfile,
+				Method => $method,
+				Selector => $selector,
+			);
+
+		$dkim->load($fh);
+
+		$result = $dkim->result;
+		$result_detail = $dkim->result_detail;
+
+		syslog("info", '%s',
+			"DKIM signing - $result_detail; "
+			. join(", ", $dkim->message_attributes));
+		print STDERR "DKIM signing - $result_detail; "
+			. join(", ", $dkim->message_attributes) . "\n";
+	};
+	if ($@)
+	{
+		my $E = $@;
+		chomp $E;
+		syslog("warning", '%s', "signing error: $E");
+		$result = "temperror";
+		$result_detail = "$result ($E)";
+	}
+
+	# check signing result
+	if ($result =~ /error$/ && $reject_error)
+	{
+		# temporary or permanent error
+		$server->fail(
+			($result eq "permerror" ? "550" : "450")
+			. " DKIM - $result_detail");
+		return 0;
+	}
+
+	$fh->seek(0,0);
+
+	if ($dkim && $dkim->signature)
+	{
+		# output the generated DKIM-Signature
+		my $dkim_signature = $dkim->signature->as_string;
+		if ($dkim_signature)
+		{
+			$client->write_data_line($dkim_signature . "\015\012");
+		}
+		# send the original message as is
+		$client->yammer($fh);
+	}
+	else
+	{
+		# send the message unaltered
+		$client->yammer($fh);
+	}
+	return 1;
+}
+
+package MySignerPolicy;
+use Mail::DKIM::SignerPolicy;
+use base "Mail::DKIM::SignerPolicy";
+
+sub apply
+{
+	my ($self, $signer) = @_;
+
+	# determine what domain to use
+	my $domain;
+	if ($domain = lc $signer->message_sender->host)
+	{
+		while ($domain)
+		{
+			if (grep { lc($_) eq $domain } @domains)
+			{
+				$signer->domain($domain);
+				return 1;
+			}
+			# try the parent domain
+			(undef, $domain) = split(/\./, $domain, 2);
+		}
+	}
+
+	# unable to match a sender domain
+	return undef;
+}
+
+__END__
+
+=head1 NAME
+
+dkimfilter.out - SMTP proxy for adding DKIM signatures to email
+
+=head1 SYNOPSIS
+
+  dkimfilter.out [options] --keyfile=FILENAME --selector=SELECTOR \
+                 --domain=DOMAIN listen.addr:port talk.addr:port
+    options:
+      --method=simple|nowsp|relaxed
+      --reject-error
+
+  dkimfilter.out --help
+    to see a full description of the various options
+
+=head1 OPTIONS
+
+=over
+
+=item B<--keyfile=FILENAME>
+
+This is a required argument. Use it to specify the filename containing
+the private key used in signing outgoing messages.
+
+=item B<--selector=SELECTOR>
+
+This is a required argument. Use it to specify the name of the key
+selector.
+
+=item B<--domain=DOMAIN>
+
+This is a required argument. Use it to specify what domain(s) emails
+are signed for. If you want to sign for multiple domains, specify the
+domains separated by commas. As messages are delivered through the proxy,
+the proxy will attempt to match the message to one of the domains
+specified in this argument. If it sees a match, it will sign the message
+using the matching domain.
+
+=item B<--method=simple|nowsp|relaxed>
+
+This option specifies the canonicalization algorithm to use for signing
+messages. It is C<simple>, C<nowsp>, or C<relaxed>. If not specified,
+the default is C<nowsp>.
+
+=item B<--reject-error>
+
+This option specifies what to do if an error occurs during signing
+of a message. If this option is specified, the message will be rejected
+with an SMTP error code. This will result in the MTA sending the message
+to try again later, or bounce it back to the sender (depending on the
+exact error code used). If this option is not specified, the message
+will be passed through without a signature.
+
+=back
+
+=head1 DESCRIPTION
+
+dkimfilter.out listens on the IP address and TCP port specified by its
+first argument, and sends the traffic mostly unmodified to the SMTP
+server specified by the address and port in the second argument.
+The SMTP protocol is propogated literally, but message bodies may get
+signed with a DKIM signature.
+
+=head1 EXAMPLE
+
+  dkimfilter.out --keyfile=private.key --selector=postfix \
+          --domain=example.org 127.0.0.1:10027 127.0.0.1:10028

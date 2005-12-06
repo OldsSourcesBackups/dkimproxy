@@ -1,0 +1,17 @@
+This is dkfilter, an SMTP-proxy that implements DomainKeys message signing
+and verification.  It is designed to work with Postfix, but since it only
+speaks SMTP, it could potentially work with any MTA, not just Postfix.  It
+comprises two separate filters, an "outbound" filter for signing outgoing
+email, and an "inbound" filter for verifying signatures of incoming email.
+The filters can operate as either Before-Queue or After-Queue Postfix
+content filters.
+
+See the INSTALL file for installation instructions.
+
+Dkfilter is based on smtpprox and Mail::DomainKeys. My thanks go out to
+Bennett Todd for providing smtpprox and Anthony D. Urso for providing
+Mail::DomainKeys.
+
+Dkfilter is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation.
