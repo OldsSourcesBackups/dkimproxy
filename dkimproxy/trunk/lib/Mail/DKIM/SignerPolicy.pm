@@ -10,6 +10,7 @@ use strict;
 use warnings;
 
 package Mail::DKIM::SignerPolicy;
+our $VERSION = "0.12";
 
 1;
 

@@ -32,7 +32,7 @@ sub add_header
 	my $self = shift;
 	my ($line) = @_;
 
-	croak "header parse error \"$line\"" unless ($line =~ /:/);
+	#croak "header parse error \"$line\"" unless ($line =~ /:/);
 
 	$line =~ s/\015\012\z//s;
 	push @{$self->{myheaders}},

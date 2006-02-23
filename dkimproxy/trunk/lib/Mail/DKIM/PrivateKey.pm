@@ -11,9 +11,9 @@ use strict;
 use warnings;
 
 package Mail::DKIM::PrivateKey;
-use base "Mail::DomainKeys::Key";
+use base "Mail::DKIM::Key";
 
-our $VERSION = "0.18";
+our $VERSION = "0.12";
 
 sub load {
 	my $type = shift;

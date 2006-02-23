@@ -12,6 +12,7 @@ use warnings;
 
 package Mail::DKIM::MessageParser;
 use Carp;
+our $VERSION = "0.12";
 
 sub new_object
 {

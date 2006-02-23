@@ -1,3 +1,43 @@
+
+ -- VERSION 0.12 --
+
+2006-02-22: Jason Long <jlong@messiah.edu>
+ * lib/Mail/DKIM/Key.pm: copied this file from Mail::DomainKeys and
+   renamed to Mail::DKIM::Key
+
+2006-02-20: Jason Long <jlong@messiah.edu>
+ * lib/Mail/DKIM/Algorithm/rsa_sha1.pm: fixed a bug where a missing c=
+   tag in the signature was causing an "unsupported canonicalization"
+   error
+ * lib/Mail/DKIM/Canonicalization/relaxed.pm: the latest spec clarifies
+   what to do with a space between the header field name and the colon.
+   This space is now removed.
+ * lib/Mail/DKIM/Signature.pm: new method "canonicalization", replaces
+   "method" method, to access the c= tag. This new method splits the
+   value between the header and body canonicalization, filling in the
+   defaults if either is not specified.
+
+2005-12-07: Jason Long <jlong@messiah.edu>
+ * lib/Mail/DKIM/KeyValueList.pm: common base class for Signature and
+   PublicKey, both of which have the same format
+ * lib/Mail/DKIM/PublicKey.pm: checks public key to see if it's valid
+ * scripts/dkimsign.pl: added documentation and --help argument
+
+2005-12-06: Jason Long <jlong@messiah.edu>
+ * Now working on version 0.12.
+ * lib/Mail/DKIM/Common.pm, Verifier.pm: fixed bug in parsing of
+   DKIM-Signature header... the capitalization of the field name was not
+   being preserved.
+ * NEWS, INSTALL, scripts/dkim_responder.pl: replaced occurrences of
+   'dkfilter' with 'dkimproxy'
+
+ -- VERSION 0.9 - 0.11 --
+
+2005-12-06: Jason Long <jlong@messiah.edu>
+ * Added DKIM support.
+   (see lib/Mail/DKIM subdirectory)
+ * Renamed project to dkimproxy.
+
 2005-07-13: Jason Long <jlong@messiah.edu>
  * Released version 0.8, now working on 0.9.
 

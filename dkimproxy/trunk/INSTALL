@@ -1,32 +1,24 @@
 Copyright 2005 Messiah College. All rights reserved.
 
-   See the README file for an overview of Dkfilter.
+   See the README file for an overview of Dkimproxy.
 
 
-Dkfilter Requirements
-=====================
+Dkimproxy Requirements
+======================
 
-   Dkfilter is written in Perl. It requires the following Perl modules:
+   Dkimproxy is written in Perl. It requires the following Perl modules:
 
    * Crypt::OpenSSL::RSA
    * Mail::Address
    * MIME::Base64
    * Net::DNS
    * Test::More
-
-   The configure script described below does NOT check for these Perl
-   modules. You are on your own to install them.
-
-
-Dkimfilter Requirements
-=======================
-
-   If you are interested in DKIM signing and verifying, you will
-   additionally need this Perl module:
-
    * Crypt::RSA
    * Net::Server
    * Digest::SHA1
+
+   The configure script described below does NOT check for these Perl
+   modules. You are on your own to install them.
 
 
 Basic Installation
@@ -44,7 +36,7 @@ Basic Installation
      documentation. This will install the filter scripts in $prefix/bin
 	 and the Perl module files in $prefix/lib.
 
-  3. Create a Unix user/group dedicated to running Dkfilter. E.g. dkfilter.
+  3. Create a Unix user/group dedicated to running Dkimproxy. E.g. dkfilter.
 
   4. Create a startup/shutdown script for the filter and install it in
      the location normal for your distribution (e.g. /etc/init.d). A
@@ -54,11 +46,11 @@ Basic Installation
 	 the filters, as this is how to configure Dkfilter.
 
 
-Dkfilter Setup
-==============
+Dkimproxy Setup
+===============
 
-   Information on setting up dkfilter is currently only available online.
-   See http://jason.long.name/dkfilter/ for the details.
+   Information on setting up dkimproxy is currently only available online.
+   See http://jason.long.name/dkimproxy/ for the details.
 
 
-This document last updated 2005-11-16.
+This document last updated 2005-12-06.

@@ -50,16 +50,22 @@ DKIM support:
      - it may be possible to distinguish between a RSA sig. failure 
        and a change in message digest... if so, it could be reported
        in the verification results
+     - check public key "granularity"
+     - test public key variants
  - signer
-     - add l=, t=, z= tags
-	 - provide configurable way to add i= (identity) tag
-	 - provide configurable way to add x= (expiration) tag
-	 - add header-wrapping to signature before signing
+     - add t=, z= tags
+     - provide configurable way to add l= (length) tag
+     - provide configurable way to add i= (identity) tag
+     - provide configurable way to add x= (expiration) tag
+     - add header-wrapping to signature before signing
  - filters
      - determine way to indicate what headers should be removed
  - Mail::DKIM::Signature
      - implement method for getting/setting the copied header fields (z=)
        tag
+ - Mail::DKIM::PublicKey
+     - remove dependence on Mail::DomainKeys::Key.pm
+     - add documentation
 
 DKIM testing:
  - test public key errors:

@@ -12,9 +12,9 @@ use warnings;
 
 package Mail::DKIM::PublicKey;
 
-use base "Mail::DomainKeys::Key";
+use base ("Mail::DKIM::KeyValueList", "Mail::DKIM::Key");
 
-our $VERSION = "0.18";
+our $VERSION = "0.12";
 
 sub new {
 	my $type = shift;
@@ -31,40 +31,11 @@ sub new {
 	bless $self, $type;
 }
 
-sub load {
-	my $type = shift;
-	my %prms = @_;
-
-	my $self = {};
-
-
-	$self->{'GRAN'} = $prms{'Granularity'};
-	$self->{'NOTE'} = $prms{'Note'};
-	$self->{'TEST'} = $prms{'Testing'};
-	$self->{'TYPE'} = ($prms{'Type'} or "rsa");
-
-	if ($prms{'File'}) {	
-		my @data;
-		open FILE, "<$prms{'File'}" or
-			return;
-		while (<FILE>) {
-			chomp;
-			/^---/ and
-				next;
-			push @data, $_;
-		}
-		$self->{'DATA'} = join '', @data;
-	} else {
-		return;
-	}
-
-	bless $self, $type;
-}
-
-sub fetch {
+sub fetch
+{
 	use Net::DNS;
 
-	my $type = shift;
+	my $class = shift;
 	my %prms = @_;
 
 	my $strn;
@@ -116,50 +87,80 @@ sub fetch {
 	$strn or
 		return;
 
-	my $self = &parse_string($strn) or
-		return;
-
-	bless $self, $type;	
+	my $self = $class->parse($strn);
+	$self->{Selector} = $prms{'Selector'};
+	$self->{Domain} = $prms{'Domain'};
+	$self->check;
+	return $self;
 }
 
-sub parse {
-	my $type = shift;
-	my %prms = @_;
-
-
-	my $self = &parse_string($prms{'String'}) or
-		return;
-
-	bless $self, $type;	
-}
-
-sub as_string {
+# check syntax of the public key
+# throw an error if any errors are detected
+sub check
+{
 	my $self = shift;
 
-	my $text;
+	# check public key version tag
+	if (my $v = $self->get_tag("v"))
+	{
+		unless ($v eq "DKIM1")
+		{
+			die "unrecognized public key version\n";
+		}
+	}
 
+	# check public key granularity
+	my $g = $self->granularity;
 
-	$self->granularity and
-		$text .= "g=" . $self->granularity . "; ";
+	# check hash algorithm
+	if (my $h = $self->get_tag("h"))
+	{
+		my @list = split(/:/, $h);
+		unless (grep { $_ eq "sha1" } @list)
+		{
+			die "public key: no supported hash algorithm\n";
+		}
+	}
+
+	# check key type
+	if (my $k = $self->get_tag("k"))
+	{
+		unless ($k eq "rsa")
+		{
+			die "public key: unsupported key type\n";
+		}
+	}
+
+	# check public-key data
+	my $p = $self->data;
+	if (not defined $p)
+	{
+		die "public key: missing p= tag\n";
+	}
+	if ($p eq "")
+	{
+		die "public key: revoked\n";
+	}
+	unless ($p =~ /^[A-Za-z0-9\+\/\=]+$/)
+	{
+		die "public key: invalid data\n";
+	}
 	
-	$self->type and
-		$text .= "k=" . $self->type . "; ";
+	# check service type
+	if (my $s = $self->get_tag("s"))
+	{
+		my @list = split(/:/, $s);
+		unless (grep { $_ eq "*" || $_ eq "email" } @list)
+		{
+			die "public key: does not support email authentication\n";
+		}
+	}
 
-	$self->note and
-		$text .= "n=" . $self->note . "; ";
-	
-	$self->testing and
-		$text .= "t=y; ";
-
-	$text .= "p=" . $self->data;
-	
-	length $text and
-		return $text;
-
-	return;
+	return 1;
 }
 
-sub convert {
+sub convert
+{
 	use Crypt::OpenSSL::RSA;
 
 	my $self = shift;
@@ -218,25 +219,48 @@ sub verify {
 	return $rtrn;
 }
 
-sub granularity {
+sub granularity
+{
 	my $self = shift;
 
 	(@_) and 
-		$self->{'GRAN'} = shift;
+		$self->set_tag("g", shift);
 
-	$self->{'GRAN'};
+	return $self->get_tag("g");
 }
 
-sub note {
+sub notes
+{
 	my $self = shift;
 
 	(@_) and 
-		$self->{'NOTE'} = shift;
+		$self->set_tag("n", shift);
 
-	$self->{'NOTE'};
+	return $self->get_tag("n");
 }
 
-sub revoked {
+sub data
+{
+	my $self = shift;
+
+	(@_) and 
+		$self->set_tag("p", shift);
+
+	return $self->get_tag("p");
+}
+
+sub flags
+{
+	my $self = shift;
+
+	(@_) and 
+		$self->set_tag("t", shift);
+
+	return $self->get_tag("t");
+}
+
+sub revoked
+{
 	my $self = shift;
 
 	$self->data or
@@ -245,40 +269,19 @@ sub revoked {
 	return;
 }
 
-sub testing {
+sub testing
+{
 	my $self = shift;
 
-	(@_) and 
-		$self->{'TEST'} = shift;
-
-	$self->{'TEST'};
-}
-
-sub parse_string {
-	my $text = shift;
-
-	my %tags;
-
-
-	foreach my $tag (split /;/, $text) {
-		$tag =~ s/^\s*|\s*$//g;
-
-		foreach ($tag) {
-			/^g=(\S+)$/ and
-				$tags{'GRAN'} = $1;
-			/^k=(rsa)$/i and
-				$tags{'TYPE'} = lc $1;
-			/^n=(.*)$/ and
-				$tags{'NOTE'} = $1;
-			/^p=([A-Za-z0-9\+\/\=]+)$/ and
-				$tags{'DATA'} = $1;
-			/^t=y$/i and
-				$tags{'TEST'} = 1;
-		}
+	my $flags = $self->flags;
+	my @flaglist = split(/:/, $flags);
+	if (grep { $_ eq "y" } @flaglist)
+	{
+		return 1;
 	}
-
-	return \%tags;
+	return undef;
 }
+
 
 use Crypt::RSA::Primitives;
 use Crypt::RSA::DataFormat ("os2ip", "octet_len", "i2osp", "h2osp");

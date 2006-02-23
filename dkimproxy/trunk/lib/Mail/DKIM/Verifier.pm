@@ -52,6 +52,8 @@ Mail::DKIM::Verifier - verifies a DKIM-signed message
 package Mail::DKIM::Verifier;
 use base "Mail::DKIM::Common";
 use Carp;
+use Error ":try";
+our $VERSION = "0.12";
 
 sub init
 {
@@ -90,13 +92,13 @@ sub init
 sub handle_header
 {
 	my $self = shift;
-	my ($field_name, $contents) = @_;
+	my ($field_name, $contents, $line) = @_;
 
 	$self->SUPER::handle_header($field_name, $contents);
 
 	if (lc($field_name) eq "dkim-signature")
 	{
-		$self->add_signature($contents);
+		$self->add_signature($line);
 	}
 }
 
@@ -213,11 +215,20 @@ sub finish_header
 		next unless ($self->check_signature($signature));
 
 		# get public key
-		$self->{public_key} = $signature->get_public_key;
+		try
+		{
+			$self->{public_key} = $signature->get_public_key;
+		}
+		otherwise
+		{
+			my $E = shift;
+			chomp $E;
+			$self->{signature_reject_reason} = $E;
+		};
+
 		unless ($self->{public_key})
 		{
 			# public key not available
-			$self->{signature_reject_reason} = "public key not available";
 			next;
 		}
 

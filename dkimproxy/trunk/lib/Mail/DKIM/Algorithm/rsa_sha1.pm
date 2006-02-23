@@ -38,13 +38,14 @@ sub init
 
 	if ($self->{Signature})
 	{
-		my $method = $self->{Signature}->method;
-		my ($header_method, $body_method) = split(/\//, $method, 2);
-		unless (defined $body_method)
-		{
-			$body_method = ($header_method eq "relaxed" ? "simple" :
-						$header_method);
-		}
+		my ($header_method, $body_method)
+			= $self->{Signature}->canonicalization;
+		#my ($header_method, $body_method) = split(/\//, $method, 2);
+		#unless (defined $body_method)
+		#{
+		#	$body_method = ($header_method eq "relaxed" ? "simple" :
+		#				$header_method);
+		#}
 
 		my $header_class = $self->get_canonicalization_class($header_method);
 		my $body_class = $self->get_canonicalization_class($body_method);

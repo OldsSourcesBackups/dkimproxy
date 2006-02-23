@@ -63,6 +63,7 @@ The steps done are:
 package Mail::DKIM::SigningFilter;
 use base "Mail::DKIM::Signer";
 use Carp;
+our $VERSION = "0.12";
 
 sub add_body
 {

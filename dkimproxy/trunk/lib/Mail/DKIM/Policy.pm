@@ -17,7 +17,7 @@ Mail::DKIM::Policy - represents a DKIM sender signing policy
 
 use strict;
 
-our $VERSION = "0.18";
+our $VERSION = "0.12";
 
 =head1 CONSTRUCTORS
 

@@ -13,8 +13,9 @@ use warnings;
 use Mail::DKIM::PublicKey;
 
 package Mail::DKIM::Signature;
+use base "Mail::DKIM::KeyValueList";
 use Carp;
-our $VERSION = "0.18";
+our $VERSION = "0.12";
 
 =head1 NAME
 
@@ -71,49 +72,25 @@ of the as_string method.
 
 sub parse
 {
-	my $type = shift;
+	my $class = shift;
 	croak "wrong number of arguments" unless (@_ == 1);
 	my ($string) = @_;
-
-	my $self = {};
-	bless $self, $type;	
 
 	# remove line terminator, if present
 	$string =~ s/\015\012\z//;
 
 	# remove field name, if present
+	my $prefix;
 	if ($string =~ /^(dkim-signature:)(.*)/si)
 	{
 		# save the field name (capitalization), so that it can be
 		# restored later
-		$self->{prefix} = $1;
+		$prefix = $1;
 		$string = $2;
 	}
 
-	$self->{tags} = [];
-	foreach my $raw_tag (split /;/, $string, -1)
-	{
-		my $tag = {
-			raw => $raw_tag
-			};
-		push @{$self->{tags}}, $tag;
-
-		# strip preceding and trailing whitespace
-		$raw_tag =~ s/^\s*|\s*$//g;
-
-		next if ($raw_tag eq "");
-
-		my ($tagname, $value) = split(/=/, $raw_tag, 2);
-		unless (defined $value)
-		{
-			die "signature syntax error\n";
-		}
-
-		$tag->{name} = $tagname;
-		$tag->{value} = $value;
-
-		$self->{tags_by_name}->{$tagname} = $tag;
-	}
+	my $self = $class->SUPER::parse($string);
+	$self->{prefix} = $prefix;
 
 	if (defined $self->get_tag("v"))
 	{
@@ -121,75 +98,6 @@ sub parse
 	}
 
 	return $self;
-}
-
-sub clone
-{
-	my $self = shift;
-	my $str = $self->as_string;
-	return ref($self)->parse($str);
-}
-
-sub get_tag
-{
-	my $self = shift;
-	my ($tagname) = @_;
-
-	if ($self->{tags_by_name}->{$tagname})
-	{
-		return $self->{tags_by_name}->{$tagname}->{value};
-	}
-	return undef;
-}
-
-sub set_tag
-{
-	my $self = shift;
-	my ($tagname, $value) = @_;
-
-	if ($tagname =~ /[;=\015\012\t ]/)
-	{
-		croak "invalid tag name";
-	}
-
-	if (defined $value)
-	{
-		if ($value =~ /;/)
-		{
-			croak "invalid tag value";
-		}
-		if ($value =~ /\015\012[^\t ]/)
-		{
-			croak "invalid tag value";
-		}
-
-		if ($self->{tags_by_name}->{$tagname})
-		{
-			$self->{tags_by_name}->{$tagname}->{value} = $value;
-			my ($rawname, $rawvalue) = split(/=/,
-					$self->{tags_by_name}->{$tagname}->{raw}, 2);
-			$self->{tags_by_name}->{$tagname}->{raw} = "$rawname=$value";
-		}
-		else
-		{
-			my $tag = {
-				name => $tagname,
-				value => $value,
-				raw => " $tagname=$value"
-				};
-			push @{$self->{tags}}, $tag;
-			$self->{tags_by_name}->{$tagname} = $tag;
-		}
-	}
-	else
-	{
-		if ($self->{tags_by_name}->{$tagname})
-		{
-			delete $self->{tags_by_name}->{$tagname};
-		}
-		@{$self->{tags}} = grep
-			{ $_->{name} ne $tagname } @{$self->{tags}};
-	}
 }
 
 
@@ -251,7 +159,7 @@ sub as_string
 
 	my $prefix = $self->{prefix} || "DKIM-Signature:";
 
-	return $prefix . join(";", map { $_->{raw} } @{$self->{tags}});
+	return $prefix . $self->SUPER::as_string;
 }
 
 # undocumented method
@@ -314,6 +222,53 @@ sub body_count
 	return $self->get_tag("l");
 }
 
+=head2 canonicalization() - get or set the canonicalization (c=) field
+
+  $signature->canonicalization("relaxed", "simple");
+
+  ($header, $body) = $signature->canonicalization;
+
+Message canonicalization (default is "simple/simple"). This informs the
+verifier of the type of canonicalization used to prepare the message for
+signing.
+
+In scalar context, this returns header/body canonicalization as a single
+string separated by /. In list context, it returns a two element array,
+containing first the header canonicalization, then the body.
+
+=cut
+
+sub canonicalization
+{
+	my $self = shift;
+
+	if (@_)
+	{
+		$self->set_tag("c", join("/", @_));
+	}
+
+	my $c = lc $self->get_tag("c");
+	if (not $c)
+	{
+		$c = "simple/simple";
+	}
+	my ($c1, $c2) = split(/\//, $c, 2);
+	if (not defined $c2)
+	{
+		# default body canonicalization depends on header canonicalization
+		$c2 = $c1 eq "nowsp" ? "nowsp" : "simple";
+	}
+
+	if (wantarray)
+	{
+		return ($c1, $c2);
+	}
+	else
+	{
+		return "$c1/$c2";
+	}
+}	
+
 =head2 domain() - get or set the domain (d=) field
 
   my $d = $signature->domain;          # gets the domain value
@@ -361,16 +316,7 @@ sub check_canonicalization
 {
 	my $self = shift;
 
-	my $c = $self->method;
-	if (not defined $c)
-	{
-		$c = "simple/simple";
-	}
-	my ($c1, $c2) = split(/\//, $c, 2);
-	if (not defined $c2)
-	{
-		$c2 = "simple";
-	}
+	my ($c1, $c2) = $self->canonicalization;
 
 	my @known = ("nowsp", "simple", "relaxed");
 	return undef unless (grep { $_ eq $c1 } @known);
@@ -395,15 +341,20 @@ sub get_public_key
 		my $pubk = Mail::DKIM::PublicKey->fetch(
 			Protocol => $self->protocol,
 			Selector => $self->selector,
-			Domain => $self->domain) or
-				$self->status("no key"),
-				$self->errorstr("no public key available"),
-				return;
+			Domain => $self->domain);
+		unless ($pubk)
+		{
+			#$self->status("no key"),
+			#$self->errorstr("no public key available"),
+			die "no public key available\n";
+		}
 
-		$pubk->revoked and
-			$self->status("revoked"),
-			$self->errorstr("public key has been revoked"),
-			return;
+		if ($pubk->revoked)
+		{
+			#$self->status("revoked"),
+			#$self->errorstr("public key has been revoked"),
+			die "public key has been revoked\n";
+		}
 
 		$self->{public} = $pubk;
 	}

@@ -16,3 +16,4 @@ test4.txt: tests whitespace inserted within b= tag (after signing)
 test5.txt: DKIM-Signature header name is case insensitive
 test6.txt: d= and s= tag contents are case insensitive
 test7.txt: tests whitespace within h= tag
+test8.txt: unrecognized tags

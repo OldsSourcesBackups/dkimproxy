@@ -16,6 +16,7 @@ use Mail::DKIM::Signature;
 package Mail::DKIM::Common;
 use base "Mail::DKIM::MessageParser";
 use Carp;
+our $VERSION = "0.12";
 
 sub new
 {
@@ -43,7 +44,7 @@ sub add_header
 	{
 		my $field_name = lc $1;
 		my $contents = $2;
-		$self->handle_header($field_name, $contents);
+		$self->handle_header($field_name, $contents, $line);
 	}
 	push @{$self->{headers}}, $line;
 }
@@ -60,7 +61,7 @@ sub add_body
 sub handle_header
 {
 	my $self = shift;
-	my ($field_name, $contents) = @_;
+	my ($field_name, $contents, $line) = @_;
 
 	push @{$self->{header_field_names}}, $field_name;
 

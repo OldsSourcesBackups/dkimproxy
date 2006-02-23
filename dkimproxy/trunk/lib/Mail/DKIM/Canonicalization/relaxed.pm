@@ -55,10 +55,10 @@ sub canonicalize_header
 	$line =~ s/ \z//s;
 
 	# 
-	# step 5: delete any WSP character remaining after the colon
+	# step 5: delete any WSP character remaining before and after the colon
 	# separating the header field name from the header field value
 	#
-	$line =~ s/([^:]+):\s+/$1:/;
+	$line =~ s/^([^:\s]+)\s*:\s*/$1:/;
 
 	return $line;
 }

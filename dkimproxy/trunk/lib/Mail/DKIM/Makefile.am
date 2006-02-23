@@ -3,6 +3,7 @@ SUBDIRS = Algorithm Canonicalization
 dkimdir = $(perllibdir)/Mail/DKIM
 dkim_SCRIPTS = \
 	Common.pm \
+	KeyValueList.pm \
 	MessageParser.pm \
 	Policy.pm \
 	PrivateKey.pm \

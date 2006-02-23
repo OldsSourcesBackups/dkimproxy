@@ -1,5 +1,11 @@
-This file summarizes what's changed between releases of dkfilter.
+This file summarizes what's changed between releases of dkimproxy.
 See the ChangeLog file for the details.
+
+Version 0.12 - released 2006-02-23
+
+ * A few bugs were fixed with regard to DKIM specifications.
+ * Mail::DomainKeys is no longer needed, and no longer included with the
+   dkimproxy package.
 
 Version 0.11 - released 2005-12-06
 

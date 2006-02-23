@@ -77,6 +77,7 @@ See Mail::DKIM::SignerPolicy for more information about policy objects.
 package Mail::DKIM::Signer;
 use base "Mail::DKIM::Common";
 use Carp;
+our $VERSION = "0.12";
 
 # PROPERTIES
 #
@@ -192,7 +193,7 @@ sub finish_header
 	$self->{signature} = new Mail::DKIM::Signature(
 			Algorithm => $self->{"Algorithm"},
 			Method => $self->{"Method"},
-			Headers => join(" : ", @headers),
+			Headers => join(":", @headers),
 			Domain => $self->{"Domain"},
 			Selector => $self->{"Selector"},
 		);
