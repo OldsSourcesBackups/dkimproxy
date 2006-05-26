@@ -1,4 +1,4 @@
-SUBDIRS = MSDW Mail
+SUBDIRS = MSDW
 
 perllib_SCRIPTS = \
 	DKMessage.pm \

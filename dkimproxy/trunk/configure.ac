@@ -1,5 +1,5 @@
 dnl Initialize automake/autoconf
-AC_INIT(dkimproxy, 0.12)
+AC_INIT(dkimproxy, 0.13)
 AM_INIT_AUTOMAKE
 
 dnl Check for Perl
@@ -12,10 +12,6 @@ AC_SUBST(perllibdir)
 AC_OUTPUT([
 	Makefile
 	lib/Makefile
-	lib/Mail/Makefile
-	lib/Mail/DKIM/Makefile
-	lib/Mail/DKIM/Algorithm/Makefile
-	lib/Mail/DKIM/Canonicalization/Makefile
 	lib/MSDW/Makefile
 	lib/MSDW/SMTP/Makefile
 	scripts/Makefile

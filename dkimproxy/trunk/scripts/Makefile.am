@@ -1,9 +1,5 @@
 perldir = $(bindir)
 perl_scripts = \
-	dk_responder.pl \
-	dkverify.pl \
-	dkfilter.in \
-	dkfilter.out \
 	dkim_responder.pl \
 	dkimsign.pl \
 	dkimverify.pl \

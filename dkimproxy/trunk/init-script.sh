@@ -1,6 +1,12 @@
 #!/bin/sh
 #
-# Copyright (c) 2005 Messiah College.
+# Copyright (c) 2005-2006 Messiah College.
+#
+### BEGIN INIT INFO
+# Default-Start:  3 4 5
+# Default-Stop:   0 1 2 6
+# Description:    Runs dkimproxy
+### END INIT INFO
 
 DKFILTERUSER=dkfilter
 DKFILTERGROUP=dkfilter

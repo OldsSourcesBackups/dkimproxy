@@ -11,6 +11,7 @@ use warnings;
 use IO::File;
 use MIME::Entity;
 
+use Mail::DKIM 0.17;
 use Mail::DKIM::Verifier;
 
 use constant FROM_ADDR => 'admin@dkimtest.jason.long.name';
@@ -104,6 +105,7 @@ subject.
 }
 
 # part one, literal text containing result of test
+my $PRODUCT = "Mail::DKIM " . $Mail::DKIM::VERSION;
 $top->attach(
 	Type => "text/plain",
 	Data => [
@@ -113,9 +115,8 @@ $top->attach(
 		"\n",
 		$attach_text,
 		"Thank you for using the dkimproxy DKIM Auto Responder.\n",
-		"This Auto Responder tests the verification routines of dkimproxy-0.11\n",
-		"(formerly dkfilter).\n",
-		"For more information about dkimproxy, see http://jason.long.name/dkimproxy/\n",
+		"This Auto Responder tests the verification routines of $PRODUCT.\n",
+		"For more information about Mail::DKIM, see http://jason.long.name/dkimproxy/\n",
 		"\n",
 		"If you have any questions about this automated tester, or if you\n",
 		"received this message in error, please send a note to\n",

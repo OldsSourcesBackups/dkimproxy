@@ -29,7 +29,14 @@ use MySmtpServer;
 use IO::File;
 
 package MySmtpProxyServer;
-use base "Net::Server";
+use base "Net::Server::MultiType";
+
+sub run
+{
+	my $class = shift;
+	print "running\n";
+	$class->SUPER::run(@_);
+}
 
 sub process_request
 {
@@ -48,6 +55,10 @@ sub process_request
 	#  - wait for a command from source
 	while (my $what = $server->chat)
 	{
+		if ($self->{debug})
+		{
+			print STDERR $what . "\n";
+		}
 		$self->handle_command($what)
 			or last;
 	}

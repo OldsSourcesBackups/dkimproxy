@@ -1,6 +1,6 @@
 #!/usr/bin/perl -I../lib
 #
-# Copyright (c) 2005 Messiah College. This program is free software.
+# Copyright (c) 2005-2006 Messiah College. This program is free software.
 # You can redistribute it and/or modify it under the terms of the
 # GNU Public License as found at http://www.fsf.org/copyleft/gpl.html.
 #
@@ -27,6 +27,7 @@ use Pod::Usage;
 use IO::File;
 use Sys::Syslog;
 
+use Mail::DKIM 0.17;
 use Mail::DKIM::Signer;
 use MySmtpServer;
 
@@ -35,6 +36,7 @@ my $keyfile;
 my $selector;
 my $domain_arg;
 my $method = "nowsp";
+my $pidfile;
 my $debugtrace = undef;
 my $help;
 GetOptions(
@@ -44,6 +46,7 @@ GetOptions(
 	   "domain=s" => \$domain_arg,
 	   "method=s" => \$method,
 	   "debugtrace=s" => \$debugtrace,
+	   "pidfile=s" => \$pidfile,
 	   "help|?" => \$help)
 	or pod2usage(2);
 pod2usage(1) if $help;
@@ -84,6 +87,8 @@ use base "MySmtpProxyServer";
 main->run(
 		host => $srcaddr,
 		port => $srcport,
+		server_type => "PreFork",
+		pid_file => $pidfile,
 	);
 
 sub setup_client_socket

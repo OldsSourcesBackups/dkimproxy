@@ -1,6 +1,20 @@
 This file summarizes what's changed between releases of dkimproxy.
 See the ChangeLog file for the details.
 
+Version 0.13 - released 2006-05-26
+
+ UPGRADERS TAKE NOTE!
+   If you have installed version 0.12 (or lower) of DKIM proxy,
+   please delete the $prefix/lib/Mail/DKIM directory before upgrading.
+
+ * Mail::DKIM is now a separate download, so please download it (from
+   the same location as dkimproxy is available) and install it
+   separately. Mail::DKIM version 0.17 includes support for draft ietf-01
+   of the DKIM specification.
+ * Some tweaks have been made to the init script, and a new argument
+   --pidfile can be specified to create a PID file on startup.
+ * Fixed an issue where only one SMTP client could be connected at a time.
+
 Version 0.12 - released 2006-02-23
 
  * A few bugs were fixed with regard to DKIM specifications.

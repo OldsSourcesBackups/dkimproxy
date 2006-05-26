@@ -1,3 +1,25 @@
+2006-05-26: Jason Long <jlong@messiah.edu>
+ * lib/Mail/DKIM: removed this directory... the Dkim proxy now expects
+   the Mail::DKIM module to be installed from CPAN (i.e. it's no longer
+   bundled)
+ * scripts/dkimproxy.in, scripts/dkimproxy.out: added support for --pidfile
+   argument
+
+2006-05-23: Jason Long <jlong@messiah.edu>
+ * init-script.sh: sample init script updated to include SLB headers (to
+   describe what runlevels dkimproxy should run under)
+
+2006-03-28: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.in, scripts/dkimproxy.out: new option "--debug"
+   can be specified, which will cause the server to spit out every SMTP
+   command it sees to STDERR
+ * lib/MySmtpProxyServer.pm: now uses Net::Server::MultiType so that
+   different server types (e.g. forking, preforking) can be selected
+   at runtime; server type now set to "PreFork" by default; provide
+   support for --debug option
+
+2006-02-23: Jason Long <jlong@messiah.edu>
+ * Now working on version 0.13.
 
  -- VERSION 0.12 --
 

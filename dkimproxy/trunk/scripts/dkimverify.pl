@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 
+use Mail::DKIM 0.17;
 use Mail::DKIM::Verifier;
 use Getopt::Long;
 

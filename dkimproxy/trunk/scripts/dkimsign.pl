@@ -9,6 +9,7 @@
 use strict;
 use warnings;
 
+use Mail::DKIM 0.17;
 use Mail::DKIM::Signer;
 use Getopt::Long;
 use Pod::Usage;

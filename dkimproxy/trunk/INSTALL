@@ -1,4 +1,4 @@
-Copyright 2005 Messiah College. All rights reserved.
+Copyright 2005-2006 Messiah College. All rights reserved.
 
    See the README file for an overview of Dkimproxy.
 
@@ -8,18 +8,16 @@ Dkimproxy Requirements
 
    Dkimproxy is written in Perl. It requires the following Perl modules:
 
-   * Crypt::OpenSSL::RSA
-   * Mail::Address
-   * MIME::Base64
-   * Net::DNS
-   * Test::More
-   * Crypt::RSA
+   * Mail::DKIM (version 0.17 or later)
+   * Error
    * Net::Server
-   * Digest::SHA1
 
    The configure script described below does NOT check for these Perl
    modules. You are on your own to install them.
 
+   Mail::DKIM should be downloaded from http://jason.long.name/dkimproxy/,
+   so that you have the right version. Error and Net::Server can be
+   installed using CPAN.
 
 Basic Installation
 ==================
@@ -43,7 +41,7 @@ Basic Installation
 	 sample script is provided... make sure to check, and modify if
 	 necessary, the user, group, and paths found in the script. Also,
 	 you'll want to adjust the command-line arguments used to start
-	 the filters, as this is how to configure Dkfilter.
+	 the filters, as this is how to configure Dkimproxy.
 
 
 Dkimproxy Setup
@@ -53,4 +51,4 @@ Dkimproxy Setup
    See http://jason.long.name/dkimproxy/ for the details.
 
 
-This document last updated 2005-12-06.
+This document last updated 2006-05-26.
