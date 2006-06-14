@@ -1,10 +1,9 @@
 perldir = $(bindir)
 perl_scripts = \
-	auto_responder.pl \
+	dk_responder.pl \
 	dkverify.pl \
 	dkfilter.in \
-	dkfilter.out \
-	dkimfilter.out
+	dkfilter.out
 
 EXTRA_DIST = $(perl_scripts)
 

@@ -276,72 +276,6 @@ sub simple {
 	return $text;
 }
 
-sub nowsp
-{
-	my $self = shift;
-	my $signing = shift || 0;
-
-	my $text = "";
-
-	my @mess_headers = @{$self->head};
-	foreach my $hdr_name ($self->signature->headerlist)
-	{
-		$hdr_name = lc $hdr_name;
-
-		# find the specified header in the message
-		internal_loop:
-		for (my $i = 0; $i < @mess_headers; $i++)
-		{
-			if (lc($mess_headers[$i]->key) eq $hdr_name)
-			{
-				# found it
-				my $hdr = $mess_headers[$i];
-
-				# this removes it from our list, so if it occurs more than
-				# once, we'll get the next header in line
-				splice @mess_headers, $i, 1;
-
-				my $line = $hdr->unfolded;
-
-				# remove all whitespace
-				$line =~ s/[\t\n\r\ ]//g;
-
-				# map field name to lowercase
-				$line =~ s/^([^:]+):/$hdr_name:/;
-
-				$text .= $line . "\015\012";
-				last internal_loop;
-			}
-		}
-	}
-
-	# delete trailing blank lines
-	foreach (reverse @{$self->{'BODY'}}) {
-		if (/^[\t\n\r\ ]*$/)
-		{
-			pop @{$self->{'BODY'}};
-		}
-		else
-		{
-			last;
-		}
-	}
-
-	# make sure there is a body before adding a seperator line
-	(scalar @{$self->{'BODY'}}) and
-		$text .= "\r\n";
-
-	foreach my $lin (@{$self->{'BODY'}}) {
-		my $line = $lin;
-		$line =~ s/[\t\n\r\ ]//g;
-		$text .= $line;
-	}
-
-	# TODO - add the DKIM-Signature header (minus the b= tag)
-
-	return $text;
-}
-
 sub sign {
 	my $self = shift;
 	my %prms = @_;
@@ -361,9 +295,7 @@ sub sign {
 
 	$self->signature($sign);
 
-	my $canon = $sign->method eq "nofws" ? $self->nofws(1) :
-				$sign->method eq "nowsp" ? $self->nowsp(1)
-						: $self->simple(1);
+	my $canon = $sign->method eq "nofws" ? $self->nofws(1) : $self->simple(1);
 	$sign->sign(Text => $canon, Private => $prms{'Private'});
 
 	return $sign;
@@ -384,7 +316,6 @@ sub verify {
 	my $method = $self->signature->method;
 	return $self->signature->verify(
 			Text => ($method eq "nofws" ? $self->nofws :
-					 $method eq "nowsp" ? $self->nowsp :
 					 $method eq "simple" ? $self->simple :
 					 die "unrecognized method\n"),
 			Sender => ($self->sender or $self->from));

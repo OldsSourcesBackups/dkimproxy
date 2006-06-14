@@ -1,3 +1,32 @@
+2006-06-14: Jason Long <jlong@messiah.edu>
+ * Released version 0.10, now working on 0.11.
+
+ -- VERSION 0.10 --
+
+2006-06-07: Jason Long <jlong@messiah.edu>
+ * init-script.sh: added a runlevel information header to the initialization
+   script
+
+2006-05-04: Jason Long <jlong@messiah.edu>
+ * lib/MySmtpProxyServer.pm: a subclass of Net::Server which handles
+   incoming SMTP connections and proxies them to another SMTP server,
+   allowing the program to filter and make changes to the message as it
+   is proxied.
+ * lib/MySmtpServer.pm: manages an incoming SMTP connection
+ * scripts/dkfilter.in: rewrote it to be a subclass of MySmtpProxyServer
+ * scripts/dkfilter.out: rewrote it to be a subclass of MySmtpProxyServer
+
+2006-05-02: Jason Long <jlong@messiah.edu>
+ * lib/Mail/DomainKeys/Header.pm: subtle fix to regular expressions for
+   matching header field names and values
+ * scripts/dk_responder.pl: renamed auto_responder.pl to this
+
+2005-10-28: Jason Long <jlong@messiah.edu>
+ * Forked dkfilter to work on DKIM support. A side effect is a bump in the
+   version number, now working on 0.10. No changes to dkfilter.
+
+ -- VERSION 0.9 --
+
 2005-07-13: Jason Long <jlong@messiah.edu>
  * Released version 0.8, now working on 0.9.
 

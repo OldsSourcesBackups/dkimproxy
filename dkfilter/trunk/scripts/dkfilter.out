@@ -1,9 +1,10 @@
 #!/usr/bin/perl -I../lib
 #
-# Copyright (c) 2005 Messiah College. This program is free software.
+# Copyright (c) 2005-2006 Messiah College. This program is free software.
 # You can redistribute it and/or modify it under the terms of the
 # GNU Public License as found at http://www.fsf.org/copyleft/gpl.html.
 #
+# Written by Jason Long, jlong@messiah.edu.
 
 #
 #   This code is Copyright (C) 2001 Morgan Stanley Dean Witter, and
@@ -19,26 +20,19 @@
 # Written by Bennett Todd <bet@rahul.net>
 
 use strict;
-use Getopt::Long;
-use IO::File;
+use strict;
 
-use MSDW::SMTP::Server;
-use MSDW::SMTP::Client;
+use Getopt::Long;
+use Pod::Usage;
+use IO::File;
 use Sys::Syslog;
+
 use DKMessage;
+use MySmtpServer;
 
 use Sys::Hostname;
 my $hostname = hostname;
-my $syntax = "syntax: $0 [--children=16] [--minperchild=100] ".
-             "[--maxperchild=200] [--debugtrace=undef] ".
-			 "[--reject-fail] [--reject-error] [--hostname=$hostname] " .
-			 "--keyfile=KEYFILE --selector=SELECTOR --domain=DOMAIN " .
-			 "[--method=simple|nofws] " .
-             "listen.addr:port talk.addr:port\n";
 
-my $children = 16;
-my $minperchild = 100;
-my $maxperchild = 200;
 my $reject_fail = 0;  # not actually used in this filter
 my $reject_error = 0;
 my $keyfile;
@@ -46,125 +40,93 @@ my $selector;
 my $domain_arg;
 my $method = "simple";
 my $headers = 0;
-my $debugtrace = undef;
-GetOptions("children=n" => \$children,
-	   "minperchild=n" => \$minperchild,
-	   "maxperchild=n" => \$maxperchild,
-	   "reject-fail" => \$reject_fail,
-	   "reject-error" => \$reject_error,
-	   "hostname=s" => \$hostname,
-	   "keyfile=s" => \$keyfile,
-	   "selector=s" => \$selector,
-	   "domain=s" => \$domain_arg,
-	   "method=s" => \$method,
-	   "headers" => \$headers,
-	   "debugtrace=s" => \$debugtrace) or die $syntax;
+my $pidfile;
+my $debug;
+my $help;
+GetOptions(
+		"reject-fail" => \$reject_fail,
+		"reject-error" => \$reject_error,
+		"hostname=s" => \$hostname,
+		"keyfile=s" => \$keyfile,
+		"selector=s" => \$selector,
+		"domain=s" => \$domain_arg,
+		"method=s" => \$method,
+		"headers" => \$headers,
+		"pidfile=s" => \$pidfile,
+		"debug" => \$debug,
+		"help|?" => \$help)
+	or pod2usage(2);
+pod2usage(1) if $help;
+pod2usage("Error: one or more required arguments are missing")
+	unless @ARGV == 2;
 
-die $syntax unless @ARGV == 2;
+if ($pidfile)
+{
+	open my $fh, ">", $pidfile
+		or die "Error: cannot write $pidfile: $!\n";
+	print $fh "$$\n";
+	close $fh;
+}
+
 my ($srcaddr, $srcport) = split /:/, $ARGV[0];
 my ($dstaddr, $dstport) = split /:/, $ARGV[1];
-die $syntax unless defined($srcport) and defined($dstport);
+unless (defined($srcport) and defined($dstport))
+{
+	pod2usage("Error: source or destination port is missing");
+}
 
 unless (defined $keyfile)
 {
-	print STDERR "Error: no keyfile specified\n";
-	die $syntax;
+	pod2usage("Error: no keyfile specified");
 }
 unless (-r $keyfile)
 {
-	die "Error: can't read keyfile $keyfile\n";
+	pod2usage("Error: cannot read keyfile $keyfile");
 }
 unless (defined $selector)
 {
-	print STDERR "Error: selector not specified\n";
-	die $syntax;
+	pod2usage("Error: selector not specified");
 }
 unless (defined $domain_arg)
 {
-	print STDERR "Error: domain not specified\n";
-	die $syntax;
+	pod2usage("Error: domain not specified");
 }
 my @domains = split(/,\s*/, $domain_arg);
+unless (@domains)
+{
+	pod2usage("Error: domain not specified");
+}
 unless ($method eq "simple" || $method eq "nofws")
 {
 	die "Error: invalid method; must be simple or nofws\n";
 }
 
+use base "MySmtpProxyServer";
+main->run(
+		host => $srcaddr,
+		port => $srcport,
+		server_type => "PreFork",
+	);
 
-my $server = MSDW::SMTP::Server->new(interface => $srcaddr, port => $srcport);
-
-# This should allow a kill on the parent to also blow away the
-# children, I hope
-my %children;
-use vars qw($please_die);
-$please_die = 0;
-$SIG{TERM} = sub { $please_die = 1; die "got TERM signal"; };
-
-# catch exception thrown by TERM signal handler
-eval
+sub setup_client_socket
 {
-	# This block is the parent daemon, never does an accept, just herds
-	# a pool of children who accept and service connections, and
-	# occasionally kill themselves off
-	PARENT: while (1)
-	{
-		while (scalar(keys %children) >= $children)
-		{
-			# wait for a child process to exit
-			my $child = wait;
-			delete $children{$child} if exists $children{$child};
-		}
-		# start a new child process
-		my $pid = fork;
-		die "$0: fork failed: $!\n" unless defined $pid;
-		last PARENT if $pid == 0;
-		$children{$pid} = 1;
-		select(undef, undef, undef, 0.1);
-	}
-}; # end eval
-
-$SIG{TERM} = 'DEFAULT';
-if ($please_die)
-{
-	kill 15, keys %children;
-	exit 0;
-}
-# This block is a child service daemon. It inherited the bound
-# socket created by SMTP::Server->new, it will service a random
-# number of connection requests in [minperchild..maxperchild] then
-# exit
-
-my $lives = $minperchild + (rand($maxperchild - $minperchild));
-my %opts;
-if (defined $debugtrace) {
-	$opts{debug} = IO::File->new(">$debugtrace.$$");
-	$opts{debug}->autoflush(1);
+	# create an object for sending the outgoing SMTP commands
+	#  (and the signed message)
+    my $client = MSDW::SMTP::Client->new(
+			interface => $dstaddr,
+			port => $dstport);
+	return $client;
 }
 
-# initialize syslog
-openlog("dkfilter.out", "cons,pid", "mail");
+sub process_request
+{
+	my $self = shift;
 
-while (1) {
-    $server->accept(%opts);
-    my $client = MSDW::SMTP::Client->new(interface => $dstaddr, port => $dstport);
-    my $banner = $client->hear;
-    $banner = "220 $debugtrace.$$" if defined $debugtrace;
-    $server->ok($banner);
-    while (my $what = $server->chat) {
-		if ($what eq '.') {
-			unless (handle_end_of_data($server, $client))
-			{
-				# TODO - explicitly close the connection to the next server
-				last;
-			}
-		} else {
-	    	$client->say($what);
-		}
-		$server->ok($client->hear);
-    }
-    $client = undef;
-    delete $server->{"s"};
-    exit 0 if $lives-- <= 0;
+	# initialize syslog
+	openlog("dkfilter.out", "cons,pid", "mail");
+
+	$self->{debug} = $debug;
+	$self->SUPER::process_request;
 }
 
 # handle_end_of_data
@@ -184,7 +146,9 @@ while (1) {
 #
 sub handle_end_of_data
 {
-	my ($server, $client) = @_;
+	my $self = shift;
+	my $server = $self->{smtp_server};
+	my $client = $self->{smtp_client};
 
 	my $fh = $server->{data};
 	my $mess;
@@ -273,22 +237,68 @@ __END__
 
 =head1 NAME
 
-  dkfilter.out -- SMTP proxy for DomainKeys signing
+  dkfilter.out -- SMTP proxy for adding Yahoo! DomainKeys signatures
 
 =head1 SYNOPSIS
 
   dkfilter.out [options] listen.addr:port talk.addr:port
     options:
-      --children=16
-      --minperchild=100
-      --maxperchild=200
-      --debugtrace=filename_prefix
       --reject-error
       --keyfile=filename
       --selector=SELECTOR
       --domain=DOMAIN
       --method=simple|nofws
       --headers
+
+  dkfilter.out --help
+    to see a full description of the various options
+
+=head1 OPTIONS
+
+=over
+
+=item B<--reject-error>
+
+This option specifies what to do if an error occurs during signing
+of a message. If this option is specified, the message will be rejected
+with an SMTP error code. This will result in the MTA sending the message
+to try again later, or bounce it back to the sender (depending on the
+exact error code used). If this option is not specified, the message
+will be passed through without modification, and the error will be logged.
+
+The most common error is a message parse error.
+
+=item B<--keyfile=FILENAME>
+
+This is a required argument. Use it to specify the filename containing
+the private key used in signing outgoing messages.
+
+=item B<--selector=SELECTOR>
+
+This is a required argument. Use it to specify the name of the key
+selector.
+
+=item B<--domain=DOMAIN>
+
+This is a required argument. Use it to specify what domain(s) emails
+are signed for. If you want to sign for multiple domains, specify the
+domains separated by commas. As messages are delivered through the filter,
+the filter will attempt to match the message to one of the domains
+specified in this argument. If it sees a match, it will sign the message
+using the matching domain.
+
+=item B<--method=simple|nofws>
+
+This option specifies the canonicalization algorithm to use for signing
+messages. Specify either C<simple> or C<nofws>. If not specified,
+the default is C<simple>.
+
+=item B<--headers>
+
+Specifying this will create signatures with an h tag, which lists all
+the header names found in the signed message.
+
+=back
 
 =head1 DESCRIPTION
 
@@ -303,44 +313,5 @@ content.
 
   dkfilter.out --keyfile=private.key --selector=sydney \
           --domain=example.org 127.0.0.1:10027 127.0.0.1:10028
-
-=head1 SMTPPROX OPTIONS
-
-The children option, defaulting to 16, allows adjusting how many child
-processes will be maintained in the service pool. Each child will
-kill itself after servicing some random number of messages between
-minperchild and maxperchild (100-200 default), after which the
-parent will immediately fork another child to pick up its share of
-the load. If debugtrace is specified, the prefix will have the PID
-appended to it for a separate logfile for each child, which will
-capture all the SMTP dialogues that child services. It looks like a
-snooper on the client side of the proxy. And if debugtracefile is
-defined, it returns its own banner including its PID for debugging
-at startup, otherwise it copies the server's banner back to the
-client transparently.
-
-=head1 WARNING
-
-While the richness or lack thereof in the SMTP dialect spoken lies
-in the hands of the next SMTP server down the chain, this proxy was
-not designed to run on the front lines listening for traffic from
-the internet; neither its performance characteristics nor its
-paranoia were tuned for that role. Rather, it's designed as an
-intermediate component, suitable for use as the framework for a
-content-scanning proxy for use with Postfix's content-filtering
-hooks.
-
-=head1 PERFORMANCE NOTES
-
-This proxy is tuned to some specific assumptions: execing perl is
-wickedly expensive, forking perl is fairly expensive, messages will
-vary rather widely in size, and memory footprint efficiency is
-somewhat more important than CPU utilization. It uses Apache-style
-preforking to almost entirely eliminate the need to fork perls,
-with controlled child restart to defend against resource leaks in
-children; it stores the body of the message in an unlinked file
-under /tmp, which should be a tmpfs; this prevents the allocation
-overhead associated with large strings (often 2-3x) and ensures that
-space will be returned to the OS as soon as it's not needed.
 
 =cut

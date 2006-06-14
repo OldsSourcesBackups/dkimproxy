@@ -5,7 +5,11 @@ Testing:
 Desired features:
  - sign/verify a message without having to read it completely into memory
      - Digest::SHA1 can generate the digest incrementally, but I still
-       need a way to sign the digest
+       need a way to sign/verify the digest
+     - Crypt::OpenSSL::RSA cannot, as far as I can tell, accept an already
+       computed digest when doing a sign/verify
+     - Crypt::RSA provides the necessary primitives, but so far I haven't
+       been able to load a private key with it
 
 Possible bugs:
  - the Mail::DomainKeys module frequently makes assumptions that it's in

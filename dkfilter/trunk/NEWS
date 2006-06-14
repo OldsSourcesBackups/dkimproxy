@@ -1,16 +1,17 @@
 This file summarizes what's changed between releases of dkfilter.
 See the ChangeLog file for the details.
 
-Version 0.9 - released 2005-10-28
+Version 0.10 - 2006-06-14
 
- * Started working on DKIM support. The signing process appears to be
-   more-or-less complete (at least until the next revision of the DKIM
-   drafts), but has received very little testing. I recommend against
-   putting this into production.
- * DKIM verification support is rudimentary as well. Once again, I must
-   recommend against using it in production.
- * No changes to the DomainKeys signing and verification, so there's
-   no reason for users to upgrade.
+ * The server processes (dkfilter.in and dkfilter.out) now use Net::Server
+   to manage forking, accepting incoming connections, and proper cleanup.
+ * dkfilter.in and dkfilter.out accept a --pidfile argument, which tells
+   it to generate a pidfile (often used by startup/shutdown scripts)
+
+Version 0.9 - 2005-10-28 (not released)
+
+ This version concentrated on writing DKIM support. Later, I diverged the
+ DKIM stuff as a separate project. See http://jason.long.name/dkimproxy/.
 
 Version 0.8 - released 2005-07-13
 

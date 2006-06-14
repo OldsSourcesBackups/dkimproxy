@@ -76,7 +76,7 @@ $top->attach(
 		"\n",
 		"Attached you will find the original message as plain text.\n\n",
 		"Thank you for using the dkfilter Domain Key Auto Responder.\n",
-		"This Auto Responder tests the verification routines of dkfilter-0.9.\n",
+		"This Auto Responder tests the verification routines of dkfilter-0.10.\n",
 		"For more information about dkfilter, see http://jason.long.name/dkfilter/\n",
 		"\n",
 		"If you have any questions about this automated tester, or if you\n",

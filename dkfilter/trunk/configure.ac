@@ -1,5 +1,5 @@
 dnl Initialize automake/autoconf
-AC_INIT(dkfilter, 0.9)
+AC_INIT(dkfilter, 0.10)
 AM_INIT_AUTOMAKE
 
 dnl Check for Perl
@@ -15,9 +15,6 @@ AC_OUTPUT([
 	lib/Mail/Makefile
 	lib/Mail/DomainKeys/Makefile
 	lib/Mail/DomainKeys/Key/Makefile
-	lib/Mail/DKIM/Makefile
-	lib/Mail/DKIM/Algorithm/Makefile
-	lib/Mail/DKIM/Canonicalization/Makefile
 	lib/MSDW/Makefile
 	lib/MSDW/SMTP/Makefile
 	scripts/Makefile

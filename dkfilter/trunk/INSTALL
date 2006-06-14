@@ -1,6 +1,7 @@
-Copyright 2005 Messiah College. All rights reserved.
+Copyright 2005-2006 Messiah College. All rights reserved.
 
    See the README file for an overview of Dkfilter.
+
 
 Dkfilter Requirements
 =====================
@@ -12,6 +13,7 @@ Dkfilter Requirements
    * MIME::Base64
    * Net::DNS
    * Test::More
+   * Net::Server
 
    The configure script described below does NOT check for these Perl
    modules. You are on your own to install them.
@@ -49,4 +51,4 @@ Dkfilter Setup
    See http://jason.long.name/dkfilter/ for the details.
 
 
-This document last updated 2005-07-12.
+This document last updated 2006-05-02.
