@@ -4,18 +4,20 @@ Testing:
 
 Desired features:
  - sign/verify a message without having to read it completely into memory
-     - Digest::SHA1 can generate the digest incrementally, but I still
-       need a way to sign/verify the digest
-     - Crypt::OpenSSL::RSA cannot, as far as I can tell, accept an already
-       computed digest when doing a sign/verify
-     - Crypt::RSA provides the necessary primitives, but so far I haven't
-       been able to load a private key with it
+     - see Mail::DKIM for how to do this
+ - provide an init script that will work on all Linux distributions
+   (or at least Redhat, Suse, Debian, and Gentoo). (Use the --pidfile
+   option to generate the pidfile.)
+ - incorporate Xavier Perseguers Config_File.patch for allowing multiple
+   domains with unique configurations. Provide a smooth upgrade path.
+ - provide a mode that would allow it to be used with ProxSMTP
+   (suggested by Dick Vasser <dick@terena.nl>)
 
 Possible bugs:
  - the Mail::DomainKeys module frequently makes assumptions that it's in
    a Unix environment ... e.g. it uses "\r\n" where it should use "\015\012"
-   (see perlport(1)'s discussion of Newlines)
- - smtpprox does the same thing, so maybe it's not an issue
+   (see perlport(1)'s discussion of Newlines)...  smtpprox does the same
+   thing, so maybe it's not an issue
  - check header parsing algorithm in Mail::DomainKeys::Message, as it may
    not do the right thing when headers are in the wrong order or duplicate
    headers occur
@@ -31,6 +33,7 @@ Possibly desired features:
  - support use of multiple selectors, multiple private keys
    (the signing process would use a lookup table of some sort, using the
    sender address's domain to pick a selector and a key to use)
+ - sync my copy of Mail::DomainKeys with the official CPAN module
  - sign/verify in the same program - although...
      - messages coming from within the organization should be signed
      - messages coming from outside should be verified

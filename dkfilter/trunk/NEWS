@@ -1,6 +1,11 @@
 This file summarizes what's changed between releases of dkfilter.
 See the ChangeLog file for the details.
 
+Version 0.11 - 2006-09-21
+
+ * The sample init script has been rewritten; it should now work on Linux
+   distributions other than Suse.
+
 Version 0.10 - 2006-06-14
 
  * The server processes (dkfilter.in and dkfilter.out) now use Net::Server

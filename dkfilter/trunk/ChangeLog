@@ -1,3 +1,23 @@
+2006-09-21: Jason Long <jlong@messiah.edu>
+ * Released version 0.11, now working on 0.12.
+
+ -- VERSION 0.11 --
+
+2006-09-21: Jason Long <jlong@messiah.edu>
+ * init-script.sh: rewrote sample init script; it no longer needs Suse's
+   startproc and killproc utilities; it also supports a "status" mode,
+   where it reports whether the dkfilter.in and dkfilter.out processes
+   are still running
+ * scripts/dkfilter.out: fixed bug that was breaking --pidfile support
+ * acinclude.m4: created Autoconf macro for checking Perl modules
+ * configure.ac: added Perl module checks to configure script
+
+2006-06-16: Jason Long <jlong@messiah.edu>
+ * scripts/dkfilter.in: support --user, --group, --daemonize, --pidfile
+   arguments
+ * scripts/dkfilter.out: support --user, --group, --daemonize, --pidfile
+   arguments
+
 2006-06-14: Jason Long <jlong@messiah.edu>
  * Released version 0.10, now working on 0.11.
 

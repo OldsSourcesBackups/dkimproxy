@@ -8,4 +8,5 @@ EXTRA_DIST = \
 	smtpprox.ChangeLog \
 	smtpprox.README \
 	smtpprox.TODO \
-	init-script.sh
+	sample-dkfilter-init-script.sh \
+	Config_File.patch
