@@ -1,3 +1,23 @@
+2006-09-21: Jason Long <jlong@messiah.edu>
+ * Released version 0.14, now working on 0.15.
+
+ -- VERSION 0.14 --
+
+2006-09-21: Jason Long <jlong@messiah.edu>
+ * init-script.sh: rewrote sample init script; it no longer needs Suse's
+   startproc and killproc utilities; it also supports a "status" mode,
+   where it reports whether the dkimproxy.in and dkimproxy.out processes
+   are still running
+ * scripts/dkimproxy.in: support --user, --group, --daemonize arguments
+ * scripts/dkimproxy.out: support --user, --group, --daemonize arguments
+ * acinclude.m4: created Autoconf macro for checking Perl modules
+ * configure.ac: added Perl module checks to configure script
+
+2006-05-26: Jason Long <jlong@messiah.edu>
+ * Released version 0.13, now working on 0.14.
+
+ -- VERSION 0.13 --
+
 2006-05-26: Jason Long <jlong@messiah.edu>
  * lib/Mail/DKIM: removed this directory... the Dkim proxy now expects
    the Mail::DKIM module to be installed from CPAN (i.e. it's no longer

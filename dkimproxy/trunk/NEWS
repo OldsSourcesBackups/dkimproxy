@@ -1,6 +1,11 @@
 This file summarizes what's changed between releases of dkimproxy.
 See the ChangeLog file for the details.
 
+Version 0.14 - released 2006-09-21
+
+ * The sample init script has been rewritten; it should now work on Linux
+   distributions other than Suse.
+
 Version 0.13 - released 2006-05-26
 
  UPGRADERS TAKE NOTE!

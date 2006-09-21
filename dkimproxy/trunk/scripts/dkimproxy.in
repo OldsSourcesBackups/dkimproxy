@@ -34,16 +34,22 @@ use MySmtpServer;
 my $hostname;
 my $reject_fail = 0;
 my $reject_error = 0;
+my $setuser;
+my $setgroup;
+my $daemonize;
 my $pidfile;
 my $debug;
 my $help;
 GetOptions(
-	   "reject-fail" => \$reject_fail,
-	   "reject-error" => \$reject_error,
-	   "hostname=s" => \$hostname,
-	   "pidfile=s" => \$pidfile,
-	   "debug" => \$debug,
-	   "help|?" => \$help)
+		"reject-fail" => \$reject_fail,
+		"reject-error" => \$reject_error,
+		"hostname=s" => \$hostname,
+		"user=s" => \$setuser,
+		"group=s" => \$setgroup,
+		"daemonize" => \$daemonize,
+		"pidfile=s" => \$pidfile,
+		"debug" => \$debug,
+		"help|?" => \$help)
 	or pod2usage(2);
 pod2usage(1) if $help;
 pod2usage("Error: one or more required arguments are missing")
@@ -67,6 +73,9 @@ main->run(
 		host => $srcaddr,
 		port => $srcport,
 		server_type => "PreFork",
+		user => $setuser,
+		group => $setgroup,
+		setsid => $daemonize,
 		pid_file => $pidfile,
 	);
 

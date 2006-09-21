@@ -10,14 +10,15 @@ Dkimproxy Requirements
 
    * Mail::DKIM (version 0.17 or later)
    * Error
-   * Net::Server
+   * Net::Server (version 0.89 or later; 0.93 and 0.94 are known to work)
 
-   The configure script described below does NOT check for these Perl
-   modules. You are on your own to install them.
+   The configure script described below will check for these Perl
+   modules, and report an error if not found. You are on your own to
+   install them. (Hint: use CPAN.)
 
-   Mail::DKIM should be downloaded from http://jason.long.name/dkimproxy/,
-   so that you have the right version. Error and Net::Server can be
-   installed using CPAN.
+   Mail::DKIM can also be downloaded from http://jason.long.name/dkimproxy/,
+   which may have a more recent version than CPAN.
+
 
 Basic Installation
 ==================
@@ -25,23 +26,25 @@ Basic Installation
    To install this package:
 
   1. `cd' to the directory containing the package's source code and type
-	 `./configure --prefix=' followed by the location in which you want
-	 to install the filter. E.g.
+     `./configure --prefix=' followed by the location in which you want
+     to install the filter. E.g.
 
-	 ./configure --prefix=/usr/local/dkfilter
+     ./configure --prefix=/usr/local/dkfilter
 
   2. Type `make install' to install the programs and any data files and
      documentation. This will install the filter scripts in $prefix/bin
-	 and the Perl module files in $prefix/lib.
+     and the Perl module files in $prefix/lib.
 
   3. Create a Unix user/group dedicated to running Dkimproxy. E.g. dkfilter.
 
   4. Create a startup/shutdown script for the filter and install it in
      the location normal for your distribution (e.g. /etc/init.d). A
-	 sample script is provided... make sure to check, and modify if
-	 necessary, the user, group, and paths found in the script. Also,
-	 you'll want to adjust the command-line arguments used to start
-	 the filters, as this is how to configure Dkimproxy.
+     sample script is provided... you can copy it as /etc/init.d/dkimproxy.
+     Be sure to check, and modify if necessary, the user, group, and paths
+     found in the script. Also, you'll want to adjust the command-line
+     arguments used to start the filters, as this is how Dkimproxy is
+     configured.
+
 
 
 Dkimproxy Setup
@@ -51,4 +54,4 @@ Dkimproxy Setup
    See http://jason.long.name/dkimproxy/ for the details.
 
 
-This document last updated 2006-05-26.
+This document last updated 2006-09-21.

@@ -36,18 +36,24 @@ my $keyfile;
 my $selector;
 my $domain_arg;
 my $method = "nowsp";
+my $setuser;
+my $setgroup;
+my $daemonize;
 my $pidfile;
 my $debugtrace = undef;
 my $help;
 GetOptions(
-	   "reject-error" => \$reject_error,
-	   "keyfile=s" => \$keyfile,
-	   "selector=s" => \$selector,
-	   "domain=s" => \$domain_arg,
-	   "method=s" => \$method,
-	   "debugtrace=s" => \$debugtrace,
-	   "pidfile=s" => \$pidfile,
-	   "help|?" => \$help)
+		"reject-error" => \$reject_error,
+		"keyfile=s" => \$keyfile,
+		"selector=s" => \$selector,
+		"domain=s" => \$domain_arg,
+		"method=s" => \$method,
+		"debugtrace=s" => \$debugtrace,
+		"user=s" => \$setuser,
+		"group=s" => \$setgroup,
+		"daemonize" => \$daemonize,
+		"pidfile=s" => \$pidfile,
+		"help|?" => \$help)
 	or pod2usage(2);
 pod2usage(1) if $help;
 pod2usage("Error: one or more required arguments are missing")
@@ -88,6 +94,9 @@ main->run(
 		host => $srcaddr,
 		port => $srcport,
 		server_type => "PreFork",
+		user => $setuser,
+		group => $setgroup,
+		setsid => $daemonize,
 		pid_file => $pidfile,
 	);
 
