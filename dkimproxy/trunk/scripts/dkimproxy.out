@@ -302,3 +302,5 @@ signed with a DKIM signature.
 
   dkimfilter.out --keyfile=private.key --selector=postfix \
           --domain=example.org 127.0.0.1:10027 127.0.0.1:10028
+
+=cut
