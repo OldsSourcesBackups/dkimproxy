@@ -1,3 +1,6 @@
+2006-10-19: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_milter.out: added experimental milter script
+
 2006-09-21: Jason Long <jlong@messiah.edu>
  * Released version 0.14, now working on 0.15.
 
