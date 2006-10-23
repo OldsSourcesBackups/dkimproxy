@@ -27,7 +27,7 @@ use Pod::Usage;
 use IO::File;
 use Sys::Syslog;
 
-use Mail::DKIM 0.17;
+use Mail::DKIM 0.20;
 use Mail::DKIM::Signer;
 use MySmtpServer;
 
@@ -115,7 +115,7 @@ sub process_request
 	my $self = shift;
 
 	# initialize syslog
-	openlog("dkimfilter.out", "cons,pid", "mail");
+	openlog("dkimproxy.out", "cons,pid", "mail");
 
 	$self->SUPER::process_request;
 }
@@ -188,13 +188,19 @@ sub handle_end_of_data
 
 	if ($dkim && $dkim->signature)
 	{
+		# output version info
+		my $DKIM_PROXY_VERSION = "0.15";
+		$client->write_data_line("X-DKIM-Proxy-Version: "
+			. "DkimProxy $DKIM_PROXY_VERSION, "
+			. "Mail::DKIM $Mail::DKIM::VERSION\015\012");
+
 		# output the generated DKIM-Signature
-		my $dkim_signature = $dkim->signature->as_string;
-		if ($dkim_signature)
+		foreach my $dkim_signature ($dkim->signatures)
 		{
-			$client->write_data_line($dkim_signature . "\015\012");
+			$client->write_data_line($dkim_signature->as_string . "\015\012");
 		}
-		# send the original message as is
+
+		# followed by the unaltered original message
 		$client->yammer($fh);
 	}
 	else
@@ -237,17 +243,17 @@ __END__
 
 =head1 NAME
 
-dkimfilter.out - SMTP proxy for adding DKIM signatures to email
+dkimproxy.out - SMTP proxy for adding DKIM signatures to email
 
 =head1 SYNOPSIS
 
-  dkimfilter.out [options] --keyfile=FILENAME --selector=SELECTOR \
+  dkimproxy.out [options] --keyfile=FILENAME --selector=SELECTOR \
                  --domain=DOMAIN listen.addr:port talk.addr:port
     options:
       --method=simple|nowsp|relaxed
       --reject-error
 
-  dkimfilter.out --help
+  dkimproxy.out --help
     to see a full description of the various options
 
 =head1 OPTIONS
@@ -292,7 +298,7 @@ will be passed through without a signature.
 
 =head1 DESCRIPTION
 
-dkimfilter.out listens on the IP address and TCP port specified by its
+dkimproxy.out listens on the IP address and TCP port specified by its
 first argument, and sends the traffic mostly unmodified to the SMTP
 server specified by the address and port in the second argument.
 The SMTP protocol is propogated literally, but message bodies may get
@@ -300,7 +306,7 @@ signed with a DKIM signature.
 
 =head1 EXAMPLE
 
-  dkimfilter.out --keyfile=private.key --selector=postfix \
+  dkimproxy.out --keyfile=private.key --selector=postfix \
           --domain=example.org 127.0.0.1:10027 127.0.0.1:10028
 
 =cut

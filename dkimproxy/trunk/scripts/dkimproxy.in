@@ -189,17 +189,17 @@ __END__
 
 =head1 NAME
 
-dkimfilter.in - SMTP proxy for verifying DKIM signatures
+dkimproxy.in - SMTP proxy for verifying DKIM signatures
 
 =head1 SYNOPSIS
 
-  dkimfilter.in [options] listen.addr:port talk.addr:port
+  dkimproxy.in [options] listen.addr:port talk.addr:port
     options:
       --reject-fail
       --reject-error
       --hostname=HOSTNAME
 
-  dkimfilter.in --help
+  dkimproxy.in --help
     to see a full description of the various options
 
 =head1 OPTIONS
@@ -238,7 +238,7 @@ want to use an alternate name.
 
 =head1 DESCRIPTION
 
-dkimfilter.in listens on the IP address and TCP port specified by its
+dkimproxy.in listens on the IP address and TCP port specified by its
 first argument, and sends the traffic mostly unmodified to the SMTP
 server specified by the address and port in the second argument.
 The SMTP protocol is propogated literally, but message bodies will get
@@ -246,6 +246,6 @@ prepended with an Authentication-Results header.
 
 =head1 EXAMPLE
 
-  dkimfilter.in --reject-fail --reject-error 127.0.0.1:10027 127.0.0.1:10028
+  dkimproxy.in --reject-fail --reject-error 127.0.0.1:10027 127.0.0.1:10028
 
 =cut

@@ -1,3 +1,10 @@
+2006-10-23: Jason Long <jlong@messiah.edu>
+ * configure.ac, INSTALL: dkimproxy now requires 0.20 or better of Mail::DKIM
+ * scripts/dkimproxy.in: change dkimfilter.in to dkimproxy.in
+ * scripts/dkimproxy.out: change dkimfilter.out to dkimproxy.out;
+   support multiple signatures
+ * lib/MySmtpProxyServer.pm: no longer prints "running" on startup
+
 2006-10-19: Jason Long <jlong@messiah.edu>
  * scripts/dkim_milter.out: added experimental milter script
 

@@ -34,7 +34,6 @@ use base "Net::Server::MultiType";
 sub run
 {
 	my $class = shift;
-	print "running\n";
 	$class->SUPER::run(@_);
 }
 
