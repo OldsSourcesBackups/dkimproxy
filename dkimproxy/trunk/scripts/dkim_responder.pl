@@ -15,6 +15,7 @@ use Mail::DKIM 0.17;
 use Mail::DKIM::Verifier;
 
 use constant FROM_ADDR => 'admin@dkimtest.jason.long.name';
+use constant SENDER_ADDR => 'nobody@messiah.edu';
 use constant DEFAULT_SUBJECT => "Results of DKIM test";
 use constant RESULT_BCC => 'results@dkimtest.jason.long.name';
 
@@ -82,8 +83,10 @@ if ($@)
 my $top = MIME::Entity->build(
 		Type => "multipart/mixed",
 		From => FROM_ADDR,
+		Sender => SENDER_ADDR,
 		To => $from,
-		Subject => $subject);
+		Subject => $subject,
+	);
 
 my $attach_text;
 if ($attach_original_msg)
@@ -114,6 +117,10 @@ $top->attach(
 		"  $result_detail\n",
 		"\n",
 		$attach_text,
+		"Please note if your message had multiple signatures, that this\n",
+		"auto-responder looks for ANY passing signature, including DomainKeys\n",
+		"signatures.\n",
+		"\n",
 		"Thank you for using the dkimproxy DKIM Auto Responder.\n",
 		"This Auto Responder tests the verification routines of $PRODUCT.\n",
 		"For more information about Mail::DKIM, see http://jason.long.name/dkimproxy/\n",
