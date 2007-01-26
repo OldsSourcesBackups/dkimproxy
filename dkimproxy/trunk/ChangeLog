@@ -1,7 +1,13 @@
+2007-01-26: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.in, scripts/dkimproxy.out: do argument-processing
+   within Net::Server framework, so it's easier for the user to specify
+   additional Net::Server parameters
+
 2006-12-18: Jason Long <jlong@messiah.edu>
  * scripts/dkim_responder.pl: use a Sender header of @messiah.edu so a
    DKIM signature will get added on the reply; include a note in the reply
    about multiple signatures
+ * scripts/dkimproxy.out: show how to add DomainKey signatures
 
 2006-10-23: Jason Long <jlong@messiah.edu>
  * configure.ac, INSTALL: dkimproxy now requires 0.20 or better of Mail::DKIM

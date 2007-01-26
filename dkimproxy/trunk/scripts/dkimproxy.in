@@ -34,58 +34,61 @@ use MySmtpServer;
 my $hostname;
 my $reject_fail = 0;
 my $reject_error = 0;
-my $setuser;
-my $setgroup;
-my $daemonize;
-my $pidfile;
 my $debug;
-my $help;
-GetOptions(
-		"reject-fail" => \$reject_fail,
-		"reject-error" => \$reject_error,
-		"hostname=s" => \$hostname,
-		"user=s" => \$setuser,
-		"group=s" => \$setgroup,
-		"daemonize" => \$daemonize,
-		"pidfile=s" => \$pidfile,
-		"debug" => \$debug,
-		"help|?" => \$help)
-	or pod2usage(2);
-pod2usage(1) if $help;
-pod2usage("Error: one or more required arguments are missing")
-		unless @ARGV == 2;
-
-my ($srcaddr, $srcport) = split /:/, $ARGV[0];
-my ($dstaddr, $dstport) = split /:/, $ARGV[1];
-unless (defined($srcport) and defined($dstport))
-{
-	pod2usage("Error: source or destination port is missing");
-}
-
-if (not defined $hostname)
-{
-	use Sys::Hostname;
-	$hostname = hostname;
-}
 
 use base "MySmtpProxyServer";
 main->run(
-		host => $srcaddr,
-		port => $srcport,
 		server_type => "PreFork",
-		user => $setuser,
-		group => $setgroup,
-		setsid => $daemonize,
-		pid_file => $pidfile,
 	);
+
+sub configure
+{
+	my $self = shift;
+	$self->SUPER::configure(@_);
+
+	my $help;
+	GetOptions(
+			"reject-fail" => \$reject_fail,
+			"reject-error" => \$reject_error,
+			"hostname=s" => \$hostname,
+			"daemonize" => \$self->{server}->{setsid},
+			"pidfile=s" => \$self->{server}->{pid_file},
+			"debug" => \$debug,
+			"help|?" => \$help)
+		or pod2usage(2);
+	pod2usage(1) if $help;
+
+	if (not defined $hostname)
+	{
+		use Sys::Hostname;
+		$hostname = hostname;
+	}
+
+	pod2usage("Error: wrong number of arguments")
+		unless @ARGV == 2;
+
+	my ($srcaddr, $srcport) = split /:/, $ARGV[0];
+	my ($dstaddr, $dstport) = split /:/, $ARGV[1];
+	unless (defined($srcport) and defined($dstport))
+	{
+		pod2usage("Error: source or destination port is missing");
+	}
+
+	$self->{server}->{host} = $srcaddr;
+	$self->{server}->{port} = $srcport;
+	$self->{server}->{dest_host} = $dstaddr;
+	$self->{server}->{dest_port} = $dstport;
+}
 
 sub setup_client_socket
 {
+	my $self = shift;
+
 	# create an object for sending the outgoing SMTP commands
 	#  (and the signed message)
     my $client = MSDW::SMTP::Client->new(
-			interface => $dstaddr,
-			port => $dstport);
+			interface => $self->{server}->{dest_host},
+			port => $self->{server}->{dest_port});
 	return $client;
 }
 
