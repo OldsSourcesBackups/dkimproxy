@@ -37,6 +37,7 @@ my $selector;
 my $domain_arg;
 my $method = "nowsp";
 my $debugtrace = undef;
+my @domains;
 
 use base "MySmtpProxyServer";
 main->run(
@@ -93,7 +94,7 @@ sub configure
 	{
 		pod2usage("Error: domain not specified");
 	}
-	my @domains = split(/,\s*/, $domain_arg);
+	@domains = split(/,\s*/, $domain_arg);
 	unless ($method eq "nowsp" || $method eq "simple" || $method eq "relaxed")
 	{
 		die "Error: invalid method $method\n";
@@ -102,11 +103,13 @@ sub configure
 
 sub setup_client_socket
 {
+	my $self = shift;
+
 	# create an object for sending the outgoing SMTP commands
 	#  (and the signed message)
     my $client = MSDW::SMTP::Client->new(
-			interface => $dstaddr,
-			port => $dstport);
+			interface => $self->{server}->{dest_host},
+			port => $self->{server}->{dest_port});
 	return $client;
 }
 
