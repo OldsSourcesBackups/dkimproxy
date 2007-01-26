@@ -188,11 +188,11 @@ sub handle_end_of_data
 
 	if ($dkim && $dkim->signature)
 	{
-		# output version info
-		my $DKIM_PROXY_VERSION = "0.15";
-		$client->write_data_line("X-DKIM-Proxy-Version: "
-			. "DkimProxy $DKIM_PROXY_VERSION, "
-			. "Mail::DKIM $Mail::DKIM::VERSION\015\012");
+	#	# output version info
+	#	my $DKIM_PROXY_VERSION = "0.15";
+	#	$client->write_data_line("X-DKIM-Proxy-Version: "
+	#		. "DkimProxy $DKIM_PROXY_VERSION, "
+	#		. "Mail::DKIM $Mail::DKIM::VERSION\015\012");
 
 		# output the generated DKIM-Signature
 		foreach my $dkim_signature ($dkim->signatures)
@@ -214,6 +214,8 @@ sub handle_end_of_data
 package MySignerPolicy;
 use Mail::DKIM::SignerPolicy;
 use base "Mail::DKIM::SignerPolicy";
+use Mail::DKIM::Signature;
+use Mail::DKIM::DkSignature;
 
 sub apply
 {
@@ -228,7 +230,26 @@ sub apply
 			if (grep { lc($_) eq $domain } @domains)
 			{
 				$signer->domain($domain);
-				return 1;
+
+				# construct a DKIM-Signature
+				$signer->add_signature(
+					new Mail::DKIM::Signature(
+						Algorithm => $signer->algorithm,
+						Method => $signer->method,
+						Headers => $signer->headers,
+						Domain => $signer->domain,
+						Selector => $signer->selector,
+						));
+
+	#			# construct a DomainKey-Signature
+	#			$signer->add_signature(
+	#				new Mail::DKIM::DkSignature(
+	#					Algorithm => "rsa-sha1",
+	#					Method => "simple",
+	#					Domain => $signer->domain,
+	#					Selector => $signer->selector,
+	#					));
+				return;
 			}
 			# try the parent domain
 			(undef, $domain) = split(/\./, $domain, 2);
