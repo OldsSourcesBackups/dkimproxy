@@ -202,6 +202,12 @@ dkimproxy.in - SMTP proxy for verifying DKIM signatures
       --reject-error
       --hostname=HOSTNAME
 
+    daemon options:
+      --daemonize
+      --user=USER
+      --group=GROUP
+      --pidfile=PIDFILE
+
   dkimproxy.in --help
     to see a full description of the various options
 
@@ -209,14 +215,26 @@ dkimproxy.in - SMTP proxy for verifying DKIM signatures
 
 =over
 
-=item B<--reject-fail>
+=item B<--daemonize>
 
-This option specifies what to do if verification fails and the sender
-signing policy says to reject the message. If this option is specified,
-the message will be rejected with an SMTP error code.
-This will result in the sending MTA to
-bounce the message back to the sender. If this option is not specified,
-the message will pass through as normal.
+If specified, the server will run in the background.
+
+=item B<--group=GROUP>
+
+If specified, the daemonized process will setgid() to the specified
+GROUP.
+
+=item B<--hostname=HOSTNAME>
+
+Overrides the hostname used in the X-DKIM-Authentication-Results header.
+Use this if the hostname that appears is not fully qualified or you
+want to use an alternate name.
+
+=item B<--pidfile=PIDFILE>
+
+Creates a PID file (a file containing the PID of the process) for
+the daemonized process. This makes it possible to check the status
+of the process, and to cleanly shut it down.
 
 =item B<--reject-error>
 
@@ -231,11 +249,20 @@ header instead of the verification results.
 The most common error will probably be a DNS error when trying to retrieve
 the public key or sender policy.
 
-=item B<--hostname=HOSTNAME>
+=item B<--reject-fail>
 
-Overrides the hostname used in the Authentication-Results header.
-Use this if the hostname that appears is not fully qualified or you
-want to use an alternate name.
+This option specifies what to do if verification fails and the sender
+signing policy says to reject the message. If this option is specified,
+the message will be rejected with an SMTP error code.
+This will result in the sending MTA to
+bounce the message back to the sender. If this option is not specified,
+the message will pass through as normal.
+
+=item B<--user=USER>
+
+If specified, the daemonized process will setuid() to USER after
+completing any necessary privileged operations, but before accepting
+connections.
 
 =back
 
@@ -245,7 +272,7 @@ dkimproxy.in listens on the IP address and TCP port specified by its
 first argument, and sends the traffic mostly unmodified to the SMTP
 server specified by the address and port in the second argument.
 The SMTP protocol is propogated literally, but message bodies will get
-prepended with an Authentication-Results header.
+prepended with an X-DKIM-Authentication-Results header.
 
 =head1 EXAMPLE
 

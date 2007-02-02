@@ -29,7 +29,7 @@ unless ($from_line =~ /^From (\S+)/)
 }
 
 my $from = $1;
-my $subject = DEFAULT_SUBJECT;
+my $subject;
 my $attach_original_msg;
 
 # read message from stdin, catching from address and subject
@@ -78,6 +78,15 @@ if ($@)
 	$result = "temperror";
 	$result_detail = "$result ($E)";
 }
+
+# sanitize subject
+if ($subject =~ /confirm/i)
+{
+	$subject = "";
+}
+$subject =~ s/(\w{10})\w+/$1/g;
+
+$subject ||= DEFAULT_SUBJECT;
 
 # create a response message
 my $top = MIME::Entity->build(
