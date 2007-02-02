@@ -1,0 +1,224 @@
+This is a place for me to think about config file formats for dkimproxy...
+
+The process
+ - consider an incoming message for signing
+ - look at the message attributes, e.g.
+   - from/sender headers
+   - client IP address
+   - SASL logon
+ - if the message is worthy of signing, construct one or more signatures
+   with certain attributes
+ - sign the message with those signatures
+
+So the config file could consist of a list of rules. Each rule
+has "conditions" of the message to be signed, and "actions" consisting
+of signatures to add. Each action specifies the signature attributes
+to use.
+
+----------
+Example A:
+----------
+
+[messiah.edu]
+keyfile=/usr/local/dkfilter/private.key
+selector=alpha
+method=relaxed
+
+[example.org]
+keyfile=/usr/local/dkfilter/private.key
+selector=alpha
+method=relaxed
+
+  Config to use is based on sender domain. Common config elements must be
+  duplicated in each section. Not possible to have multiple signatures.
+
+----------
+Example B:
+----------
+
+$selector = "alpha";
+$method = "relaxed";
+$keyfile = "/usr/local/dkfilter/private.key";
+
+if ($sender =~ /messiah\.edu$/) {
+  add_signature(domain => "messiah.edu");
+}
+
+  This mechanism could provide a lot of flexibility, but is probably harder
+  and more complicated to implement. The mechanism for selecting a message
+  based on sending domain is a little messy, considering how common it will
+  be for people to want to do this.
+
+----------
+Example C:
+----------
+
+# global options
+method relaxed;
+
+group {
+  keyfile /usr/local/dkfilter/private.key;
+  selector alpha;
+  domain messiah.edu;
+}
+group {
+  keyfile /usr/local/dkfilter/other.key;
+  selector beta;
+  domain example.org;
+}
+
+  This is ISC config file format... pretty nice mechanism for expressing
+  common options, but I'm not sure how to express the "actions" i.e. when
+  to generate a signature and when not to.
+
+  Is the "domain messiah.edu" declaring an attribute of the signature,
+  or a condition? In this case, both.
+
+----------
+Example D:
+----------
+
+method=relaxed
+WHEN domain == messiah.edu:
+  keyfile=/usr/local/dkfilter/private.key
+  selector=alpha
+  ADD-SIGNATURE
+WHEN domain == example.org:
+  keyfile=/usr/local/dkfilter/other.key
+  selector=beta
+  ADD-SIGNATURE
+
+----------
+Example E:
+----------
+
+method=relaxed
+BEGIN-GROUP
+  keyfile=/usr/local/dkfilter/private.key
+  selector=alpha
+  BEGIN-RULE
+    CONDITION: sender's domain is "messiah.edu"
+    ACTION: add DKIM-Signature
+    ACTION: add DomainKey-Signature
+  END-RULE
+END-GROUP
+BEGIN-GROUP
+  keyfile=/usr/local/dkfilter/other.key
+  selector=beta
+  BEGIN-RULE
+    CONDITION: sender's domain is "example.org"
+	ACTION: add DomainKey-Signature
+  END-RULE
+END-GROUP
+
+  This is the general idea I'm going for, but it seems too much like I'm
+  inventing a new programming language.
+
+----------
+Example F:
+----------
+
+<Signature-Template A>
+  Version   DKIM
+  Method    relaxed
+  Algorithm rsa-sha256
+  KeyFile   /usr/local/dkfilter/private.key
+  Selector  alpha
+</Signature-Template>
+<Sender-Domain "messiah.edu">
+  Add-Signature A
+</Sender-Domain>
+
+  Trying an Apache-style format, using a "template" concept.
+
+Method    relaxed
+Algorithm rsa-sha256
+<Group>
+  KeyFile  /usr/local/dkfilter/private.key
+  Selector alpha
+  <MessageMatch>
+    Allow sender messiah.edu
+	Add-Signature DomainKeys
+    Add-Signature DKIM
+  </MessageMatch>
+</Group>
+<MessageMatch>
+  KeyFile  /usr/local/dkfilter/other.key
+  Selector beta
+  Allow sender messiah.edu
+  Add-Signature DomainKeys
+</MessageMatch>
+
+----------
+Example G:
+----------
+
+Messiah's simple config:
+
+  selector selector1
+  method   relaxed
+  keyfile  /usr/local/dkfilter/private.key
+  domain   messiah.edu
+
+Simple ISP config, supporting many domains, same config for each:
+
+  selector selector1
+  method   relaxed
+  keyfile  /usr/local/dkfilter/private.key
+  domain   example.org
+  domain   example.com
+  domain   mydomain1.example
+  domain   mydomain2.example
+
+Simple config for Messiah to output two signatures:
+
+  <signature>
+	version  DKIM
+    selector selector1
+    method   relaxed
+    keyfile  /usr/local/dkfilter/private.key
+    domain   messiah.edu
+  </signature>
+  <signature>
+	version  DomainKeys
+    selector selector1
+    method   relaxed
+    keyfile  /usr/local/dkfilter/private.key
+    domain   messiah.edu
+  </signature>
+
+or
+
+  selector selector1
+  method   relaxed
+  keyfile  /usr/local/dkfilter/private.key
+  domain   messiah.edu
+  <signature>
+	version  DKIM
+  </signature>
+  <signature>
+	version  DomainKeys
+  </signature>
+
+----------
+Example H:
+----------
+
+  [messiah.edu]
+  signature.1=DKIM
+  selector.1=selector1
+  method.1=relaxed
+  keyfile.1=/usr/local/dkfilter/private.key
+  signature.2=DomainKey
+  selector.2=selector1
+  method.2=relaxed
+  keyfile.2=/usr/local/dkfilter/private.key
+
+----------
+Example I:
+----------
+
+  domain[messiah.edu].signature[1]=DKIM
+  domain[messiah.edu].selector[1]=selector1
+  domain[messiah.edu].method[1]=relaxed
+  domain[messiah.edu].keyfile[1]=/usr/local/dkfilter/private.key
