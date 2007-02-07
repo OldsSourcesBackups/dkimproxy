@@ -35,7 +35,7 @@ my $reject_error = 0;
 my $keyfile;
 my $selector;
 my $domain_arg;
-my $method = "nowsp";
+my $method = "relaxed";
 my $debugtrace = undef;
 my @domains;
 

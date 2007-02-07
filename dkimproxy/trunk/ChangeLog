@@ -1,3 +1,6 @@
+2007-02-07: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: change default canonicalization to relaxed
+
 2007-02-01: Jason Long <jlong@messiah.edu>
  * scripts/dkim_responder.pl: protect against abuse of the auto-responder
  * scripts/dkimproxy.in: document the daemon options
