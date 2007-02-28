@@ -1,3 +1,7 @@
+2007-02-28: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: allow use of DomainKeys signatures (using the
+   --signature argument)
+
 2007-02-07: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.out: change default canonicalization to relaxed
 

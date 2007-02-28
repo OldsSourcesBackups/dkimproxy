@@ -32,6 +32,7 @@ use Mail::DKIM::Signer;
 use MySmtpServer;
 
 my $reject_error = 0;
+my $signature = "dkim";
 my $keyfile;
 my $selector;
 my $domain_arg;
@@ -52,6 +53,7 @@ sub configure
 	my $help;
 	GetOptions(
 			"reject-error" => \$reject_error,
+			"signature=s" => \$signature,
 			"keyfile=s" => \$keyfile,
 			"selector=s" => \$selector,
 			"domain=s" => \$domain_arg,
@@ -78,6 +80,10 @@ sub configure
 	$self->{server}->{dest_host} = $dstaddr;
 	$self->{server}->{dest_port} = $dstport;
 
+	unless (grep { $signature eq $_ } qw(dkim domainkeys))
+	{
+		pod2usage("Error: invalid signature type specified");
+	}
 	unless (defined $keyfile)
 	{
 		pod2usage("Error: no keyfile specified");
@@ -234,24 +240,29 @@ sub apply
 			{
 				$signer->domain($domain);
 
-				# construct a DKIM-Signature
-				$signer->add_signature(
-					new Mail::DKIM::Signature(
-						Algorithm => $signer->algorithm,
-						Method => $signer->method,
-						Headers => $signer->headers,
-						Domain => $signer->domain,
-						Selector => $signer->selector,
-						));
-
-	#			# construct a DomainKey-Signature
-	#			$signer->add_signature(
-	#				new Mail::DKIM::DkSignature(
-	#					Algorithm => "rsa-sha1",
-	#					Method => "simple",
-	#					Domain => $signer->domain,
-	#					Selector => $signer->selector,
-	#					));
+				if ($signature eq "dkim")
+				{
+					# construct a DKIM-Signature
+					$signer->add_signature(
+						new Mail::DKIM::Signature(
+							Algorithm => $signer->algorithm,
+							Method => $signer->method,
+							Headers => $signer->headers,
+							Domain => $signer->domain,
+							Selector => $signer->selector,
+							));
+				}
+				elsif ($signature eq "domainkeys")
+				{
+					# construct a DomainKey-Signature
+					$signer->add_signature(
+						new Mail::DKIM::DkSignature(
+							Algorithm => "rsa-sha1",
+							Method => $signer->method,
+							Domain => $signer->domain,
+							Selector => $signer->selector,
+							));
+				}
 				return;
 			}
 			# try the parent domain
@@ -283,6 +294,13 @@ dkimproxy.out - SMTP proxy for adding DKIM signatures to email
 =head1 OPTIONS
 
 =over
+
+=item B<--signature=dkim|domainkeys>
+
+This specifies what type of signature to add. Use C<dkim> to sign with
+IETF-standardized DKIM signatures. Use C<domainkeys> to sign with
+the older, but more common, Yahoo! DomainKeys signatures.
+The default is C<dkim>.
 
 =item B<--keyfile=FILENAME>
 
