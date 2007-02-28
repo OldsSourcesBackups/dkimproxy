@@ -1,6 +1,16 @@
 This file summarizes what's changed between releases of dkimproxy.
 See the ChangeLog file for the details.
 
+Version 0.15
+
+ UPGRADERS TAKE NOTE!
+   If you have installed version 0.14 (or lower) of DKIM proxy,
+   the executable filenames have changed from dkfilter.in to dkimproxy.in
+   and dkfilter.out to dkimproxy.out. You will need to update your startup
+   script.
+
+ * The signer can now output DomainKeys signatures instead of DKIM signatures.
+
 Version 0.14 - released 2006-09-21
 
  * The sample init script has been rewritten; it should now work on Linux
