@@ -1,3 +1,9 @@
+2007-03-02: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: allow nofws canonicalization with DomainKeys
+   signatures; select default canonicalization based on signature type;
+   update online documentation
+ * scripts/dkimproxy.in: minor updates to documentation
+
 2007-02-28: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.out: allow use of DomainKeys signatures (using the
    --signature argument)

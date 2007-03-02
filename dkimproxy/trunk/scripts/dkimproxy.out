@@ -36,7 +36,7 @@ my $signature = "dkim";
 my $keyfile;
 my $selector;
 my $domain_arg;
-my $method = "relaxed";
+my $method;
 my $debugtrace = undef;
 my @domains;
 
@@ -101,9 +101,22 @@ sub configure
 		pod2usage("Error: domain not specified");
 	}
 	@domains = split(/,\s*/, $domain_arg);
-	unless ($method eq "nowsp" || $method eq "simple" || $method eq "relaxed")
+	# check method argument
+	if ($signature eq "dkim")
 	{
-		die "Error: invalid method $method\n";
+		$method ||= "relaxed";
+		unless (grep { $method eq $_ } qw(simple relaxed nowsp))
+		{
+			die "Error: invalid method $method\n";
+		}
+	}
+	elsif ($signature eq "domainkeys")
+	{
+		$method ||= "nofws";
+		unless (grep { $method eq $_ } qw(simple nofws))
+		{
+			die "Error: invalid method $method\n";
+		}
 	}
 }
 
@@ -285,8 +298,15 @@ dkimproxy.out - SMTP proxy for adding DKIM signatures to email
   dkimproxy.out [options] --keyfile=FILENAME --selector=SELECTOR \
                  --domain=DOMAIN listen.addr:port talk.addr:port
     options:
-      --method=simple|nowsp|relaxed
+      --signature=dkim|domainkeys
+      --method=simple|nowsp|relaxed|nofws
       --reject-error
+
+    daemon options:
+      --daemonize
+      --user=USER
+      --group=GROUP
+      --pidfile=PIDFILE
 
   dkimproxy.out --help
     to see a full description of the various options
@@ -295,22 +315,9 @@ dkimproxy.out - SMTP proxy for adding DKIM signatures to email
 
 =over
 
-=item B<--signature=dkim|domainkeys>
+=item B<--daemonize>
 
-This specifies what type of signature to add. Use C<dkim> to sign with
-IETF-standardized DKIM signatures. Use C<domainkeys> to sign with
-the older, but more common, Yahoo! DomainKeys signatures.
-The default is C<dkim>.
-
-=item B<--keyfile=FILENAME>
-
-This is a required argument. Use it to specify the filename containing
-the private key used in signing outgoing messages.
-
-=item B<--selector=SELECTOR>
-
-This is a required argument. Use it to specify the name of the key
-selector.
+If specified, the server will run in the background.
 
 =item B<--domain=DOMAIN>
 
@@ -321,11 +328,31 @@ the proxy will attempt to match the message to one of the domains
 specified in this argument. If it sees a match, it will sign the message
 using the matching domain.
 
-=item B<--method=simple|nowsp|relaxed>
+=item B<--group=GROUP>
+
+If specified, the daemonized process will setgid() to the specified
+GROUP.
+
+=item B<--keyfile=FILENAME>
+
+This is a required argument. Use it to specify the filename containing
+the private key used in signing outgoing messages. For messages to
+verify, you will need to publish the corresponding public key in
+DNS, using the selector name specified by C<--selector>, under
+the domain(s) specified in C<--domain>.
+
+=item B<--method=simple|nowsp|relaxed|nofws>
 
 This option specifies the canonicalization algorithm to use for signing
-messages. It is C<simple>, C<nowsp>, or C<relaxed>. If not specified,
-the default is C<nowsp>.
+messages. For DKIM signatures, the options are C<simple>, C<nowsp>, or
+C<relaxed>; the default is C<relaxed>. For DomainKeys signatures, the
+options are C<simple> and C<nofws>; the default is C<nofws>.
+
+=item B<--pidfile=PIDFILE>
+
+Creates a PID file (a file containing the PID of the process) for
+the daemonized process. This makes it possible to check the status
+of the process, and to cleanly shut it down.
 
 =item B<--reject-error>
 
@@ -334,7 +361,25 @@ of a message. If this option is specified, the message will be rejected
 with an SMTP error code. This will result in the MTA sending the message
 to try again later, or bounce it back to the sender (depending on the
 exact error code used). If this option is not specified, the message
-will be passed through without a signature.
+will be allowed to pass through without having a signature added.
+
+=item B<--selector=SELECTOR>
+
+This is a required argument. Use it to specify the name of the key
+selector.
+
+=item B<--signature=dkim|domainkeys>
+
+This specifies what type of signature to add. Use C<dkim> to sign with
+IETF-standardized DKIM signatures. Use C<domainkeys> to sign with
+the older, but more common, Yahoo! DomainKeys signatures.
+The default is C<dkim>.
+
+=item B<--user=USER>
+
+If specified, the daemonized process will setuid() to USER after
+completing any necessary privileged operations, but before accepting
+connections.
 
 =back
 
@@ -343,12 +388,17 @@ will be passed through without a signature.
 dkimproxy.out listens on the IP address and TCP port specified by its
 first argument, and sends the traffic mostly unmodified to the SMTP
 server specified by the address and port in the second argument.
-The SMTP protocol is propogated literally, but message bodies may get
+The SMTP protocol is propogated literally, but message bodies get
 signed with a DKIM signature.
 
 =head1 EXAMPLE
 
+For example, if dkimproxy.out is started with:
+
   dkimproxy.out --keyfile=private.key --selector=postfix \
           --domain=example.org 127.0.0.1:10027 127.0.0.1:10028
+
+the proxy will listen on port 10027 and send the signed messages to
+some other SMTP service on port 10028.
 
 =cut

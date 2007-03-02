@@ -276,6 +276,11 @@ prepended with an X-DKIM-Authentication-Results header.
 
 =head1 EXAMPLE
 
-  dkimproxy.in --reject-fail --reject-error 127.0.0.1:10027 127.0.0.1:10028
+For example, if dkimproxy.in is started with:
+
+  dkimproxy.in --reject-fail --reject-error 127.0.0.1:10025 127.0.0.1:10026
+
+the proxy will listen on port 10025 and send the verified messages to
+some other SMTP service on port 10026.
 
 =cut
