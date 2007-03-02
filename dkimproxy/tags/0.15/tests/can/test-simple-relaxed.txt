@@ -1,0 +1,24 @@
+DKIM-Signature: a=rsa-sha1; c=simple/relaxed; d=messiah.edu; h=from:to:cc:date:message-id; q=dns; s=selector1; b=k/ad+lMC2M9JGCuy5GpJ5i11/1sUeVmlLHDbVXEinvgIcyVVvw5C1ClODcFhsOgfG/7ugffUFPGQEh30evxoUSkISxM04lHJgfttTd3sPuDU7MSLgZLxHjq5mcV9SyxkMtU5Z15PwvDSjdqvqQO+tff2VGr5mGl+y4EMHq+1GHY=
+From: Jason(A wonderful \) chap) <jlong(his account)@messiah.edu(his host)>
+To:A Group(Some people)
+     :Chris Jones <c@(Chris's host.)public.example>,
+         joe@example.org,
+  John <jdoe@one.test> (my dear friend); (the end of the group)
+Cc:(Empty list)(start)Undisclosed recipients  :(nobody(that I know))  ;
+Date: Thu,
+      13
+		Feb
+          1969
+      23:32
+               -0330 (Newfoundland Time)
+Message-ID:				<testabcd.1234@silly.test>
+
+
+This
+	strangely-formatted     example
+  was brought to you   ... by
+RFC 2822  !!
+
+
+
+

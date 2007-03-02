@@ -1,0 +1,286 @@
+#!/usr/bin/perl -I../lib
+#
+# Copyright (c) 2005-2006 Messiah College. This program is free software.
+# You can redistribute it and/or modify it under the terms of the
+# GNU Public License as found at http://www.fsf.org/copyleft/gpl.html.
+#
+# Written by Jason Long, jlong@messiah.edu.
+
+#
+#   This code is Copyright (C) 2001 Morgan Stanley Dean Witter, and
+#   is distributed according to the terms of the GNU Public License
+#   as found at <URL:http://www.fsf.org/copyleft/gpl.html>.
+#
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+# Written by Bennett Todd <bet@rahul.net>
+
+use warnings;
+use strict;
+
+use Getopt::Long;
+use Pod::Usage;
+use IO::File;
+use Sys::Syslog;
+
+use Mail::DKIM 0.17;
+use Mail::DKIM::Verifier;
+use MySmtpServer;
+
+my $hostname;
+my $reject_fail = 0;
+my $reject_error = 0;
+my $debug;
+
+use base "MySmtpProxyServer";
+main->run(
+		server_type => "PreFork",
+	);
+
+sub configure
+{
+	my $self = shift;
+	$self->SUPER::configure(@_);
+
+	my $help;
+	GetOptions(
+			"reject-fail" => \$reject_fail,
+			"reject-error" => \$reject_error,
+			"hostname=s" => \$hostname,
+			"daemonize" => \$self->{server}->{setsid},
+			"pidfile=s" => \$self->{server}->{pid_file},
+			"debug" => \$debug,
+			"help|?" => \$help)
+		or pod2usage(2);
+	pod2usage(1) if $help;
+
+	if (not defined $hostname)
+	{
+		use Sys::Hostname;
+		$hostname = hostname;
+	}
+
+	pod2usage("Error: wrong number of arguments")
+		unless @ARGV == 2;
+
+	my ($srcaddr, $srcport) = split /:/, $ARGV[0];
+	my ($dstaddr, $dstport) = split /:/, $ARGV[1];
+	unless (defined($srcport) and defined($dstport))
+	{
+		pod2usage("Error: source or destination port is missing");
+	}
+
+	$self->{server}->{host} = $srcaddr;
+	$self->{server}->{port} = $srcport;
+	$self->{server}->{dest_host} = $dstaddr;
+	$self->{server}->{dest_port} = $dstport;
+}
+
+sub setup_client_socket
+{
+	my $self = shift;
+
+	# create an object for sending the outgoing SMTP commands
+	#  (and the signed message)
+    my $client = MSDW::SMTP::Client->new(
+			interface => $self->{server}->{dest_host},
+			port => $self->{server}->{dest_port});
+	return $client;
+}
+
+sub process_request
+{
+	my $self = shift;
+
+	print STDERR "got new connection\n";
+
+	# initialize syslog
+	openlog("dkimproxy.in", "cons,pid", "mail");
+	$self->{debug} = $debug;
+
+	$self->SUPER::process_request;
+}
+
+sub handle_end_of_data
+{
+	my $self = shift;
+	my $server = $self->{smtp_server};
+	my $client = $self->{smtp_client};
+
+	my $fh = $server->{data};
+	my $dkim;
+	my $verify_result;
+	my $verify_detail;
+	eval
+	{
+		$dkim = Mail::DKIM::Verifier->new_object(
+				Hostname => $hostname,
+			);
+		$dkim->load($fh);
+
+		$verify_result = $dkim->result;
+		$verify_detail = $dkim->result_detail;
+
+		syslog("info", '%s',
+			"DKIM verify - $verify_detail; "
+			. join(", ", $dkim->message_attributes));
+		print STDERR "DKIM verify - $verify_detail; "
+			. join(", ", $dkim->message_attributes) . "\n";
+	};
+	if ($@)
+	{
+		my $E = $@;
+		chomp $E;
+		syslog("warning", '%s', "verify error: $E");
+		print STDERR "verify error: $E\n";
+		$verify_result = "temperror";
+		$verify_detail = "$verify_result ($E)";
+	}
+
+	# check signing result
+	if ($verify_result =~ /error$/ && $reject_error)
+	{
+		# temporary or permanent error
+		$server->fail(
+			($verify_result eq "permerror" ? "550" : "450")
+			. " DKIM - $verify_detail");
+		return 0;
+	}
+
+	my $policy_result = "none";
+	eval
+	{
+		my $policy = $dkim->fetch_author_policy;
+		$policy_result = $policy->apply($dkim);
+	};
+	if ($@)
+	{
+		$policy_result = "error";
+	}
+
+	if ($policy_result eq "reject" && $reject_fail)
+	{
+		# failed
+		$server->fail("550 5.7.1 DKIM - $verify_detail");
+		return 0;
+	}
+
+	$fh->seek(0,0);
+
+	if ($dkim)
+	{
+		# output a psuedo authentication results header
+		$client->write_data_line("X-DKIM-Authentication-Results: "
+			. $dkim->result_detail . "\015\012");
+
+		# send the original message as is
+		$client->yammer($fh);
+	}
+	else
+	{
+		# send the message unaltered
+		$client->yammer($fh);
+	}
+	return 1;
+}
+
+__END__
+
+=head1 NAME
+
+dkimproxy.in - SMTP proxy for verifying DKIM signatures
+
+=head1 SYNOPSIS
+
+  dkimproxy.in [options] listen.addr:port talk.addr:port
+    options:
+      --reject-fail
+      --reject-error
+      --hostname=HOSTNAME
+
+    daemon options:
+      --daemonize
+      --user=USER
+      --group=GROUP
+      --pidfile=PIDFILE
+
+  dkimproxy.in --help
+    to see a full description of the various options
+
+=head1 OPTIONS
+
+=over
+
+=item B<--daemonize>
+
+If specified, the server will run in the background.
+
+=item B<--group=GROUP>
+
+If specified, the daemonized process will setgid() to the specified
+GROUP.
+
+=item B<--hostname=HOSTNAME>
+
+Overrides the hostname used in the X-DKIM-Authentication-Results header.
+Use this if the hostname that appears is not fully qualified or you
+want to use an alternate name.
+
+=item B<--pidfile=PIDFILE>
+
+Creates a PID file (a file containing the PID of the process) for
+the daemonized process. This makes it possible to check the status
+of the process, and to cleanly shut it down.
+
+=item B<--reject-error>
+
+This option specifies what to do if an error occurs during verification
+of a message. If this option is specified, the message will be rejected
+with an SMTP error code. This will result in the MTA sending the message
+to try again later, or bounce it back to the sender (depending on the
+exact error code used). If this option is not specified, the message
+will be passed through with an error listed in the Authentication-Results
+header instead of the verification results.
+
+The most common error will probably be a DNS error when trying to retrieve
+the public key or sender policy.
+
+=item B<--reject-fail>
+
+This option specifies what to do if verification fails and the sender
+signing policy says to reject the message. If this option is specified,
+the message will be rejected with an SMTP error code.
+This will result in the sending MTA to
+bounce the message back to the sender. If this option is not specified,
+the message will pass through as normal.
+
+=item B<--user=USER>
+
+If specified, the daemonized process will setuid() to USER after
+completing any necessary privileged operations, but before accepting
+connections.
+
+=back
+
+=head1 DESCRIPTION
+
+dkimproxy.in listens on the IP address and TCP port specified by its
+first argument, and sends the traffic mostly unmodified to the SMTP
+server specified by the address and port in the second argument.
+The SMTP protocol is propogated literally, but message bodies will get
+prepended with an X-DKIM-Authentication-Results header.
+
+=head1 EXAMPLE
+
+For example, if dkimproxy.in is started with:
+
+  dkimproxy.in --reject-fail --reject-error 127.0.0.1:10025 127.0.0.1:10026
+
+the proxy will listen on port 10025 and send the verified messages to
+some other SMTP service on port 10026.
+
+=cut
