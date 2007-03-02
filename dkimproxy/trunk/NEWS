@@ -1,7 +1,7 @@
 This file summarizes what's changed between releases of dkimproxy.
 See the ChangeLog file for the details.
 
-Version 0.15
+Version 0.15 - released 2007-03-02
 
  UPGRADERS TAKE NOTE!
    If you have installed version 0.14 (or lower) of DKIM proxy,
@@ -10,6 +10,10 @@ Version 0.15
    script.
 
  * The signer can now output DomainKeys signatures instead of DKIM signatures.
+ * The online help (see dkimproxy.in --help or dkimproxy.out --help) has
+   been improved quite a bit.
+ * The dkimproxy daemons accept all options documented in Perl module
+   Net::Server::PreFork. E.g. --max_servers, --min_servers.
 
 Version 0.14 - released 2006-09-21
 
