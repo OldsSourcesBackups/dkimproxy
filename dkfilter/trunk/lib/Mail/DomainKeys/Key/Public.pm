@@ -86,9 +86,10 @@ sub fetch {
 		$resp = $rslv->query($host, "TXT");
 		alarm 0;
 	};
-	if ($@)
+	my $E = $@;
+	alarm 0;
+	if ($E)
 	{
-		my $E = $@;
 		chomp $E;
 		die "$E\n";
 	}
