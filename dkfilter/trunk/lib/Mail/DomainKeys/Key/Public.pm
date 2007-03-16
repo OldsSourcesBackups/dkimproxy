@@ -86,6 +86,11 @@ sub fetch {
 		$resp = $rslv->query($host, "TXT");
 		alarm 0;
 	};
+
+	# FIXME- this is still a little problematic... if $rslv->query "dies",
+	# we leave the eval block with the alarm still active... that is
+	# not good
+
 	my $E = $@;
 	alarm 0;
 	if ($E)

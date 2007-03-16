@@ -1,5 +1,5 @@
 dnl Initialize automake/autoconf
-AC_INIT(dkfilter, 0.11)
+AC_INIT(dkfilter, 0.12)
 AM_INIT_AUTOMAKE
 
 dnl Check for Perl
