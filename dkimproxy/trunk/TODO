@@ -1,6 +1,7 @@
 Bugs:
  - dkimfilter.in exits after a while, saying "Alarm clock" (not sure if this
    still happens)
+ - dkimproxy fails to set the listening port with Net::Server v0.90.10
 
 Possible bugs:
  - if signature fails on an email using a subdomain of the key's domain,
