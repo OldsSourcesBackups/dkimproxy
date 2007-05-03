@@ -1,6 +1,9 @@
 This file summarizes what's changed between releases of dkimproxy.
 See the ChangeLog file for the details.
 
+Version 0.16
+
+
 Version 0.15 - released 2007-03-02
 
  * The signer can now output DomainKeys signatures instead of DKIM signatures.
