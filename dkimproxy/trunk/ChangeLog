@@ -1,3 +1,9 @@
+2007-05-03: Jason Long <jlong@messiah.edu>
+ * configure.ac: Bernhard D Rohrer reports version 0.90 of Net::Server
+   doesn't work with dkimproxy, but 0.96 does. I don't know which version
+   in between is the required minimum.
+ * configure.ac: bump current version to 0.16
+
  -- VERSION 0.15 --
 
 2007-03-02: Jason Long <jlong@messiah.edu>
