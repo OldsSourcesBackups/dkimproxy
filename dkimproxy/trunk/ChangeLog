@@ -1,3 +1,8 @@
+2007-05-15: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: fix bug where arguments for Net::Server::PreFork
+   were not recognized
+ * scripts/dkimproxy.in: same
+
 2007-05-03: Jason Long <jlong@messiah.edu>
  * configure.ac: Bernhard D Rohrer reports version 0.90 of Net::Server
    doesn't work with dkimproxy, but 0.96 does. I don't know which version

@@ -48,8 +48,23 @@ main->run(
 sub configure
 {
 	my $self = shift;
+
+	if ($self->isa("Net::Server::MultiType")
+		&& !$self->{server}->{server_type})
+	{
+		# Net::Server::MultiType hasn't done its thing yet,
+		# so let it continue. It will call configure() again
+		# after it has processed the server_type parameter.
+		return $self->SUPER::configure(@_);
+	}
+
 	$self->SUPER::configure(@_);
 
+	#
+	# At this point, Net::Server should have removed from @ARGV
+	# any arguments that it recognized. So any remaining
+	# arguments in @ARGV should be for us.
+	#
 	my $help;
 	GetOptions(
 			"reject-error" => \$reject_error,
