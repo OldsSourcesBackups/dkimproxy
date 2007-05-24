@@ -20,6 +20,7 @@ Desired features:
  - support use of multiple signatures, selectors, private keys, etc.
    (the signing process would use a lookup table of some sort, using the
    sender address's domain to pick signature attributes to use)
+ - document use of min_servers and max_servers options on help page
 
 Possibly desired features:
  - sign/verify in the same program - although...

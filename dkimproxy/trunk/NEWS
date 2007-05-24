@@ -1,6 +1,9 @@
 This file summarizes what's changed between releases of dkimproxy.
 See the ChangeLog file for the details.
 
+Version 0.17
+
+
 Version 0.16 - released 2007-05-24
 
  * Fixed a bug where --max_servers and --min_servers still were not

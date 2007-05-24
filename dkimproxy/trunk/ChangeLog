@@ -1,4 +1,9 @@
 2007-05-24: Jason Long <jlong@messiah.edu>
+ * configure.ac: bump version to 0.17
+
+ -- VERSION 0.16 --
+
+2007-05-24: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.out: use "pretty" signatures if available
  * scripts/dkimsign.pl: use "pretty" signatures if available
 
