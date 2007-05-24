@@ -1,7 +1,8 @@
 Bugs:
- - dkimfilter.in exits after a while, saying "Alarm clock" (not sure if this
-   still happens)
  - dkimproxy fails to set the listening port with Net::Server v0.90.10
+   (RESOLVED- set required version to be 0.91)
+ - dkimproxy prints out "Becoming sub class of "Net::Server::PreFork";
+   caused by 2007-05-15 bugfix
 
 Possible bugs:
  - if signature fails on an email using a subdomain of the key's domain,
