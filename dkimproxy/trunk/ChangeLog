@@ -1,3 +1,7 @@
+2007-05-24: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: use "pretty" signatures if available
+ * scripts/dkimsign.pl: use "pretty" signatures if available
+
 2007-05-15: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.out: fix bug where arguments for Net::Server::PreFork
    were not recognized

@@ -14,6 +14,9 @@ use Mail::DKIM::Signer;
 use Getopt::Long;
 use Pod::Usage;
 
+#enable support for "pretty" signatures, if available
+eval "require Mail::DKIM::TextWrap";
+
 my $method = "simple";
 my $selector = "selector1";
 my $debug_canonicalization;

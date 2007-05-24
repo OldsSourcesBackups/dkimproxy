@@ -31,6 +31,9 @@ use Mail::DKIM 0.20;
 use Mail::DKIM::Signer;
 use MySmtpServer;
 
+#enable support for "pretty" signatures, if available
+eval "require Mail::DKIM::TextWrap";
+
 my $reject_error = 0;
 my $signature = "dkim";
 my $keyfile;
