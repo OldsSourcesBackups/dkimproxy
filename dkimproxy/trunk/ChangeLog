@@ -1,3 +1,9 @@
+2007-06-01: Jason Long <jlong@messiah.edu>
+ * lib/MySmtpProxyServer.pm: copied some functionality from SmtpServer
+   to here (the chat method) so that a handle_message_chunk method
+   could be implemented. This will allow (in the near future) computing
+   the signature as the message is received.
+
 2007-05-24: Jason Long <jlong@messiah.edu>
  * configure.ac: bump version to 0.17
 
