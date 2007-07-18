@@ -56,9 +56,11 @@ while (<STDIN>)
 $fh->seek(0, 0);
 my $result;
 my $result_detail;
+my $policy;
+my $policy_result;
 eval
 {
-	my $dkim = new Mail::DKIM::Verifier(
+	my $dkim = Mail::DKIM::Verifier->new(
 			Debug_Canonicalization => \$canonicalized,
 		);
 	$dkim->load($fh);
@@ -70,6 +72,9 @@ eval
 	{
 		$attach_original_msg = 1;
 	}
+
+	$policy = $dkim->fetch_policy;
+	$policy_result = $policy->apply($dkim);
 };
 if ($@)
 {
@@ -96,6 +101,16 @@ my $top = MIME::Entity->build(
 		To => $from,
 		Subject => $subject,
 	);
+
+my $policy_results_text = "";
+if ($policy_result && $policy_result ne "neutral")
+{
+	my $location = $policy->location;
+	$policy_results_text =
+"This is the result after checking the policy at \"$location\":
+  $policy_result
+\n";
+}
 
 my $attach_text;
 if ($attach_original_msg)
@@ -125,6 +140,7 @@ $top->attach(
 		"This is the result of the message verification:\n",
 		"  $result_detail\n",
 		"\n",
+		$policy_results_text,
 		$attach_text,
 		"Please note if your message had multiple signatures, that this\n",
 		"auto-responder looks for ANY passing signature, including DomainKeys\n",

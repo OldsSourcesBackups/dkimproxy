@@ -8,7 +8,7 @@ Possible bugs:
  - if signature fails on an email using a subdomain of the key's domain,
    policy lookup should be for key's domain, not sender domain (i.e.
    sender domain should only be used if the key domain doesn't match,
-   or there is no signature)
+   or there is no signature) (NO)
  - the auto responder will fail if the signed message had been analyzed by
    spamassassin, and spamassassin analyzes it again after it got signed,
    causing the spamassassin headers to change... it would be nice if the

@@ -1,3 +1,7 @@
+2007-07-18: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_responder.pl: respond with a bit about how the policy
+   is applied
+
 2007-06-01: Jason Long <jlong@messiah.edu>
  * lib/MySmtpProxyServer.pm: copied some functionality from SmtpServer
    to here (the chat method) so that a handle_message_chunk method

@@ -10,6 +10,22 @@ The process
    with certain attributes
  - sign the message with those signatures
 
+Use cases
+ - simple- one domain/one signature
+     sign all messages with From/Sender of "messiah.edu" with
+     a DKIM messiah.edu signature
+ - single domain/multiple signature
+     sign all messages with From/Sender of "messiah.edu" with
+     a DKIM messiah.edu AND a DomainKeys messiah.edu signature
+ - multiple domain/single signature
+     sign messages with From/Sender of "apple.example" with
+     a DKIM apple.example signature, and
+     sign messages with From/Sender of "bat.example" with
+     a DKIM bat.example signature
+ - global
+     sign all messages, no matter the From/Sender, with messiah.edu
+	 signature
+
 So the config file could consist of a list of rules. Each rule
 has "conditions" of the message to be signed, and "actions" consisting
 of signatures to add. Each action specifies the signature attributes
@@ -20,6 +36,7 @@ Example A:
 ----------
 
 [messiah.edu]
+signature=dkim
 keyfile=/usr/local/dkfilter/private.key
 selector=alpha
 method=relaxed
@@ -27,13 +44,96 @@ method=relaxed
 [example.org]
 keyfile=/usr/local/dkfilter/private.key
 selector=alpha
-method=relaxed
+signature.1=dkim
+method.1=relaxed
+signature.2=domainkeys
+method.2=nofws
 
   Config to use is based on sender domain. Common config elements must be
-  duplicated in each section. Not possible to have multiple signatures.
+  duplicated in each section. To use multiple signatures, omit the
+  signature= directive, and put multiple signature.X=, where X is
+  a per-signature suffix to match other directives relating to that
+  signature.
 
 ----------
 Example B:
+----------
+
+Messiah's simple config:
+
+  selector selector1
+  method   relaxed
+  keyfile  /usr/local/dkfilter/private.key
+  domain   messiah.edu
+
+Simple ISP config, supporting many domains, same config for each:
+
+  selector selector1
+  method   relaxed
+  keyfile  /usr/local/dkfilter/private.key
+  domain   example.org
+  domain   example.com
+  domain   mydomain1.example
+  domain   mydomain2.example
+
+Simple config for Messiah to output two signatures:
+
+  <signature>
+	version  DKIM
+    selector selector1
+    method   relaxed
+    keyfile  /usr/local/dkfilter/private.key
+    domain   messiah.edu
+  </signature>
+  <signature>
+	version  DomainKeys
+    selector selector1
+    method   relaxed
+    keyfile  /usr/local/dkfilter/private.key
+    domain   messiah.edu
+  </signature>
+
+or
+
+  selector selector1
+  method   relaxed
+  keyfile  /usr/local/dkfilter/private.key
+  domain   messiah.edu
+  <signature>
+	version  DKIM
+  </signature>
+  <signature>
+	version  DomainKeys
+  </signature>
+
+----------
+Example C:
+----------
+
+  [messiah.edu]
+  signature.1=DKIM
+  selector.1=selector1
+  method.1=relaxed
+  keyfile.1=/usr/local/dkfilter/private.key
+  signature.2=DomainKey
+  selector.2=selector1
+  method.2=relaxed
+  keyfile.2=/usr/local/dkfilter/private.key
+
+Problem- no ability to nest. But a "global"-type section could be
+created.
+
+----------
+Example I:
+----------
+
+  domain[messiah.edu].signature[1]=DKIM
+  domain[messiah.edu].selector[1]=selector1
+  domain[messiah.edu].method[1]=relaxed
+  domain[messiah.edu].keyfile[1]=/usr/local/dkfilter/private.key
+
+----------
+Example G:
 ----------
 
 $selector = "alpha";
@@ -50,7 +150,7 @@ if ($sender =~ /messiah\.edu$/) {
   be for people to want to do this.
 
 ----------
-Example C:
+Example H:
 ----------
 
 # global options
@@ -149,76 +249,3 @@ Algorithm rsa-sha256
   Add-Signature DomainKeys
 </MessageMatch>
 
-----------
-Example G:
-----------
-
-Messiah's simple config:
-
-  selector selector1
-  method   relaxed
-  keyfile  /usr/local/dkfilter/private.key
-  domain   messiah.edu
-
-Simple ISP config, supporting many domains, same config for each:
-
-  selector selector1
-  method   relaxed
-  keyfile  /usr/local/dkfilter/private.key
-  domain   example.org
-  domain   example.com
-  domain   mydomain1.example
-  domain   mydomain2.example
-
-Simple config for Messiah to output two signatures:
-
-  <signature>
-	version  DKIM
-    selector selector1
-    method   relaxed
-    keyfile  /usr/local/dkfilter/private.key
-    domain   messiah.edu
-  </signature>
-  <signature>
-	version  DomainKeys
-    selector selector1
-    method   relaxed
-    keyfile  /usr/local/dkfilter/private.key
-    domain   messiah.edu
-  </signature>
-
-or
-
-  selector selector1
-  method   relaxed
-  keyfile  /usr/local/dkfilter/private.key
-  domain   messiah.edu
-  <signature>
-	version  DKIM
-  </signature>
-  <signature>
-	version  DomainKeys
-  </signature>
-
-----------
-Example H:
-----------
-
-  [messiah.edu]
-  signature.1=DKIM
-  selector.1=selector1
-  method.1=relaxed
-  keyfile.1=/usr/local/dkfilter/private.key
-  signature.2=DomainKey
-  selector.2=selector1
-  method.2=relaxed
-  keyfile.2=/usr/local/dkfilter/private.key
-
-----------
-Example I:
-----------
-
-  domain[messiah.edu].signature[1]=DKIM
-  domain[messiah.edu].selector[1]=selector1
-  domain[messiah.edu].method[1]=relaxed
-  domain[messiah.edu].keyfile[1]=/usr/local/dkfilter/private.key
