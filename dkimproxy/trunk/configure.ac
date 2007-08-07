@@ -11,7 +11,7 @@ local_CHECK_PERL_MODULE(Error)
 local_CHECK_PERL_MODULE(Net::Server 0.91)
 
 dnl Installation locations
-perllibdir='${prefix}/lib'
+test -z "$perllibdir" && perllibdir='${prefix}/lib'
 AC_SUBST(perllibdir)
 
 AC_OUTPUT([
