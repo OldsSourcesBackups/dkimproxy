@@ -1,3 +1,6 @@
+2007-08-06: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_responder.pl: show both DKIM and DK policy results
+
 2007-07-18: Jason Long <jlong@messiah.edu>
  * scripts/dkim_responder.pl: respond with a bit about how the policy
    is applied
