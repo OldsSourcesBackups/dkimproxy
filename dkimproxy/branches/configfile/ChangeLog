@@ -1,3 +1,74 @@
+2007-08-06: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_responder.pl: show both DKIM and DK policy results
+ * configure.ac: allow perl lib directory to be specified
+
+2007-07-18: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_responder.pl: respond with a bit about how the policy
+   is applied
+
+2007-06-01: Jason Long <jlong@messiah.edu>
+ * lib/MySmtpProxyServer.pm: copied some functionality from SmtpServer
+   to here (the chat method) so that a handle_message_chunk method
+   could be implemented. This will allow (in the near future) computing
+   the signature as the message is received.
+
+2007-05-24: Jason Long <jlong@messiah.edu>
+ * configure.ac: bump version to 0.17
+
+ -- VERSION 0.16 --
+
+2007-05-24: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: use "pretty" signatures if available
+ * scripts/dkimsign.pl: use "pretty" signatures if available
+
+2007-05-15: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: fix bug where arguments for Net::Server::PreFork
+   were not recognized
+ * scripts/dkimproxy.in: same
+
+2007-05-03: Jason Long <jlong@messiah.edu>
+ * configure.ac: Bernhard D Rohrer reports version 0.90 of Net::Server
+   doesn't work with dkimproxy, but 0.96 does. I don't know which version
+   in between is the required minimum.
+ * configure.ac: bump current version to 0.16
+
+ -- VERSION 0.15 --
+
+2007-03-02: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: allow nofws canonicalization with DomainKeys
+   signatures; select default canonicalization based on signature type;
+   update online documentation
+ * scripts/dkimproxy.in: minor updates to documentation
+
+2007-02-28: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: allow use of DomainKeys signatures (using the
+   --signature argument)
+
+2007-02-07: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: change default canonicalization to relaxed
+
+2007-02-01: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_responder.pl: protect against abuse of the auto-responder
+ * scripts/dkimproxy.in: document the daemon options
+
+2007-01-26: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.in, scripts/dkimproxy.out: do argument-processing
+   within Net::Server framework, so it's easier for the user to specify
+   additional Net::Server parameters
+
+2006-12-18: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_responder.pl: use a Sender header of @messiah.edu so a
+   DKIM signature will get added on the reply; include a note in the reply
+   about multiple signatures
+ * scripts/dkimproxy.out: show how to add DomainKey signatures
+
+2006-10-23: Jason Long <jlong@messiah.edu>
+ * configure.ac, INSTALL: dkimproxy now requires 0.20 or better of Mail::DKIM
+ * scripts/dkimproxy.in: change dkimfilter.in to dkimproxy.in
+ * scripts/dkimproxy.out: change dkimfilter.out to dkimproxy.out;
+   support multiple signatures
+ * lib/MySmtpProxyServer.pm: no longer prints "running" on startup
+
 2006-10-19: Jason Long <jlong@messiah.edu>
  * scripts/dkim_milter.out: added experimental milter script
 

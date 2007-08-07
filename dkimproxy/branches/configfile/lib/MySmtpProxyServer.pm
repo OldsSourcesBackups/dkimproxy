@@ -31,12 +31,53 @@ use IO::File;
 package MySmtpProxyServer;
 use base "Net::Server::MultiType";
 
-sub run
+#get the next message from the connecting system
+sub _chat
 {
-	my $class = shift;
-	print "running\n";
-	$class->SUPER::run(@_);
+	my $self = shift;
+	if ($self->{smtp_server}->{state} !~ /^data/i)
+	{
+		return $self->{smtp_server}->chat(@_);
+	}
+	else
+	{
+		return $self->_chat_data;
+	}
 }
+
+sub _chat_data
+{
+	my $self = shift;
+	my $server = $self->{smtp_server};
+	local(*_);
+
+	if (defined($server->{data}))
+	{
+		$server->{data}->seek(0, 0);
+		$server->{data}->truncate(0);
+	}
+	else
+	{
+		$server->{data} = IO::File->new_tmpfile;
+	}
+	while (defined($_ = $server->getline))
+	{
+		if ($_ eq ".\r\n")
+		{
+			$server->{data}->seek(0,0);
+			return $server->{state} = '.';
+		}
+		s/^\.\./\./;
+		$self->handle_message_chunk($_);
+	}
+	# the system that connected to us dropped the connection
+	# before finishing the message
+	return(0);
+}
+
+=head2 process_request() - handles a new connection from beginning to end
+
+=cut
 
 sub process_request
 {
@@ -53,7 +94,7 @@ sub process_request
 
 	# begin main SMTP loop
 	#  - wait for a command from source
-	while (my $what = $server->chat)
+	while (my $what = $self->_chat)
 	{
 		if ($self->{debug})
 		{
@@ -63,6 +104,18 @@ sub process_request
 			or last;
 	}
 }
+
+=head2 handle_command() - handles a single SMTP command
+
+  $server->handle_command($what);
+
+$what is an SMTP command, like "mail from:<somebody@example.com>",
+or the special "end-of-data" command, ".".
+
+The result should be true to keep the connection open,
+or false to close it.
+
+=cut
 
 sub handle_command
 {
@@ -80,40 +133,46 @@ sub handle_command
 		}
 		else
 		{
-			return undef;
+			return;
 		}
 	}
 	else
 	{
 	    $client->say($what);
 		$server->ok($client->hear);
+		return if $what =~ /^quit/i;
 		return 1;
     }
 }
 
-sub setup_server_socket
+#called when a part of the message being received has been received
+#this method saves the chunk to a temporary file so that the
+#entire message can be played back after processing
+#
+sub handle_message_chunk
 {
 	my $self = shift;
+	my ($data) = @_;
 
-	# create an object for handling the incoming SMTP commands
-	return new MySmtpServer;
+	$self->{smtp_server}->{data}->print($data)
+		or die "Error saving message to temporary file: $!\n";
 }
 
-# handle_end_of_data
-#
-# Called when the source finishes transmitting the message. This method
-# may filter the message and if desired, transmit the message to
-# $client. Alternatively, this method can respond to the server with
-# some sort of rejection (temporary or permanent).
-#
-# Usage: $result = handle_end_of_data($server, $client);
-#
-# Returns:
-#   nonzero if a message was transmitted to the next server and its response
-#     returned to the source server
-#   zero if the message was rejected and the connection to the next server
-#     should be dropped
-#
+=head2 handle_end_of_data() - source has finished transmitting the message
+
+  my $result = $server->handle_end_of_data($client);
+
+This method is called when the source finishes transmitting the message.
+This method may filter the message and if desired, transmit the message
+to $client. Alternatively, this method can respond to the server with
+some sort of rejection (temporary or permanent).
+
+The result is nonzero if a message was transmitted to the next server
+and its response returned to the source server, or zero if the message
+was rejected and the connection to the next server should be dropped.
+
+=cut
+
 sub handle_end_of_data
 {
 	my $self = shift;
@@ -126,6 +185,22 @@ sub handle_end_of_data
 	$client->yammer($fh);
 
 	return 1;
+}
+
+=head2 setup_client_socket() - create socket for sending the message
+
+=cut
+
+# setup_server_socket() - create socket for receiving the message
+#
+# No use in overriding this, I think.
+#
+sub setup_server_socket
+{
+	my $self = shift;
+
+	# create an object for handling the incoming SMTP commands
+	return new MySmtpServer;
 }
 
 1;

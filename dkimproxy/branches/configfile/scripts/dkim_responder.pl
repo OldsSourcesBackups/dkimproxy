@@ -11,10 +11,11 @@ use warnings;
 use IO::File;
 use MIME::Entity;
 
-use Mail::DKIM 0.17;
+use Mail::DKIM 0.27;
 use Mail::DKIM::Verifier;
 
 use constant FROM_ADDR => 'admin@dkimtest.jason.long.name';
+use constant SENDER_ADDR => 'nobody@messiah.edu';
 use constant DEFAULT_SUBJECT => "Results of DKIM test";
 use constant RESULT_BCC => 'results@dkimtest.jason.long.name';
 
@@ -28,7 +29,7 @@ unless ($from_line =~ /^From (\S+)/)
 }
 
 my $from = $1;
-my $subject = DEFAULT_SUBJECT;
+my $subject;
 my $attach_original_msg;
 
 # read message from stdin, catching from address and subject
@@ -55,9 +56,13 @@ while (<STDIN>)
 $fh->seek(0, 0);
 my $result;
 my $result_detail;
+my $a_policy;
+my $a_policy_result;
+my $s_policy;
+my $s_policy_result;
 eval
 {
-	my $dkim = new Mail::DKIM::Verifier(
+	my $dkim = Mail::DKIM::Verifier->new(
 			Debug_Canonicalization => \$canonicalized,
 		);
 	$dkim->load($fh);
@@ -69,6 +74,11 @@ eval
 	{
 		$attach_original_msg = 1;
 	}
+
+	$a_policy = $dkim->fetch_author_policy;
+	$a_policy_result = $a_policy->apply($dkim);
+	$s_policy = $dkim->fetch_sender_policy;
+	$s_policy_result = $s_policy->apply($dkim);
 };
 if ($@)
 {
@@ -78,12 +88,41 @@ if ($@)
 	$result_detail = "$result ($E)";
 }
 
+# sanitize subject
+if ($subject =~ /confirm/i)
+{
+	$subject = "";
+}
+$subject =~ s/(\w{10})\w+/$1/g;
+
+$subject ||= DEFAULT_SUBJECT;
+
 # create a response message
 my $top = MIME::Entity->build(
 		Type => "multipart/mixed",
 		From => FROM_ADDR,
+		Sender => SENDER_ADDR,
 		To => $from,
-		Subject => $subject);
+		Subject => $subject,
+	);
+
+my $policy_results_text = "";
+if ($a_policy_result && $a_policy_result ne "neutral")
+{
+	my $location = $a_policy->location;
+	$policy_results_text =
+"This is the result after checking the DKIM policy at \"$location\":
+  $a_policy_result
+\n";
+}
+if ($s_policy_result && $s_policy_result ne "neutral")
+{
+	my $location = $s_policy->location;
+	$policy_results_text =
+"This is the result after checking the DomainKeys policy at \"$location\":
+  $s_policy_result
+\n";
+}
 
 my $attach_text;
 if ($attach_original_msg)
@@ -113,7 +152,12 @@ $top->attach(
 		"This is the result of the message verification:\n",
 		"  $result_detail\n",
 		"\n",
+		$policy_results_text,
 		$attach_text,
+		"Please note if your message had multiple signatures, that this\n",
+		"auto-responder looks for ANY passing signature, including DomainKeys\n",
+		"signatures.\n",
+		"\n",
 		"Thank you for using the dkimproxy DKIM Auto Responder.\n",
 		"This Auto Responder tests the verification routines of $PRODUCT.\n",
 		"For more information about Mail::DKIM, see http://jason.long.name/dkimproxy/\n",

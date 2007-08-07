@@ -34,58 +34,76 @@ use MySmtpServer;
 my $hostname;
 my $reject_fail = 0;
 my $reject_error = 0;
-my $setuser;
-my $setgroup;
-my $daemonize;
-my $pidfile;
 my $debug;
-my $help;
-GetOptions(
-		"reject-fail" => \$reject_fail,
-		"reject-error" => \$reject_error,
-		"hostname=s" => \$hostname,
-		"user=s" => \$setuser,
-		"group=s" => \$setgroup,
-		"daemonize" => \$daemonize,
-		"pidfile=s" => \$pidfile,
-		"debug" => \$debug,
-		"help|?" => \$help)
-	or pod2usage(2);
-pod2usage(1) if $help;
-pod2usage("Error: one or more required arguments are missing")
-		unless @ARGV == 2;
-
-my ($srcaddr, $srcport) = split /:/, $ARGV[0];
-my ($dstaddr, $dstport) = split /:/, $ARGV[1];
-unless (defined($srcport) and defined($dstport))
-{
-	pod2usage("Error: source or destination port is missing");
-}
-
-if (not defined $hostname)
-{
-	use Sys::Hostname;
-	$hostname = hostname;
-}
 
 use base "MySmtpProxyServer";
 main->run(
-		host => $srcaddr,
-		port => $srcport,
 		server_type => "PreFork",
-		user => $setuser,
-		group => $setgroup,
-		setsid => $daemonize,
-		pid_file => $pidfile,
 	);
+
+sub configure
+{
+	my $self = shift;
+
+	if ($self->isa("Net::Server::MultiType")
+		&& !$self->{server}->{server_type})
+	{
+		# Net::Server::MultiType hasn't done its thing yet,
+		# so let it continue. It will call configure() again
+		# after it has processed the server_type parameter.
+		return $self->SUPER::configure(@_);
+	}
+
+	$self->SUPER::configure(@_);
+
+	#
+	# At this point, Net::Server should have removed from @ARGV
+	# any arguments that it recognized. So any remaining
+	# arguments in @ARGV should be for us.
+	#
+	my $help;
+	GetOptions(
+			"reject-fail" => \$reject_fail,
+			"reject-error" => \$reject_error,
+			"hostname=s" => \$hostname,
+			"daemonize" => \$self->{server}->{setsid},
+			"pidfile=s" => \$self->{server}->{pid_file},
+			"debug" => \$debug,
+			"help|?" => \$help)
+		or pod2usage(2);
+	pod2usage(1) if $help;
+
+	if (not defined $hostname)
+	{
+		use Sys::Hostname;
+		$hostname = hostname;
+	}
+
+	pod2usage("Error: wrong number of arguments")
+		unless @ARGV == 2;
+
+	my ($srcaddr, $srcport) = split /:/, $ARGV[0];
+	my ($dstaddr, $dstport) = split /:/, $ARGV[1];
+	unless (defined($srcport) and defined($dstport))
+	{
+		pod2usage("Error: source or destination port is missing");
+	}
+
+	$self->{server}->{host} = $srcaddr;
+	$self->{server}->{port} = $srcport;
+	$self->{server}->{dest_host} = $dstaddr;
+	$self->{server}->{dest_port} = $dstport;
+}
 
 sub setup_client_socket
 {
+	my $self = shift;
+
 	# create an object for sending the outgoing SMTP commands
 	#  (and the signed message)
     my $client = MSDW::SMTP::Client->new(
-			interface => $dstaddr,
-			port => $dstport);
+			interface => $self->{server}->{dest_host},
+			port => $self->{server}->{dest_port});
 	return $client;
 }
 
@@ -189,31 +207,49 @@ __END__
 
 =head1 NAME
 
-dkimfilter.in - SMTP proxy for verifying DKIM signatures
+dkimproxy.in - SMTP proxy for verifying DKIM signatures
 
 =head1 SYNOPSIS
 
-  dkimfilter.in [options] listen.addr:port talk.addr:port
+  dkimproxy.in [options] listen.addr:port talk.addr:port
     options:
       --reject-fail
       --reject-error
       --hostname=HOSTNAME
 
-  dkimfilter.in --help
+    daemon options:
+      --daemonize
+      --user=USER
+      --group=GROUP
+      --pidfile=PIDFILE
+
+  dkimproxy.in --help
     to see a full description of the various options
 
 =head1 OPTIONS
 
 =over
 
-=item B<--reject-fail>
+=item B<--daemonize>
 
-This option specifies what to do if verification fails and the sender
-signing policy says to reject the message. If this option is specified,
-the message will be rejected with an SMTP error code.
-This will result in the sending MTA to
-bounce the message back to the sender. If this option is not specified,
-the message will pass through as normal.
+If specified, the server will run in the background.
+
+=item B<--group=GROUP>
+
+If specified, the daemonized process will setgid() to the specified
+GROUP.
+
+=item B<--hostname=HOSTNAME>
+
+Overrides the hostname used in the X-DKIM-Authentication-Results header.
+Use this if the hostname that appears is not fully qualified or you
+want to use an alternate name.
+
+=item B<--pidfile=PIDFILE>
+
+Creates a PID file (a file containing the PID of the process) for
+the daemonized process. This makes it possible to check the status
+of the process, and to cleanly shut it down.
 
 =item B<--reject-error>
 
@@ -228,24 +264,38 @@ header instead of the verification results.
 The most common error will probably be a DNS error when trying to retrieve
 the public key or sender policy.
 
-=item B<--hostname=HOSTNAME>
+=item B<--reject-fail>
 
-Overrides the hostname used in the Authentication-Results header.
-Use this if the hostname that appears is not fully qualified or you
-want to use an alternate name.
+This option specifies what to do if verification fails and the sender
+signing policy says to reject the message. If this option is specified,
+the message will be rejected with an SMTP error code.
+This will result in the sending MTA to
+bounce the message back to the sender. If this option is not specified,
+the message will pass through as normal.
+
+=item B<--user=USER>
+
+If specified, the daemonized process will setuid() to USER after
+completing any necessary privileged operations, but before accepting
+connections.
 
 =back
 
 =head1 DESCRIPTION
 
-dkimfilter.in listens on the IP address and TCP port specified by its
+dkimproxy.in listens on the IP address and TCP port specified by its
 first argument, and sends the traffic mostly unmodified to the SMTP
 server specified by the address and port in the second argument.
 The SMTP protocol is propogated literally, but message bodies will get
-prepended with an Authentication-Results header.
+prepended with an X-DKIM-Authentication-Results header.
 
 =head1 EXAMPLE
 
-  dkimfilter.in --reject-fail --reject-error 127.0.0.1:10027 127.0.0.1:10028
+For example, if dkimproxy.in is started with:
+
+  dkimproxy.in --reject-fail --reject-error 127.0.0.1:10025 127.0.0.1:10026
+
+the proxy will listen on port 10025 and send the verified messages to
+some other SMTP service on port 10026.
 
 =cut

@@ -27,86 +27,126 @@ use Pod::Usage;
 use IO::File;
 use Sys::Syslog;
 
-use Mail::DKIM 0.17;
+use Mail::DKIM 0.20;
 use Mail::DKIM::Signer;
 use MySmtpServer;
 
+#enable support for "pretty" signatures, if available
+eval "require Mail::DKIM::TextWrap";
+
 my $reject_error = 0;
+my $signature = "dkim";
 my $keyfile;
 my $selector;
 my $domain_arg;
-my $method = "nowsp";
-my $setuser;
-my $setgroup;
-my $daemonize;
-my $pidfile;
+my $method;
 my $debugtrace = undef;
-my $help;
-GetOptions(
-		"reject-error" => \$reject_error,
-		"keyfile=s" => \$keyfile,
-		"selector=s" => \$selector,
-		"domain=s" => \$domain_arg,
-		"method=s" => \$method,
-		"debugtrace=s" => \$debugtrace,
-		"user=s" => \$setuser,
-		"group=s" => \$setgroup,
-		"daemonize" => \$daemonize,
-		"pidfile=s" => \$pidfile,
-		"help|?" => \$help)
-	or pod2usage(2);
-pod2usage(1) if $help;
-pod2usage("Error: one or more required arguments are missing")
-		unless @ARGV == 2;
-
-my ($srcaddr, $srcport) = split /:/, $ARGV[0];
-my ($dstaddr, $dstport) = split /:/, $ARGV[1];
-unless (defined($srcport) and defined($dstport))
-{
-	pod2usage("Error: source or destination port is missing");
-}
-
-unless (defined $keyfile)
-{
-	pod2usage("Error: no keyfile specified");
-}
-unless (-r $keyfile)
-{
-	pod2usage("Error: cannot read keyfile $keyfile");
-}
-unless (defined $selector)
-{
-	pod2usage("Error: selector not specified");
-}
-unless (defined $domain_arg)
-{
-	pod2usage("Error: domain not specified");
-}
-my @domains = split(/,\s*/, $domain_arg);
-unless ($method eq "nowsp" || $method eq "simple" || $method eq "relaxed")
-{
-	die "Error: invalid method $method\n";
-}
-
+my @domains;
 
 use base "MySmtpProxyServer";
 main->run(
-		host => $srcaddr,
-		port => $srcport,
 		server_type => "PreFork",
-		user => $setuser,
-		group => $setgroup,
-		setsid => $daemonize,
-		pid_file => $pidfile,
 	);
+
+sub configure
+{
+	my $self = shift;
+
+	if ($self->isa("Net::Server::MultiType")
+		&& !$self->{server}->{server_type})
+	{
+		# Net::Server::MultiType hasn't done its thing yet,
+		# so let it continue. It will call configure() again
+		# after it has processed the server_type parameter.
+		return $self->SUPER::configure(@_);
+	}
+
+	$self->SUPER::configure(@_);
+
+	#
+	# At this point, Net::Server should have removed from @ARGV
+	# any arguments that it recognized. So any remaining
+	# arguments in @ARGV should be for us.
+	#
+	my $help;
+	GetOptions(
+			"reject-error" => \$reject_error,
+			"signature=s" => \$signature,
+			"keyfile=s" => \$keyfile,
+			"selector=s" => \$selector,
+			"domain=s" => \$domain_arg,
+			"method=s" => \$method,
+			"debugtrace=s" => \$debugtrace,
+			"daemonize" => \$self->{server}->{setsid},
+			"pidfile=s" => \$self->{server}->{pid_file},
+			"help|?" => \$help)
+		or pod2usage(2);
+	pod2usage(1) if $help;
+
+	pod2usage("Error: wrong number of arguments")
+		unless @ARGV == 2;
+
+	my ($srcaddr, $srcport) = split /:/, $ARGV[0];
+	my ($dstaddr, $dstport) = split /:/, $ARGV[1];
+	unless (defined($srcport) and defined($dstport))
+	{
+		pod2usage("Error: source or destination port is missing");
+	}
+
+	$self->{server}->{host} = $srcaddr;
+	$self->{server}->{port} = $srcport;
+	$self->{server}->{dest_host} = $dstaddr;
+	$self->{server}->{dest_port} = $dstport;
+
+	unless (grep { $signature eq $_ } qw(dkim domainkeys))
+	{
+		pod2usage("Error: invalid signature type specified");
+	}
+	unless (defined $keyfile)
+	{
+		pod2usage("Error: no keyfile specified");
+	}
+	unless (-r $keyfile)
+	{
+		pod2usage("Error: cannot read keyfile $keyfile");
+	}
+	unless (defined $selector)
+	{
+		pod2usage("Error: selector not specified");
+	}
+	unless (defined $domain_arg)
+	{
+		pod2usage("Error: domain not specified");
+	}
+	@domains = split(/,\s*/, $domain_arg);
+	# check method argument
+	if ($signature eq "dkim")
+	{
+		$method ||= "relaxed";
+		unless (grep { $method eq $_ } qw(simple relaxed nowsp))
+		{
+			die "Error: invalid method $method\n";
+		}
+	}
+	elsif ($signature eq "domainkeys")
+	{
+		$method ||= "nofws";
+		unless (grep { $method eq $_ } qw(simple nofws))
+		{
+			die "Error: invalid method $method\n";
+		}
+	}
+}
 
 sub setup_client_socket
 {
+	my $self = shift;
+
 	# create an object for sending the outgoing SMTP commands
 	#  (and the signed message)
     my $client = MSDW::SMTP::Client->new(
-			interface => $dstaddr,
-			port => $dstport);
+			interface => $self->{server}->{dest_host},
+			port => $self->{server}->{dest_port});
 	return $client;
 }
 
@@ -115,7 +155,7 @@ sub process_request
 	my $self = shift;
 
 	# initialize syslog
-	openlog("dkimfilter.out", "cons,pid", "mail");
+	openlog("dkimproxy.out", "cons,pid", "mail");
 
 	$self->SUPER::process_request;
 }
@@ -188,13 +228,19 @@ sub handle_end_of_data
 
 	if ($dkim && $dkim->signature)
 	{
+	#	# output version info
+	#	my $DKIM_PROXY_VERSION = "0.15";
+	#	$client->write_data_line("X-DKIM-Proxy-Version: "
+	#		. "DkimProxy $DKIM_PROXY_VERSION, "
+	#		. "Mail::DKIM $Mail::DKIM::VERSION\015\012");
+
 		# output the generated DKIM-Signature
-		my $dkim_signature = $dkim->signature->as_string;
-		if ($dkim_signature)
+		foreach my $dkim_signature ($dkim->signatures)
 		{
-			$client->write_data_line($dkim_signature . "\015\012");
+			$client->write_data_line($dkim_signature->as_string . "\015\012");
 		}
-		# send the original message as is
+
+		# followed by the unaltered original message
 		$client->yammer($fh);
 	}
 	else
@@ -208,6 +254,8 @@ sub handle_end_of_data
 package MySignerPolicy;
 use Mail::DKIM::SignerPolicy;
 use base "Mail::DKIM::SignerPolicy";
+use Mail::DKIM::Signature;
+use Mail::DKIM::DkSignature;
 
 sub apply
 {
@@ -222,7 +270,31 @@ sub apply
 			if (grep { lc($_) eq $domain } @domains)
 			{
 				$signer->domain($domain);
-				return 1;
+
+				if ($signature eq "dkim")
+				{
+					# construct a DKIM-Signature
+					$signer->add_signature(
+						new Mail::DKIM::Signature(
+							Algorithm => $signer->algorithm,
+							Method => $signer->method,
+							Headers => $signer->headers,
+							Domain => $signer->domain,
+							Selector => $signer->selector,
+							));
+				}
+				elsif ($signature eq "domainkeys")
+				{
+					# construct a DomainKey-Signature
+					$signer->add_signature(
+						new Mail::DKIM::DkSignature(
+							Algorithm => "rsa-sha1",
+							Method => $signer->method,
+							Domain => $signer->domain,
+							Selector => $signer->selector,
+							));
+				}
+				return;
 			}
 			# try the parent domain
 			(undef, $domain) = split(/\./, $domain, 2);
@@ -237,32 +309,33 @@ __END__
 
 =head1 NAME
 
-dkimfilter.out - SMTP proxy for adding DKIM signatures to email
+dkimproxy.out - SMTP proxy for adding DKIM signatures to email
 
 =head1 SYNOPSIS
 
-  dkimfilter.out [options] --keyfile=FILENAME --selector=SELECTOR \
+  dkimproxy.out [options] --keyfile=FILENAME --selector=SELECTOR \
                  --domain=DOMAIN listen.addr:port talk.addr:port
     options:
-      --method=simple|nowsp|relaxed
+      --signature=dkim|domainkeys
+      --method=simple|nowsp|relaxed|nofws
       --reject-error
 
-  dkimfilter.out --help
+    daemon options:
+      --daemonize
+      --user=USER
+      --group=GROUP
+      --pidfile=PIDFILE
+
+  dkimproxy.out --help
     to see a full description of the various options
 
 =head1 OPTIONS
 
 =over
 
-=item B<--keyfile=FILENAME>
+=item B<--daemonize>
 
-This is a required argument. Use it to specify the filename containing
-the private key used in signing outgoing messages.
-
-=item B<--selector=SELECTOR>
-
-This is a required argument. Use it to specify the name of the key
-selector.
+If specified, the server will run in the background.
 
 =item B<--domain=DOMAIN>
 
@@ -273,11 +346,31 @@ the proxy will attempt to match the message to one of the domains
 specified in this argument. If it sees a match, it will sign the message
 using the matching domain.
 
-=item B<--method=simple|nowsp|relaxed>
+=item B<--group=GROUP>
+
+If specified, the daemonized process will setgid() to the specified
+GROUP.
+
+=item B<--keyfile=FILENAME>
+
+This is a required argument. Use it to specify the filename containing
+the private key used in signing outgoing messages. For messages to
+verify, you will need to publish the corresponding public key in
+DNS, using the selector name specified by C<--selector>, under
+the domain(s) specified in C<--domain>.
+
+=item B<--method=simple|nowsp|relaxed|nofws>
 
 This option specifies the canonicalization algorithm to use for signing
-messages. It is C<simple>, C<nowsp>, or C<relaxed>. If not specified,
-the default is C<nowsp>.
+messages. For DKIM signatures, the options are C<simple>, C<nowsp>, or
+C<relaxed>; the default is C<relaxed>. For DomainKeys signatures, the
+options are C<simple> and C<nofws>; the default is C<nofws>.
+
+=item B<--pidfile=PIDFILE>
+
+Creates a PID file (a file containing the PID of the process) for
+the daemonized process. This makes it possible to check the status
+of the process, and to cleanly shut it down.
 
 =item B<--reject-error>
 
@@ -286,21 +379,44 @@ of a message. If this option is specified, the message will be rejected
 with an SMTP error code. This will result in the MTA sending the message
 to try again later, or bounce it back to the sender (depending on the
 exact error code used). If this option is not specified, the message
-will be passed through without a signature.
+will be allowed to pass through without having a signature added.
+
+=item B<--selector=SELECTOR>
+
+This is a required argument. Use it to specify the name of the key
+selector.
+
+=item B<--signature=dkim|domainkeys>
+
+This specifies what type of signature to add. Use C<dkim> to sign with
+IETF-standardized DKIM signatures. Use C<domainkeys> to sign with
+the older, but more common, Yahoo! DomainKeys signatures.
+The default is C<dkim>.
+
+=item B<--user=USER>
+
+If specified, the daemonized process will setuid() to USER after
+completing any necessary privileged operations, but before accepting
+connections.
 
 =back
 
 =head1 DESCRIPTION
 
-dkimfilter.out listens on the IP address and TCP port specified by its
+dkimproxy.out listens on the IP address and TCP port specified by its
 first argument, and sends the traffic mostly unmodified to the SMTP
 server specified by the address and port in the second argument.
-The SMTP protocol is propogated literally, but message bodies may get
+The SMTP protocol is propogated literally, but message bodies get
 signed with a DKIM signature.
 
 =head1 EXAMPLE
 
-  dkimfilter.out --keyfile=private.key --selector=postfix \
+For example, if dkimproxy.out is started with:
+
+  dkimproxy.out --keyfile=private.key --selector=postfix \
           --domain=example.org 127.0.0.1:10027 127.0.0.1:10028
+
+the proxy will listen on port 10027 and send the signed messages to
+some other SMTP service on port 10028.
 
 =cut

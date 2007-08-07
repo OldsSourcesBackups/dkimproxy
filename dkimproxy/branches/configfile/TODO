@@ -1,44 +1,35 @@
-Testing:
- - test what happens if DNS is unavailable when fetching key or domain policy
- - use "torture tests" from domainkeys.sourceforge.net to test canonicalization
-
-Desired features:
- - sign/verify a message without having to read it completely into memory
-     - Digest::SHA1 can generate the digest incrementally, but I still
-       need a way to sign/verify the digest
-     - Crypt::OpenSSL::RSA cannot, as far as I can tell, accept an already
-       computed digest when doing a sign/verify
-     - Crypt::RSA provides the necessary primitives, but so far I haven't
-       been able to load a private key with it
-
 Bugs:
- - dkimfilter.in exits after a while, saying "Alarm clock"
+ - dkimproxy fails to set the listening port with Net::Server v0.90.10
+   (RESOLVED- set required version to be 0.91)
+ - dkimproxy prints out "Becoming sub class of "Net::Server::PreFork";
+   caused by 2007-05-15 bugfix
 
 Possible bugs:
- - the Mail::DomainKeys module frequently makes assumptions that it's in
-   a Unix environment ... e.g. it uses "\r\n" where it should use "\015\012"
-   (see perlport(1)'s discussion of Newlines)
- - smtpprox does the same thing, so maybe it's not an issue
- - check header parsing algorithm in Mail::DomainKeys::Message, as it may
-   not do the right thing when headers are in the wrong order or duplicate
-   headers occur
- - h= tag in signature header contains multiple occurrences of same header
-   name
  - if signature fails on an email using a subdomain of the key's domain,
    policy lookup should be for key's domain, not sender domain (i.e.
    sender domain should only be used if the key domain doesn't match,
-   or there is no signature)
- - message parse error occurs on headers without colons
+   or there is no signature) (NO)
+ - the auto responder will fail if the signed message had been analyzed by
+   spamassassin, and spamassassin analyzes it again after it got signed,
+   causing the spamassassin headers to change... it would be nice if the
+   auto-responder can check the signature(s) for "known bad" headers,
+   and give a warning to the user if their message got signed by one
+   of those headers
+
+Desired features:
+ - support use of multiple signatures, selectors, private keys, etc.
+   (the signing process would use a lookup table of some sort, using the
+   sender address's domain to pick signature attributes to use)
+ - document use of min_servers and max_servers options on help page
+ - perform fewer passes over the message data
 
 Possibly desired features:
- - support use of multiple selectors, multiple private keys
-   (the signing process would use a lookup table of some sort, using the
-   sender address's domain to pick a selector and a key to use)
  - sign/verify in the same program - although...
      - messages coming from within the organization should be signed
      - messages coming from outside should be verified
    having one program do both actions requires it to know which way the
    message is going, a decision I don't want to be responsible for
+ - use LMTP and/or unix sockets to filter mail (requested by Leif Bergman)
 
 DKIM support:
  - verifier
@@ -47,39 +38,8 @@ DKIM support:
        (i.e. look up the sender policy and apply)
      - allow more control over handling passing DKIM messages
        (i.e. use a pluggable reputation system)
-     - it may be possible to distinguish between a RSA sig. failure 
-       and a change in message digest... if so, it could be reported
-       in the verification results
-     - check public key "granularity"
-     - test public key variants
- - signer
-     - add t=, z= tags
-     - provide configurable way to add l= (length) tag
-     - provide configurable way to add i= (identity) tag
-     - provide configurable way to add x= (expiration) tag
-     - add header-wrapping to signature before signing
  - filters
      - determine way to indicate what headers should be removed
- - Mail::DKIM::Signature
-     - implement method for getting/setting the copied header fields (z=)
-       tag
- - Mail::DKIM::PublicKey
-     - remove dependence on Mail::DomainKeys::Key.pm
-     - add documentation
 
-DKIM testing:
- - test public key errors:
-   - DNS timeout
-   - NXDOMAIN
-   - SERVFAIL
-   - syntax error in public key record
- - test DNS timeout for signing policy
- - test signature options:
-   - unspecified query type
-   - query type of "dns/"
-   - bad query type
-   - bad algorithm
-   - unspecified algorithm
-   - bad canonicalization
-   - unspecified canonicalization
-   - test presence of version tag in signature
+Testing:
+ - test what happens if DNS is unavailable when fetching key or domain policy
