@@ -61,6 +61,7 @@ sub configure
 		return $self->SUPER::configure(@_);
 	}
 
+	%domains = ();
 	$self->SUPER::configure(@_);
 
 	#
@@ -68,13 +69,15 @@ sub configure
 	# any arguments that it recognized. So any remaining
 	# arguments in @ARGV should be for us.
 	#
+
+	$self->process_domain_args;
+
 	my $help;
 	GetOptions(
 			"reject-error" => \$reject_error,
 			"signature=s" => \$signature,
 			"keyfile=s" => \$keyfile,
 			"selector=s" => \$selector,
-			"domain=s" => \$domain_arg,
 			"method=s" => \$method,
 			"debugtrace=s" => \$debugtrace,
 			"daemonize" => \$self->{server}->{setsid},
@@ -98,10 +101,6 @@ sub configure
 	$self->{server}->{dest_host} = $dstaddr;
 	$self->{server}->{dest_port} = $dstport;
 
-	unless (grep { $signature eq $_ } qw(dkim domainkeys))
-	{
-		pod2usage("Error: invalid signature type specified");
-	}
 	unless (defined $keyfile)
 	{
 		pod2usage("Error: no keyfile specified");
@@ -110,31 +109,78 @@ sub configure
 	{
 		pod2usage("Error: cannot read keyfile $keyfile");
 	}
-	unless (defined $selector)
-	{
-		pod2usage("Error: selector not specified");
-	}
-	unless (defined $domain_arg)
+	unless (keys %domains)
 	{
 		pod2usage("Error: domain not specified");
 	}
-	%domains = map { lc($_) => {} } split(/,\s*/, $domain_arg);
-	# check method argument
-	if ($signature eq "dkim")
+	# check domain option arguments
+	foreach my $domain (keys %domains)
 	{
-		$method ||= "relaxed";
-		unless (grep { $method eq $_ } qw(simple relaxed nowsp))
+		foreach my $options (@{$domains{$domain}})
 		{
-			die "Error: invalid method $method\n";
+			$self->check_domain_options($domain, $options);
 		}
 	}
-	elsif ($signature eq "domainkeys")
+	use Data::Dumper;
+	print STDERR Dumper(\%domains);
+	exit;
+}
+
+sub process_domain_args
+{
+	my $self = shift;
+
+	# look for --domain arguments
+	my @args;
+	foreach my $arg (@ARGV)
 	{
-		$method ||= "nofws";
-		unless (grep { $method eq $_ } qw(simple nofws))
+		if ($arg =~ m/^(?:--)?(domain)=(.*)$/)
 		{
-			die "Error: invalid method $method\n";
+			$self->process_conf_option($1, $2);
 		}
+		else
+		{
+			push @args, $arg;
+		}
+	}
+	@ARGV = @args;
+}
+
+sub check_domain_options
+{
+	my $self = shift;
+	my ($domain, $options) = @_;
+
+	unless (defined $options->{s})
+	{
+		$options->{s} = $selector;
+		unless (defined $selector)
+		{
+			pod2usage("Error: selector not specified");
+		}
+	}
+	if ($options->{type} eq "dkim")
+	{
+		# check method argument
+		$options->{c} ||= $method || "relaxed";
+		unless (grep { $options->{c} eq $_ } qw(simple relaxed nowsp))
+		{
+			die "Error: invalid method $options->{c}\n";
+		}
+	}
+	elsif ($options->{type} eq "domainkeys")
+	{
+		# check method argument
+		$options->{c} ||= $method || "nofws";
+		unless (grep { $options->{c} eq $_ } qw(simple nofws))
+		{
+			die "Error: invalid method $options->{c}\n";
+		}
+	}
+	else
+	{
+		pod2usage("Error: invalid signature type $options->{type}"
+			. " for domain '$domain'");
 	}
 }
 
@@ -156,18 +202,7 @@ sub process_conf
 		or die "Error: cannot open $file: $!\n";
 	while (<$fh>)
 	{
-		if (/^\s*\[(.*)$/)
-		{
-			my $condition_text = $1;
-			$condition_text =~ s/\]\s*$//;
-			$self->process_conf_condition($condition_text);
-		}
-		elsif (/^\s*\+(.*)/)
-		{
-			my $signature_text = $1;
-			$self->process_conf_signature($signature_text);
-		}
-		elsif (m/^\s*((?:--)?\w+)(?:\s*[=:]\s*|\s+)(\S+)/)
+		if (m/^\s*((?:--)?\w+)(?:\s*[=:]\s*|\s+)(\S.*)/)
 		{
 			$self->process_conf_option($1, $2);
 		}
@@ -177,18 +212,46 @@ sub process_conf
 	$self->process_args( $self->{server}->{conf_file_args}, $template );
 }
 
-sub process_conf_condition
-{
-	my $self = shift;
-	my ($condition) = @_;
-
-}
-
 sub process_conf_option
 {
 	my $self = shift;
 	my ($name, $value) = @_;
-	push @{$self->{server}->{conf_file_args}}, "$name=$value";
+	if ($name eq "domain")
+	{
+		foreach my $arg1 (split /,\s*/, $value)
+		{
+			my ($domain, @rest) = split /\s+/, $arg1;
+			foreach my $r (@rest)
+			{
+				$self->process_domain_option($domain, $r);
+			}
+		}
+	}
+	else
+	{
+		push @{$self->{server}->{conf_file_args}}, "$name=$value";
+	}
+}
+
+sub process_domain_option
+{
+	my $self = shift;
+	my ($domain, $options_unparsed) = @_;
+	my $options = {};
+	foreach my $opt (split /\./, $options_unparsed)
+	{
+		my ($n, $v) = split /=/, $opt, 2;
+		$options->{lc $n} = $v;
+	}
+	$options->{type} ||= "dkim" if exists $options->{dkim};
+	$options->{type} ||= "domainkeys" if exists $options->{domainkeys};
+	$options->{type} ||= "domainkeys" if exists $options->{domainkey};
+	delete $options->{dkim};
+	delete $options->{domainkeys};
+	delete $options->{domainkey};
+
+	$domains{lc $domain} ||= [];
+	push @{$domains{lc $domain}}, $options;
 }
 
 sub setup_client_socket
@@ -326,12 +389,17 @@ sub apply
 				? (@$match) : ($match);
 			foreach my $signature_info (@signatures)
 			{
+				$signature_info->{type} = "dkim"
+					if ($signature_info->{dkim});
+				$signature_info->{type} = "domainkeys"
+					if ($signature_info->{domainkey}
+						|| $signature_info->{domainkeys});
 				$signature_info->{type} ||= $signature;
-				$signature_info->{algorithm} ||= $signer->algorithm;
-				$signature_info->{method} ||= $signer->method;
-				$signature_info->{selector} ||= $signer->selector;
-				$signature_info->{headers} ||= $signer->headers;
-				$signature_info->{domain} ||=
+				$signature_info->{a} ||= $signer->algorithm;
+				$signature_info->{c} ||= $signer->method;
+				$signature_info->{s} ||= $signer->selector;
+				$signature_info->{h} ||= $signer->headers;
+				$signature_info->{d} ||=
 					($domain eq "." ? $sender_domain : $domain);
 
 				my %signature_type_classes = (
@@ -345,11 +413,11 @@ sub apply
 				# construct a DKIM-Signature or DomainKey-Signature
 				$signer->add_signature(
 					$cls->new(
-						Algorithm => $signature_info->{algorithm},
-						Method => $signature_info->{method},
-						Headers => $signature_info->{headers},
-						Domain => $signature_info->{domain},
-						Selector => $signature_info->{selector},
+						Algorithm => $signature_info->{a},
+						Method => $signature_info->{c},
+						Headers => $signature_info->{h},
+						Domain => $signature_info->{d},
+						Selector => $signature_info->{s},
 						));
 			}
 			return;
