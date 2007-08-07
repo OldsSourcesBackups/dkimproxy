@@ -29,6 +29,7 @@ Possibly desired features:
      - messages coming from outside should be verified
    having one program do both actions requires it to know which way the
    message is going, a decision I don't want to be responsible for
+ - use LMTP and/or unix sockets to filter mail (requested by Leif Bergman)
 
 DKIM support:
  - verifier
