@@ -442,6 +442,7 @@ dkimproxy.out - SMTP proxy for adding DKIM signatures to email
   dkimproxy.out [options] --keyfile=FILENAME --selector=SELECTOR \
                  --domain=DOMAIN listen.addr:port talk.addr:port
     options:
+      --conf_file=FILENAME
       --signature=dkim|domainkeys
       --method=simple|nowsp|relaxed|nofws
       --reject-error
@@ -544,5 +545,12 @@ For example, if dkimproxy.out is started with:
 
 the proxy will listen on port 10027 and send the signed messages to
 some other SMTP service on port 10028.
+
+=head1 CONFIGURATION FILE
+
+Example configuration file:
+
+  domain example.org domainkeys s=postfix key=private.key h=* c=nofws
+  domain example.org dkim s=postfix key=private.key c=relaxed
 
 =cut
