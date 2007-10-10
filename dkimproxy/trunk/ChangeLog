@@ -1,3 +1,7 @@
+2007-10-10: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.in: experimenting with using a proper
+   "Authentication-Results" header
+
 2007-08-06: Jason Long <jlong@messiah.edu>
  * scripts/dkim_responder.pl: show both DKIM and DK policy results
  * configure.ac: allow perl lib directory to be specified

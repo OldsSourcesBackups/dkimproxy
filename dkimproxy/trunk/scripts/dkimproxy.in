@@ -188,6 +188,13 @@ sub handle_end_of_data
 
 	if ($dkim)
 	{
+		# output authentication results header
+		my $auth_results = join("; ",
+			map { "dkim=" . $_->result_detail
+				. " header.i=" . $_->identity } $dkim->signatures);
+		$client->write_data_line("Authentication-Results: $hostname; "
+			. $auth_results . "\015\012");
+
 		# output a psuedo authentication results header
 		$client->write_data_line("X-DKIM-Authentication-Results: "
 			. $dkim->result_detail . "\015\012");
