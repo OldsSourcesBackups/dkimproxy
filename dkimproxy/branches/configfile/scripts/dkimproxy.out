@@ -548,6 +548,43 @@ some other SMTP service on port 10028.
 
 =head1 CONFIGURATION FILE
 
+Backwards compatible... add a signature matching the sender domain for
+only select domains:
+
+  domain example.org,example.com
+  keyfile private.key
+  selector postfix
+  signature dkim
+
+equivalent to?
+
+  signature dkim
+  selector postfix
+  keyfile private.key
+  domain example.org
+  domain example.com
+
+Commonly requested feature #1... sign anything, always with the same domain
+
+  signature dkim d=example.com
+  domain *
+  selector postfix
+  keyfile private.key
+
+Commonly requested feature #2... add multiple signatures
+
+  signature dkim c=relaxed
+  signature domainkeys c=nofws
+  domain example.org,example.com
+
+Commonly requested feature #3... different signatures for different domains
+
+  domain example.com
+  signature dkim key=key1-private.key s=key1
+  %
+  domain example.org
+  signature dkim key=key2-private.key s=key2
+
 Example configuration file:
 
   domain example.org domainkeys s=postfix key=private.key h=* c=nofws
