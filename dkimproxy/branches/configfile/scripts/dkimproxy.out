@@ -553,4 +553,49 @@ Example configuration file:
   domain example.org domainkeys s=postfix key=private.key h=* c=nofws
   domain example.org dkim s=postfix key=private.key c=relaxed
 
+A different example:
+
+  :sender example.org
+  signature dkim
+
+  :sender example.com
+  signature domainkeys s=postfix key=private.key h=* c=nofws
+  signature dkim s=postfix key=private.key c=relaxed
+
+  :sender *
+  signature dkim d=example.com
+
+Another idea:
+
+  [example.org]
+  only-if-sender = example.org
+  domain = example.org
+
+  [example.com]
+  only-if-sender = example.com
+  domain = example.com
+  signature = domainkeys
+  next = example.com#2
+
+  [example.com#2]
+  only-if-sender = example.com
+  domain = example.com
+  signature = dkim
+
+Another idea:
+
+  :example.org
+  match-sender
+  signature dkim
+
+  :example.com
+  match-sender
+  signature 1,2
+
+  :1
+  signature dkim
+
+  :2
+  signature domainkeys
+
 =cut
