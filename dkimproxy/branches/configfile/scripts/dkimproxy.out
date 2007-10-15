@@ -37,14 +37,17 @@ eval "require Mail::DKIM::TextWrap";
 use constant DEFAULT_RELAY_PORT => 25;
 
 my $reject_error = 0;
-my $signature = "dkim";
-my $keyfile;
-my $selector;
-my $domain_arg;
-my $method;
 my $debugtrace = undef;
 my %domains;
 my $sender_mapfile;
+my @signature_arg;
+my $default_signature_options = {
+	key => undef,
+	selector => undef,
+	domain => undef,
+	method => undef,
+	algorithm => undef,
+	};
 
 use base "MySmtpProxyServer";
 main->run(
@@ -63,13 +66,14 @@ sub options
 	$template->{pidfile} = \$self->{server}->{pid_file};
 
 	$template->{"reject-error"} = \$reject_error;
-	$template->{keyfile} = \$keyfile;
-	$template->{selector} = \$selector;
-	$template->{method} = \$method;
-	$template->{signature} = \$signature;
-	$template->{debugtrace} = \$debugtrace;
-	$template->{domain} = \$domain_arg;
 	$template->{"sender-map"} = \$sender_mapfile;
+	$template->{debugtrace} = \$debugtrace;
+
+	$template->{signature} = \@signature_arg;
+	$template->{keyfile} = \$default_signature_options->{keyfile};
+	$template->{selector} = \$default_signature_options->{selector};
+	$template->{method} = \$default_signature_options->{method};
+	$template->{domain} = \$default_signature_options->{domain};
 
 	$template->{listen} = \$self->{server}->{listen};
 	$template->{relay} = \$self->{server}->{relay};
@@ -99,8 +103,6 @@ sub configure
 	# any arguments that it recognized. So any remaining
 	# arguments in @ARGV should be for us.
 	#
-
-#	$self->process_domain_args;
 
 	my $help;
 	GetOptions(
@@ -138,87 +140,104 @@ sub configure
 		pod2usage("Error: relay host was not specified");
 	}
 
-	unless (defined $keyfile)
+	unless (@signature_arg || defined($sender_mapfile))
 	{
-		pod2usage("Error: no keyfile specified");
+		# backwards-compatible... if no --signature argument,
+		# and no --sender-map argument, then we create a dkim signature
+		@signature_arg = ("dkim");
 	}
-	unless (-r $keyfile)
+
+	my $default_case = {};
+	foreach my $sig (@signature_arg)
 	{
-		pod2usage("Error: cannot read keyfile $keyfile");
+		my $options = parse_signature_options($sig);
+		$self->check_signature_options($options);
+		$default_case->{signatures} ||= [];
+		push @{$default_case->{signatures}}, $options;
 	}
-	unless (keys %domains)
+
+	if ($sender_mapfile)
 	{
-		pod2usage("Error: domain not specified");
-	}
-	# check domain option arguments
-	foreach my $domain (keys %domains)
-	{
-		foreach my $options (@{$domains{$domain}})
+		unless (-f $sender_mapfile)
 		{
-			$self->check_domain_options($domain, $options);
+			die "Error: $sender_mapfile: file not found\n";
 		}
 	}
-print STDERR "am I never here?\n";
-	use Data::Dumper;
-	print STDERR Dumper(\%domains);
-	exit;
 }
 
-sub process_domain_args
+sub parse_signature_options
 {
-	my $self = shift;
+	my ($options_str) = @_;
 
-	# look for --domain arguments
-	my @args;
-	foreach my $arg (@ARGV)
+	my $options = { %$default_signature_options };
+
+	my $orig_options_str = $options_str;
+	unless ($options_str =~ s/^(\w+)//)
 	{
-		if ($arg =~ m/^(?:--)?(domain)=(.*)$/)
+		die "invalid signature specifier: '$orig_options_str'\n";
+	}
+	$options->{signature} = $1;
+
+	if ($options_str =~ /^\((.*)\)$/)
+	{
+		my @opts = split /,\s*/, $1;
+		foreach my $opt (@opts)
 		{
-			$self->process_conf_option($1, $2);
-		}
-		else
-		{
-			push @args, $arg;
+			my ($n, $v) = split /=/, $opt, 2;
+			$options->{$n} = $v;
 		}
 	}
-	@ARGV = @args;
+	elsif ($options ne "")
+	{
+		die "invalid signature specifier: '$orig_options_str'\n";
+	}
+	return $options;
 }
 
-sub check_domain_options
+sub check_signature_options
 {
 	my $self = shift;
-	my ($domain, $options) = @_;
+	my ($options, $prefix) = @_;
 
-	unless (defined $options->{s})
+	$prefix ||= "Error";
+
+	unless (defined $options->{keyfile})
 	{
-		$options->{s} = $selector;
-		unless (defined $selector)
-		{
-			pod2usage("Error: selector not specified");
-		}
+		pod2usage("$prefix: no keyfile specified");
 	}
-	if ($options->{type} eq "dkim")
+	unless (-r $options->{keyfile})
+	{
+		pod2usage("$prefix: cannot read keyfile $options->{keyfile}");
+	}
+	unless ($options->{domain})
+	{
+		pod2usage("$prefix: domain not specified");
+	}
+	unless (defined $options->{selector})
+	{
+		pod2usage("$prefix: selector not specified");
+	}
+	if ($options->{signature} eq "dkim")
 	{
 		# check method argument
-		$options->{c} ||= $method || "relaxed";
-		unless (grep { $options->{c} eq $_ } qw(simple relaxed nowsp))
+		$options->{method} ||= "relaxed";
+		unless (grep { $options->{method} eq $_ } qw(simple relaxed nowsp))
 		{
-			die "Error: invalid method $options->{c}\n";
+			pod2usage("$prefix: invalid method $options->{method}");
 		}
 	}
-	elsif ($options->{type} eq "domainkeys")
+	elsif ($options->{signature} eq "domainkeys")
 	{
 		# check method argument
-		$options->{c} ||= $method || "nofws";
-		unless (grep { $options->{c} eq $_ } qw(simple nofws))
+		$options->{method} ||= "nofws";
+		unless (grep { $options->{method} eq $_ } qw(simple nofws))
 		{
-			die "Error: invalid method $options->{c}\n";
+			pod2usage("$prefix: invalid method $options->{method}");
 		}
 	}
 	else
 	{
-		pod2usage("Error: invalid signature type $options->{type}"
-			. " for domain '$domain'");
+		pod2usage("$prefix: invalid signature type $options->{signature}");
 	}
 }
 
@@ -254,42 +273,7 @@ sub process_conf_option
 {
 	my $self = shift;
 	my ($name, $value) = @_;
-	if ($name eq "domain")
-	{
-		foreach my $arg1 (split /,\s*/, $value)
-		{
-			my ($domain, @rest) = split /\s+/, $arg1;
-			foreach my $r (@rest)
-			{
-				$self->process_domain_option($domain, $r);
-			}
-		}
-	}
-	else
-	{
 		push @{$self->{server}->{conf_file_args}}, "$name=$value";
-	}
-}
-
-sub process_domain_option
-{
-	my $self = shift;
-	my ($domain, $options_unparsed) = @_;
-	my $options = {};
-	foreach my $opt (split /\./, $options_unparsed)
-	{
-		my ($n, $v) = split /=/, $opt, 2;
-		$options->{lc $n} = $v;
-	}
-	$options->{type} ||= "dkim" if exists $options->{dkim};
-	$options->{type} ||= "domainkeys" if exists $options->{domainkeys};
-	$options->{type} ||= "domainkeys" if exists $options->{domainkey};
-	delete $options->{dkim};
-	delete $options->{domainkeys};
-	delete $options->{domainkey};
-
-	$domains{lc $domain} ||= [];
-	push @{$domains{lc $domain}}, $options;
 }
 
 sub setup_client_socket
@@ -342,10 +326,10 @@ sub handle_end_of_data
 	eval
 	{
 		$dkim = Mail::DKIM::Signer->new(
-				Policy => "MySignerPolicy",
-				KeyFile => $keyfile,
-				Method => $method,
-				Selector => $selector,
+				Policy => \&signer_policy,
+				KeyFile => $default_signature_options->{keyfile},
+				Method => $default_signature_options->{method},
+				Selector => $default_signature_options->{selector},
 			);
 
 		$dkim->load($fh);
@@ -405,15 +389,12 @@ sub handle_end_of_data
 	return 1;
 }
 
-package MySignerPolicy;
-use Mail::DKIM::SignerPolicy;
-use base "Mail::DKIM::SignerPolicy";
 use Mail::DKIM::Signature;
 use Mail::DKIM::DkSignature;
 
-sub apply
+sub signer_policy
 {
-	my ($self, $signer) = @_;
+	my ($signer) = @_;
 
 	# determine what signatures to add based on the domain of the
 	# "sender" of this message
@@ -432,7 +413,7 @@ sub apply
 				$signature_info->{type} = "domainkeys"
 					if ($signature_info->{domainkey}
 						|| $signature_info->{domainkeys});
-				$signature_info->{type} ||= $signature;
+				$signature_info->{type} ||= $default_signature_options->{signature};
 				$signature_info->{a} ||= $signer->algorithm;
 				$signature_info->{c} ||= $signer->method;
 				$signature_info->{s} ||= $signer->selector;
