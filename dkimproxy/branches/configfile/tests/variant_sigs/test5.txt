@@ -1,8 +1,0 @@
-X-Comment: DKIM-Signature header name is case insensitive
-dkim-signature: a=rsa-sha1; c=simple; d=messiah.edu; h=from:to:subject:message-id; q=dns; s=selector1; b=ul4zJ5Ijrpy9NPtqi6GlGDLR6k3R/xHSMohY9fi7JnFo3Zr5g95681hbo3A/AlNlQ44ficief0knW+2FQU9/CAgVIhgh+Ou8CjTN4h06KlUfSwpuRO6YQVQQZtJMNNJsfshc8uoTZ6qY8L3z55QW+3Nbmd8Aj2Zdog69ax+Kua4=
-From: Jason Long <jlong@messiah.edu>
-To: Nobody <nobody@messiah.edu>
-Subject: dkim test
-Message-ID: <20051205083900@test.messiah.edu>
-
-This is a test

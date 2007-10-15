@@ -1,8 +1,0 @@
-X-Comment: d= tag contains nonexistent domain
-DKIM-Signature: a=rsa-sha1; c=simple; d=abc.invalid; h=from:to:subject:message-id; q=dns; s=selector1; b=J3TF1fpneHDSvZy36gHY76e0BjZCO51RrXZO21TB/1YBpVCDvPUjnq/Y7HCqcrCnLQv3TMZjY7BoR426fTPNLIuWiJUrap5pYgV74UpUgFu1xipicTIXTU2hZOokFTqSYoFG0RCg+Gr+IA+JFc9JIlwAbCXYrowjf9kCuH9Waq4=
-From: Jason Long <jlong@messiah.edu>
-To: Nobody <nobody@messiah.edu>
-Subject: dkim test
-Message-ID: <20051205083900@test.messiah.edu>
-
-This is a test

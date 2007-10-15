@@ -20,8 +20,4 @@ AC_OUTPUT([
 	lib/MSDW/Makefile
 	lib/MSDW/SMTP/Makefile
 	scripts/Makefile
-	tests/Makefile
-	tests/can/Makefile
-	tests/variant_keys/Makefile
-	tests/variant_sigs/Makefile
 	])

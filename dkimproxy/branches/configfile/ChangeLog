@@ -3,6 +3,10 @@
    let Net::Server process dkimproxy's arguments (so they can be specified
    in a configuration file)
 
+2007-10-15: Jason Long <jlong@messiah.edu>
+ * tests: removed the tests subdirectory (this is stuff that was here
+   before the Mail-DKIM/dkimproxy split)
+
 2007-10-10: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.in: experimenting with using a proper
    "Authentication-Results" header

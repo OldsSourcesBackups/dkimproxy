@@ -1,8 +1,0 @@
-X-Comment: signature without b= tag is invalid
-DKIM-Signature: a=rsa-sha1; c=simple; d=messiah.edu; h=from:to:subject:message-id; q=dns; s=selector1
-From: Jason Long <jlong@messiah.edu>
-To: Nobody <nobody@messiah.edu>
-Subject: dkim test
-Message-ID: <20051205083900@test.messiah.edu>
-
-This is a test
