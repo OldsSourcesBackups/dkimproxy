@@ -48,6 +48,23 @@ main->run(
 		server_type => "PreFork",
 	);
 
+sub options
+{
+	my $self = shift;
+	my ($template) = @_;
+
+	# compatibility arguments (older versions of dkimproxy)
+	$template->{daemonize} = \$self->{server}->{setsid};
+	$template->{pidfile} = \$self->{server}->{pid_file};
+
+	$template->{"reject-error"} = \$reject_error;
+	$template->{keyfile} = \$keyfile;
+	$template->{selector} = \$selector;
+	$template->{method} = \$method;
+	$template->{signature} = \$signature;
+	$template->{debugtrace} => \$debugtrace;
+}
+
 sub configure
 {
 	my $self = shift;
@@ -74,14 +91,6 @@ sub configure
 
 	my $help;
 	GetOptions(
-			"reject-error" => \$reject_error,
-			"signature=s" => \$signature,
-			"keyfile=s" => \$keyfile,
-			"selector=s" => \$selector,
-			"method=s" => \$method,
-			"debugtrace=s" => \$debugtrace,
-			"daemonize" => \$self->{server}->{setsid},
-			"pidfile=s" => \$self->{server}->{pid_file},
 			"help|?" => \$help)
 		or pod2usage(2);
 	pod2usage(1) if $help;
@@ -513,12 +522,25 @@ will be allowed to pass through without having a signature added.
 This is a required argument. Use it to specify the name of the key
 selector.
 
+=item B<--sender-map=FILENAME>
+
+If specified, the named file provides signature parameters depending
+on what sender is found in the message. See the section below titled
+"SENDER MAP FILE".
+
 =item B<--signature=dkim|domainkeys>
 
 This specifies what type of signature to add. Use C<dkim> to sign with
 IETF-standardized DKIM signatures. Use C<domainkeys> to sign with
 the older, but more common, Yahoo! DomainKeys signatures.
 The default is C<dkim>.
+
+This parameter can be specified more than once to add more than one
+signature to the message. In addition, per-signature parameters can be
+specified by enclosing the options in paranthesis after the signature
+type, e.g.
+
+  --signature=dkim(c=relaxed,key=private.key)
 
 =item B<--user=USER>
 
@@ -548,113 +570,37 @@ some other SMTP service on port 10028.
 
 =head1 CONFIGURATION FILE
 
-Backwards compatible... add a signature matching the sender domain for
-only select domains:
+Parameters can be stored in a separate file instead of specifying
+them all on the command-line. Use the conf_file option to specify
+the path to the configuration file, e.g.
 
+  dkimproxy.out --conf_file=/etc/dkimproxy_out.conf
+
+The format of the configuration file is one option per line:
+name of the option, space, then the value of the option. E.g.
+
+  # this is an example config file
   domain example.org,example.com
   keyfile private.key
   selector postfix
   signature dkim
 
-equivalent to?
+equivalent to
 
-  signature dkim
-  selector postfix
-  keyfile private.key
-  domain example.org
-  domain example.com
+  dkimproxy.out --domain=example.org,example.com --keyfile=private.key \
+                --selector=postfix --signature=dkim
 
-Commonly requested feature #1... sign anything, always with the same domain
+=head1 SENDER MAP FILE
 
-  signature dkim d=example.com
-  domain *
-  selector postfix
-  keyfile private.key
+If you want to use different signature properties depending on the
+sender of the message being signed, use a "sender map file". This
+is a lookup file containing sender email addresses on the left
+and signature properties on the right. E.g.
 
-Commonly requested feature #2... add multiple signatures
+  # sign my mail with a EXAMPLE.COM dkim signature
+  jason@long.name  dkim(d=example.com)
 
-  signature dkim c=relaxed
-  signature domainkeys c=nofws
-  domain example.org,example.com
-
-Commonly requested feature #3... different signatures for different domains
-
-  domain example.com
-  signature dkim key=key1-private.key s=key1
-  %
-  domain example.org
-  signature dkim key=key2-private.key s=key2
-
-What about
-
-  sender-map sender_map_file
-
-sender_map_file:
-
-  messiah.edu dkim(c=relaxed) domainkeys(c=nofws)
-  example.org dkim(c=relaxed)
-  example.com domainkeys(c=nofws)
-
-I like this, but this type of syntax wouldn't work on the command-line.
-That is, if I want to tack on multiple signatures to each message,
-but always use the same config no matter the sender, do I really need
-to use a paramter called "sender-map"?
-
-sender_map_file:
-
-  messiah.edu type=multi type1=dkim c1=relaxed type2=domainkeys c2=nofws
-
-This syntax would work on the command-line (maybe), but it's not
-as straight-forward.
-
-Example configuration file:
-
-  domain example.org domainkeys s=postfix key=private.key h=* c=nofws
-  domain example.org dkim s=postfix key=private.key c=relaxed
-
-A different example:
-
-  :sender example.org
-  signature dkim
-
-  :sender example.com
-  signature domainkeys s=postfix key=private.key h=* c=nofws
-  signature dkim s=postfix key=private.key c=relaxed
-
-  :sender *
-  signature dkim d=example.com
-
-Another idea:
-
-  [example.org]
-  only-if-sender = example.org
-  domain = example.org
-
-  [example.com]
-  only-if-sender = example.com
-  domain = example.com
-  signature = domainkeys
-  next = example.com#2
-
-  [example.com#2]
-  only-if-sender = example.com
-  domain = example.com
-  signature = dkim
-
-Another idea:
-
-  :example.org
-  match-sender
-  signature dkim
-
-  :example.com
-  match-sender
-  signature 1,2
-
-  :1
-  signature dkim
-
-  :2
-  signature domainkeys
+  # sign EXAMPLE.ORG mail with both a domainkeys and dkim signature
+  example.org      dkim(c=relaxed), domainkeys(c=nofws)
 
 =cut

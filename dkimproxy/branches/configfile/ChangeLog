@@ -1,3 +1,8 @@
+2007-10-15: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: document how configuration will be done;
+   let Net::Server process dkimproxy's arguments (so they can be specified
+   in a configuration file)
+
 2007-10-10: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.in: experimenting with using a proper
    "Authentication-Results" header
