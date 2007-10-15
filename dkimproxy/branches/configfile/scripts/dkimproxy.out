@@ -537,8 +537,8 @@ The default is C<dkim>.
 
 This parameter can be specified more than once to add more than one
 signature to the message. In addition, per-signature parameters can be
-specified by enclosing the options in paranthesis after the signature
-type, e.g.
+specified by enclosing the comma-separated options in parenthesis after
+the signature type, e.g.
 
   --signature=dkim(c=relaxed,key=private.key)
 
