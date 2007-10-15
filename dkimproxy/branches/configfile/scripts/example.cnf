@@ -4,3 +4,4 @@ signature domainkeys(c=nofws)
 keyfile   private.key
 listen    127.0.0.1:10035
 relay     127.0.0.1:10036
+selector  postfix
