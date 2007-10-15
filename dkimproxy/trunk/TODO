@@ -22,6 +22,8 @@ Desired features:
    sender address's domain to pick signature attributes to use)
  - document use of min_servers and max_servers options on help page
  - perform fewer passes over the message data
+ - alert the client if unable to connect to the relay server
+   (syslog, a 450 greeting, etc)
 
 Possibly desired features:
  - sign/verify in the same program - although...
