@@ -585,6 +585,28 @@ Commonly requested feature #3... different signatures for different domains
   domain example.org
   signature dkim key=key2-private.key s=key2
 
+What about
+
+  sender-map sender_map_file
+
+sender_map_file:
+
+  messiah.edu dkim(c=relaxed) domainkeys(c=nofws)
+  example.org dkim(c=relaxed)
+  example.com domainkeys(c=nofws)
+
+I like this, but this type of syntax wouldn't work on the command-line.
+That is, if I want to tack on multiple signatures to each message,
+but always use the same config no matter the sender, do I really need
+to use a paramter called "sender-map"?
+
+sender_map_file:
+
+  messiah.edu type=multi type1=dkim c1=relaxed type2=domainkeys c2=nofws
+
+This syntax would work on the command-line (maybe), but it's not
+as straight-forward.
+
 Example configuration file:
 
   domain example.org domainkeys s=postfix key=private.key h=* c=nofws

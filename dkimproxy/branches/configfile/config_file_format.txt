@@ -22,6 +22,11 @@ Use cases
      a DKIM apple.example signature, and
      sign messages with From/Sender of "bat.example" with
      a DKIM bat.example signature
+	 using same parameters (except for domain)
+ - configuration per domain
+     depending on the sender domain, use a different config
+	 some domains get multiple signatures, some only one, some
+	 none at all
  - global
      sign all messages, no matter the From/Sender, with messiah.edu
 	 signature
