@@ -1,8 +1,0 @@
-X-Comment: tests whitespace within h= tag
-DKIM-Signature: a=rsa-sha1; c=simple; d=messiah.edu; h=from : to : subject : message-id; q=dns; s=selector1; b=Db567G70s0K5FMxNSsuXZKSD74WvBWmQcGfgd/EBUqMzVmxmdDkS+LQ6wz5fZ5x7Aiu4ydV/zqtaoktf11VOUNXMoy8CPos1CZto9rzvAC5SNHU7Ra5SaB8BYsFZdJJxaEhBDa2ZI0Hu6/xp8/HPT3BUlAsmm9jEYhJ2J1caky0=
-From: Jason Long <jlong@messiah.edu>
-To: Nobody <nobody@messiah.edu>
-Subject: dkim test
-Message-ID: <20051205083900@test.messiah.edu>
-
-This is a test

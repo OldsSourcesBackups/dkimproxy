@@ -1,4 +1,4 @@
-SUBDIRS = lib scripts tests
+SUBDIRS = lib scripts
 
 EXTRA_DIST = \
 	TODO \

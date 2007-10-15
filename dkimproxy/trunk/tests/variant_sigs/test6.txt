@@ -1,7 +1,0 @@
-DKIM-Signature: a=rsa-sha1; c=simple; d=MESSIAH.EDU; h=from:to:subject:message-id; q=dns; s=SELECTOR1; b=ndAaJ4IEzz9zE+FRzJAq2gTIuJQPhMtqwwxXnRsJhUXKoMAx421RH8SlO8I/dEo7+Jksm02kWJruYw/mrzo4D/8uGZ3R7dJ3PDPqytMMmZz6kLbEJQsWPNSMa5SjQ3R7uNMnMpXAoejPzvp+IFaA1vV6xqMlo5Af3zgknKDMUng=
-From: Jason Long <jlong@messiah.edu>
-To: Nobody <nobody@messiah.edu>
-Subject: dkim test
-Message-ID: <20051205083900@test.messiah.edu>
-
-This is a test

@@ -1,8 +1,0 @@
-X-Comment: tests different order of tags
-DKIM-Signature: s=selector1; b=NhkpdgIzyUht3DzzIoAYNKHKI6anoomviBY91K+az4y3pzOZ8y4SXGjpbhEV9R3AxZKR21gHko6hIx6h6DSM2Q+ZuRko62W7+wKhkAP8XldLM1ZXqpdyXdRadmUEl/qLLt6CgE99aAGdvcFwJ7PrHJN4y7X7H+e/JOV6LE+0W5g=; h=from:to:subject:message-id; q=dns; d=messiah.edu; a=rsa-sha1; c=simple
-From: Jason Long <jlong@messiah.edu>
-To: Nobody <nobody@messiah.edu>
-Subject: dkim test
-Message-ID: <20051205083900@test.messiah.edu>
-
-This is a test
