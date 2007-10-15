@@ -10,6 +10,9 @@
  * scripts/dkimproxy.out: implement signature options parsing;
    default signature parameters are now stored in an object, instead of
    individual global variables; cleanup of some previous configfile trials
+ * scripts/dkimproxy.out: implement lookup logic for sender map;
+   (get_signature_options): new method to determine what signatures
+   will get added to the message
 
 2007-10-15: Jason Long <jlong@messiah.edu>
  * tests: removed the tests subdirectory (this is stuff that was here

@@ -48,6 +48,7 @@ my $default_signature_options = {
 	method => undef,
 	algorithm => undef,
 	};
+my @default_signatures;
 
 use base "MySmtpProxyServer";
 main->run(
@@ -147,13 +148,11 @@ sub configure
 		@signature_arg = ("dkim");
 	}
 
-	my $default_case = {};
 	foreach my $sig (@signature_arg)
 	{
 		my $options = parse_signature_options($sig);
 		$self->check_signature_options($options);
-		$default_case->{signatures} ||= [];
-		push @{$default_case->{signatures}}, $options;
+		push @default_signatures, $options;
 	}
 
 	if ($sender_mapfile)
@@ -392,62 +391,129 @@ sub handle_end_of_data
 use Mail::DKIM::Signature;
 use Mail::DKIM::DkSignature;
 
+sub lookup_address
+{
+	my ($mapfile, $address) = @_;
+
+	$address = lc $address;
+	my $result = lookup($mapfile, $address);
+	return $result if defined $result;
+
+	if ($address =~ s/\+(.*)\@//)
+	{
+		# local part of address has a extension, lookup same
+		# address without extension
+		# e.g. jason+extra@long.name => jason@long.name
+		$result = lookup($mapfile, $address);
+		return $result if defined $result;
+	}
+
+	if ($address =~ s/^(.*)\@//)
+	{
+		# lookup just the domain of the address
+		$result = lookup($mapfile, $address);
+		return $result if defined $result;
+	}
+	while ($address =~ s/^([^.]+\.)//)
+	{
+		# domain has at least two parts, try again with
+		# the first part removed
+		$result = lookup($mapfile, $address);
+		return $result if defined $result;
+	}
+	$address = ".";
+	$result = lookup($mapfile, $address);
+	return $result if defined $result;
+}
+
+sub lookup
+{
+	my ($mapfile, $key) = @_;
+
+	open my $fh, "<", $mapfile
+		or die "Error: cannot read $mapfile: $!\n";
+	while (<$fh>)
+	{
+		chomp;
+		next if /^\s*$/;
+		next if /^\s*[#;]/;
+		if (/^(\S+)\s+(.*)$/)
+		{
+			return $2 if ($1 eq $key)
+		}
+	}
+	close $fh;
+	return;
+}
+
+# split the result by commas, but not commas within
+# parenthesis
+sub split_by_commas
+{
+	my $orig_str = shift;
+	my $left = $orig_str . ",";
+
+	my @result = ();
+	while ($left =~ s/^((?:[^,(]+|\(.*?\))*),//)
+	{
+		my $found = $1;
+		$found =~ s/^\s+//;
+		$found =~ s/\s+$//;
+		push @result, $found if length($found);
+	}
+	if ($left ne ",")
+	{
+		die "invalid result list: '$orig_str'\n";
+	}
+	return @result;
+}
+
+sub get_signature_options
+{
+	my $signer = shift;
+
+	if ($sender_mapfile)
+	{
+		# determine what signatures to add based on the domain of the
+		# "sender" of this message
+		my $sender = lc $signer->message_sender->address;
+		my $result = lookup_address($sender_mapfile, $sender);
+		if (defined $result)
+		{
+			my @result = split_by_commas($result);
+			return map { parse_signature_options($_) } @result;
+		}
+	}
+
+	return @default_signatures;
+}
+
 sub signer_policy
 {
 	my ($signer) = @_;
 
-	# determine what signatures to add based on the domain of the
-	# "sender" of this message
-	my $sender_domain = lc $signer->message_sender->host;
-	my $domain = $sender_domain;
-	while ($domain)
+	my @signatures = get_signature_options($signer);
+	foreach my $signature_info (@signatures)
 	{
-		if (my $match = $domains{lc $domain})
-		{
-			my @signatures = UNIVERSAL::isa($match, "ARRAY")
-				? (@$match) : ($match);
-			foreach my $signature_info (@signatures)
-			{
-				$signature_info->{type} = "dkim"
-					if ($signature_info->{dkim});
-				$signature_info->{type} = "domainkeys"
-					if ($signature_info->{domainkey}
-						|| $signature_info->{domainkeys});
-				$signature_info->{type} ||= $default_signature_options->{signature};
-				$signature_info->{a} ||= $signer->algorithm;
-				$signature_info->{c} ||= $signer->method;
-				$signature_info->{s} ||= $signer->selector;
-				$signature_info->{h} ||= $signer->headers;
-				$signature_info->{d} ||=
-					($domain eq "." ? $sender_domain : $domain);
+		my %signature_type_classes = (
+			dkim => "Mail::DKIM::Signature",
+			domainkeys => "Mail::DKIM::DkSignature",
+			);
+		my $cls = $signature_type_classes{$signature_info->{type}}
+			or die "unrecognized signature type: "
+				. $signature_info->{type} . "\n";
 
-				my %signature_type_classes = (
-					dkim => "Mail::DKIM::Signature",
-					domainkeys => "Mail::DKIM::DkSignature",
-					);
-				my $cls = $signature_type_classes{$signature_info->{type}}
-					or die "unrecognized signature type: "
-						. $signature_info->{type} . "\n";
-
-				# construct a DKIM-Signature or DomainKey-Signature
-				$signer->add_signature(
-					$cls->new(
-						Algorithm => $signature_info->{a},
-						Method => $signature_info->{c},
-						Headers => $signature_info->{h},
-						Domain => $signature_info->{d},
-						Selector => $signature_info->{s},
-						));
-			}
-			return;
-		}
-		# try the parent domain
-		(undef, $domain) = split(/\./, $domain, 2);
-		$domain ||= ".";
+		# construct a DKIM-Signature or DomainKey-Signature
+		$signer->add_signature(
+			$cls->new(
+				Algorithm => $signature_info->{a},
+				Method => $signature_info->{c},
+				Headers => $signature_info->{h},
+				Domain => $signature_info->{d},
+				Selector => $signature_info->{s},
+				));
 	}
-
-	# unable to match a sender domain
-	return undef;
+	return;
 }
 
 __END__
