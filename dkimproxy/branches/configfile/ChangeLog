@@ -2,6 +2,10 @@
  * scripts/dkimproxy.out: document how configuration will be done;
    let Net::Server process dkimproxy's arguments (so they can be specified
    in a configuration file)
+ * scripts/dkimproxy.out (options): fix bug where server_type parameter
+   was getting ignored;
+   allow listen address and relay address to be specified as options;
+   dest_host and dest_port are now stored as relay_host and relay_port
 
 2007-10-15: Jason Long <jlong@messiah.edu>
  * tests: removed the tests subdirectory (this is stuff that was here

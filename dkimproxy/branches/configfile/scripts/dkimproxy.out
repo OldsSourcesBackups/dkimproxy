@@ -34,6 +34,8 @@ use MySmtpServer;
 #enable support for "pretty" signatures, if available
 eval "require Mail::DKIM::TextWrap";
 
+use constant DEFAULT_RELAY_PORT => 25;
+
 my $reject_error = 0;
 my $signature = "dkim";
 my $keyfile;
@@ -42,6 +44,7 @@ my $domain_arg;
 my $method;
 my $debugtrace = undef;
 my %domains;
+my $sender_mapfile;
 
 use base "MySmtpProxyServer";
 main->run(
@@ -53,6 +56,8 @@ sub options
 	my $self = shift;
 	my ($template) = @_;
 
+	$self->SUPER::options(@_);
+
 	# compatibility arguments (older versions of dkimproxy)
 	$template->{daemonize} = \$self->{server}->{setsid};
 	$template->{pidfile} = \$self->{server}->{pid_file};
@@ -62,7 +67,14 @@ sub options
 	$template->{selector} = \$selector;
 	$template->{method} = \$method;
 	$template->{signature} = \$signature;
-	$template->{debugtrace} => \$debugtrace;
+	$template->{debugtrace} = \$debugtrace;
+	$template->{domain} = \$domain_arg;
+	$template->{"sender-map"} = \$sender_mapfile;
+
+	$template->{listen} = \$self->{server}->{listen};
+	$template->{relay} = \$self->{server}->{relay};
+	$template->{relay_host} = \$self->{server}->{relay_host};
+	$template->{relay_port} = \$self->{server}->{relay_port};
 }
 
 sub configure
@@ -79,6 +91,7 @@ sub configure
 	}
 
 	%domains = ();
+
 	$self->SUPER::configure(@_);
 
 	#
@@ -87,7 +100,7 @@ sub configure
 	# arguments in @ARGV should be for us.
 	#
 
-	$self->process_domain_args;
+#	$self->process_domain_args;
 
 	my $help;
 	GetOptions(
@@ -95,20 +108,35 @@ sub configure
 		or pod2usage(2);
 	pod2usage(1) if $help;
 
-	pod2usage("Error: wrong number of arguments")
-		unless @ARGV == 2;
-
-	my ($srcaddr, $srcport) = split /:/, $ARGV[0];
-	my ($dstaddr, $dstport) = split /:/, $ARGV[1];
-	unless (defined($srcport) and defined($dstport))
+	if (@ARGV == 2)
 	{
-		pod2usage("Error: source or destination port is missing");
+		$self->{server}->{listen} = shift @ARGV;
+		$self->{server}->{relay} = shift @ARGV;
+	}
+	pod2usage("Error: wrong number of arguments")
+		unless @ARGV == 0;
+
+	if (my $tmp = $self->{server}->{listen})
+	{
+		my ($host, $port) = split /:/, $tmp, 2;
+		$self->{server}->{host} = $host;
+		$self->{server}->{port} = $port;
+	}
+	if (my $tmp = $self->{server}->{relay})
+	{
+		my ($host, $port) = split /:/, $tmp, 2;
+		$self->{server}->{relay_host} = $host;
+		$self->{server}->{relay_port} = $port || DEFAULT_RELAY_PORT;
 	}
 
-	$self->{server}->{host} = $srcaddr;
-	$self->{server}->{port} = $srcport;
-	$self->{server}->{dest_host} = $dstaddr;
-	$self->{server}->{dest_port} = $dstport;
+	if (not defined $self->{server}->{port})
+	{
+		pod2usage("Error: listening port was not specified");
+	}
+	if (not defined $self->{server}->{relay_host})
+	{
+		pod2usage("Error: relay host was not specified");
+	}
 
 	unless (defined $keyfile)
 	{
@@ -130,6 +158,7 @@ sub configure
 			$self->check_domain_options($domain, $options);
 		}
 	}
+print STDERR "am I never here?\n";
 	use Data::Dumper;
 	print STDERR Dumper(\%domains);
 	exit;
@@ -270,8 +299,8 @@ sub setup_client_socket
 	# create an object for sending the outgoing SMTP commands
 	#  (and the signed message)
     my $client = MSDW::SMTP::Client->new(
-			interface => $self->{server}->{dest_host},
-			port => $self->{server}->{dest_port});
+			interface => $self->{server}->{relay_host},
+			port => $self->{server}->{relay_port});
 	return $client;
 }
 
