@@ -37,17 +37,14 @@ eval "require Mail::DKIM::TextWrap";
 use constant DEFAULT_RELAY_PORT => 25;
 
 my $reject_error = 0;
-my $debugtrace = undef;
-my %domains;
-my $sender_mapfile;
 my @signature_arg;
-my $default_signature_options = {
-	key => undef,
-	selector => undef,
-	domain => undef,
-	method => undef,
-	algorithm => undef,
-	};
+my $keyfile;
+my $selector;
+my $domain_arg;
+my $method;
+my $debugtrace = undef;
+my $sender_mapfile;
+
 my @default_signatures;
 
 use base "MySmtpProxyServer";
@@ -71,10 +68,10 @@ sub options
 	$template->{debugtrace} = \$debugtrace;
 
 	$template->{signature} = \@signature_arg;
-	$template->{keyfile} = \$default_signature_options->{keyfile};
-	$template->{selector} = \$default_signature_options->{selector};
-	$template->{method} = \$default_signature_options->{method};
-	$template->{domain} = \$default_signature_options->{domain};
+	$template->{keyfile} = \$keyfile;
+	$template->{selector} = \$selector;
+	$template->{method} = \$method;
+	$template->{domain} = \$domain_arg;
 
 	$template->{listen} = \$self->{server}->{listen};
 	$template->{relay} = \$self->{server}->{relay};
@@ -95,8 +92,6 @@ sub configure
 		return $self->SUPER::configure(@_);
 	}
 
-	%domains = ();
-
 	$self->SUPER::configure(@_);
 
 	#
@@ -104,7 +99,6 @@ sub configure
 	# any arguments that it recognized. So any remaining
 	# arguments in @ARGV should be for us.
 	#
-
 	my $help;
 	GetOptions(
 			"help|?" => \$help)
@@ -168,7 +162,12 @@ sub parse_signature_options
 {
 	my ($options_str) = @_;
 
-	my $options = { %$default_signature_options };
+	my $options = {
+		keyfile => $keyfile,
+		selector => $selector,
+		domain => $domain_arg,
+		method => $method,
+		};
 
 	my $orig_options_str = $options_str;
 	unless ($options_str =~ s/^(\w+)//)
@@ -240,41 +239,6 @@ sub check_signature_options
 	}
 }
 
-#overrides Net::Server
-sub process_conf
-{
-	my $self = shift;
-	my ($file, $template) = @_;
-
-	return unless $file;
-
-	# check filename
-    $file =~ m|^([\w\.\-\/\\\:]+)$|
-		or $self->fatal("Unsecure filename \"$file\"");
-
-	$self->{server}->{conf_file_args} = [];
-
-	open my $fh, "<", $file
-		or die "Error: cannot open $file: $!\n";
-	while (<$fh>)
-	{
-		if (m/^\s*((?:--)?\w+)(?:\s*[=:]\s*|\s+)(\S.*)/)
-		{
-			$self->process_conf_option($1, $2);
-		}
-	}
-	close $fh;
-
-	$self->process_args( $self->{server}->{conf_file_args}, $template );
-}
-
-sub process_conf_option
-{
-	my $self = shift;
-	my ($name, $value) = @_;
-		push @{$self->{server}->{conf_file_args}}, "$name=$value";
-}
-
 sub setup_client_socket
 {
 	my $self = shift;
@@ -326,9 +290,9 @@ sub handle_end_of_data
 	{
 		$dkim = Mail::DKIM::Signer->new(
 				Policy => \&signer_policy,
-				KeyFile => $default_signature_options->{keyfile},
-				Method => $default_signature_options->{method},
-				Selector => $default_signature_options->{selector},
+				KeyFile => $keyfile,
+				Method => $method,
+				Selector => $selector,
 			);
 
 		$dkim->load($fh);

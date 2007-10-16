@@ -13,6 +13,7 @@
  * scripts/dkimproxy.out: implement lookup logic for sender map;
    (get_signature_options): new method to determine what signatures
    will get added to the message
+ * scripts/dkimproxy.out: some general cleanup of configfile-type changes
 
 2007-10-15: Jason Long <jlong@messiah.edu>
  * tests: removed the tests subdirectory (this is stuff that was here
