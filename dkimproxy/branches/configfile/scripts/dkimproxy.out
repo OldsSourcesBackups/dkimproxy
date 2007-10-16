@@ -457,25 +457,25 @@ sub signer_policy
 	my ($signer) = @_;
 
 	my @signatures = get_signature_options($signer);
-	foreach my $signature_info (@signatures)
+	foreach my $options (@signatures)
 	{
 		my %signature_type_classes = (
 			dkim => "Mail::DKIM::Signature",
 			domainkeys => "Mail::DKIM::DkSignature",
 			);
-		my $cls = $signature_type_classes{$signature_info->{type}}
-			or die "unrecognized signature type: "
-				. $signature_info->{type} . "\n";
+		my $cls = $signature_type_classes{$options->{signature}}
+			or die "unrecognized signature type: $options->{signature}\n";
 
 		# construct a DKIM-Signature or DomainKey-Signature
-		$signer->add_signature(
-			$cls->new(
-				Algorithm => $signature_info->{a},
-				Method => $signature_info->{c},
-				Headers => $signature_info->{h},
-				Domain => $signature_info->{d},
-				Selector => $signature_info->{s},
+		my $sig = $cls->new(
+				Algorithm => $options->{algorithm},
+				Method => $options->{method},
+				Domain => $options->{domain},
+				Selector => $options->{selector},
+				KeyFile => $options->{keyfile},
+				Headers => $signer->headers,
 				));
+		$signer->add_signature($sig);
 	}
 	return;
 }
