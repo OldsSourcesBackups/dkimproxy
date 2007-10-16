@@ -360,34 +360,36 @@ sub lookup_address
 	my ($mapfile, $address) = @_;
 
 	$address = lc $address;
-	my $result = lookup($mapfile, $address);
-	return $result if defined $result;
+	my @lookup_keys = ($address);
 
 	if ($address =~ s/\+(.*)\@//)
 	{
 		# local part of address has a extension, lookup same
 		# address without extension
 		# e.g. jason+extra@long.name => jason@long.name
-		$result = lookup($mapfile, $address);
-		return $result if defined $result;
+		push @lookup_keys, $address;
 	}
 
 	if ($address =~ s/^(.*)\@//)
 	{
 		# lookup just the domain of the address
-		$result = lookup($mapfile, $address);
-		return $result if defined $result;
+		push @lookup_keys, $address;
 	}
 	while ($address =~ s/^([^.]+\.)//)
 	{
 		# domain has at least two parts, try again with
 		# the first part removed
-		$result = lookup($mapfile, $address);
+		push @lookup_keys, $address;
+	}
+	# a catch-all key
+	push @lookup_keys, ".";
+
+	foreach my $key (@lookup_keys)
+	{
+		my $result = lookup($mapfile, $key);
 		return $result if defined $result;
 	}
-	$address = ".";
-	$result = lookup($mapfile, $address);
-	return $result if defined $result;
+	return;
 }
 
 sub lookup
@@ -440,7 +442,7 @@ sub get_signature_options
 	{
 		# determine what signatures to add based on the domain of the
 		# "sender" of this message
-		my $sender = lc $signer->message_sender->address;
+		my $sender = $signer->message_sender->address;
 		my $result = lookup_address($sender_mapfile, $sender);
 		if (defined $result)
 		{
@@ -450,6 +452,27 @@ sub get_signature_options
 	}
 
 	return @default_signatures;
+}
+
+# my $signature_domain = best_domain($message_domain, @key_domains);
+#
+# $message_domain is the domain of the sender of this message
+# @key_domains is a list of domains for which we have signing keys
+#
+# this function picks one of @key_domains to sign with,
+# hopefully matching $message_domain
+#
+sub best_domain
+{
+	my ($target_domain, @domains) = @_;
+
+	my $d = $target_domain;
+	while (defined $d)
+	{
+		return $d if (grep { $_ eq $d } @domains);
+		(undef, $d) = split /\./, $d, 2;
+	}
+	return $domains[0];
 }
 
 sub signer_policy
@@ -466,15 +489,25 @@ sub signer_policy
 		my $cls = $signature_type_classes{$options->{signature}}
 			or die "unrecognized signature type: $options->{signature}\n";
 
+		# if multiple domains specified, pick the best domain
+		my $domain = $options->{domain};
+		if ((my @domains = split /,/, $domain) > 1)
+		{
+			my $message_domain = $options->{signature} eq "domainkeys"
+				? $signer->message_sender->host
+				: $signer->message_author->host;
+			$domain = best_domain($message_domain, @domains);
+		}
+
 		# construct a DKIM-Signature or DomainKey-Signature
 		my $sig = $cls->new(
 				Algorithm => $options->{algorithm},
 				Method => $options->{method},
-				Domain => $options->{domain},
+				Domain => $domain,
 				Selector => $options->{selector},
 				KeyFile => $options->{keyfile},
 				Headers => $signer->headers,
-				));
+				);
 		$signer->add_signature($sig);
 	}
 	return;
