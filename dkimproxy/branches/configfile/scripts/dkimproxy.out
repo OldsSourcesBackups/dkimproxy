@@ -416,20 +416,27 @@ sub lookup
 # parenthesis
 sub split_by_commas
 {
-	my $orig_str = shift;
-	my $left = $orig_str . ",";
+	my $left = shift;
 
 	my @result = ();
-	while ($left =~ s/^((?:[^,(]+|\(.*?\))*),//)
+	# loop until entire is eaten
+	while (length $left)
 	{
-		my $found = $1;
+		# find the next item in the comma-separated list
+		my $found = "";
+		my $depth = 0;
+		while ($left =~ s/^(.)//)
+		{
+			last if $depth <= 0 && $1 eq ",";
+			$depth++ if $1 eq "(";
+			$depth-- if $1 eq ")";
+			$found .= $1;
+		}
+
+		# trim whitespace around item
 		$found =~ s/^\s+//;
 		$found =~ s/\s+$//;
-		push @result, $found if length($found);
-	}
-	if ($left ne ",")
-	{
-		die "invalid result list: '$orig_str'\n";
+		push @result, $found;
 	}
 	return @result;
 }

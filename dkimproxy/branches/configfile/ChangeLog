@@ -1,3 +1,7 @@
+2007-10-17: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out (split_by_commas): my first attempt at this didn't
+   work, so this is a rewrite of this method
+
 2007-10-15: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.out: document how configuration will be done;
    let Net::Server process dkimproxy's arguments (so they can be specified
