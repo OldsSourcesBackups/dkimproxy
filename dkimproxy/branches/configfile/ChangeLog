@@ -1,4 +1,7 @@
 2007-10-17: Jason Long <jlong@messiah.edu>
+ * configure.ac: bump to version 1.0
+
+2007-10-17: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.out (split_by_commas): my first attempt at this didn't
    work, so this is a rewrite of this method
  * scripts/dkimproxy.out: Net::Server's option parsing doesn't like hyphens,

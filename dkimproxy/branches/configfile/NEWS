@@ -1,7 +1,11 @@
 This file summarizes what's changed between releases of dkimproxy.
 See the ChangeLog file for the details.
 
-Version 0.17
+Version 1.0
+
+ * Added support for configuration files
+ * Added support for specifying multiple signatures
+ * Added support for sender-dependent configurations
 
 
 Version 0.16 - released 2007-05-24
