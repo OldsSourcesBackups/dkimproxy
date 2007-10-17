@@ -63,8 +63,8 @@ sub options
 	$template->{daemonize} = \$self->{server}->{setsid};
 	$template->{pidfile} = \$self->{server}->{pid_file};
 
-	$template->{"reject-error"} = \$reject_error;
-	$template->{"sender-map"} = \$sender_mapfile;
+	$template->{reject_error} = \$reject_error;
+	$template->{sender_map} = \$sender_mapfile;
 	$template->{debugtrace} = \$debugtrace;
 
 	$template->{signature} = \@signature_arg;
@@ -101,6 +101,7 @@ sub configure
 	#
 	my $help;
 	GetOptions(
+			"reject-error" => \$reject_error, #Net::Server doesn't like hyphens
 			"help|?" => \$help)
 		or pod2usage(2);
 	pod2usage(1) if $help;
@@ -138,7 +139,7 @@ sub configure
 	unless (@signature_arg || defined($sender_mapfile))
 	{
 		# backwards-compatible... if no --signature argument,
-		# and no --sender-map argument, then we create a dkim signature
+		# and no --sender_map argument, then we create a dkim signature
 		@signature_arg = ("dkim");
 	}
 
@@ -602,7 +603,7 @@ will be allowed to pass through without having a signature added.
 This is a required argument. Use it to specify the name of the key
 selector.
 
-=item B<--sender-map=FILENAME>
+=item B<--sender_map=FILENAME>
 
 If specified, the named file provides signature parameters depending
 on what sender is found in the message. See the section below titled
