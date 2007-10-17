@@ -23,6 +23,8 @@ Desired features:
    (FIXED)
  - document use of min_servers and max_servers options on help page
  - perform fewer passes over the message data
+ - add a DomainKey-Signature only when the message's sender matches an
+   available domain
 
 Possibly desired features:
  - sign/verify in the same program - although...
