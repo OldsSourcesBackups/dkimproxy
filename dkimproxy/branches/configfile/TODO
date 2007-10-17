@@ -1,6 +1,6 @@
 Bugs:
  - dkimproxy fails to set the listening port with Net::Server v0.90.10
-   (RESOLVED- set required version to be 0.91)
+   (FIXED- set required version to be 0.91)
  - dkimproxy prints out "Becoming sub class of "Net::Server::PreFork";
    caused by 2007-05-15 bugfix
 
@@ -8,7 +8,7 @@ Possible bugs:
  - if signature fails on an email using a subdomain of the key's domain,
    policy lookup should be for key's domain, not sender domain (i.e.
    sender domain should only be used if the key domain doesn't match,
-   or there is no signature) (NO)
+   or there is no signature) (WONTFIX)
  - the auto responder will fail if the signed message had been analyzed by
    spamassassin, and spamassassin analyzes it again after it got signed,
    causing the spamassassin headers to change... it would be nice if the
@@ -20,6 +20,7 @@ Desired features:
  - support use of multiple signatures, selectors, private keys, etc.
    (the signing process would use a lookup table of some sort, using the
    sender address's domain to pick signature attributes to use)
+   (FIXED)
  - document use of min_servers and max_servers options on help page
  - perform fewer passes over the message data
 
