@@ -2,6 +2,8 @@
  * scripts/dkimproxy.out: treat a --domain=a,b,c argument as a second
    "sender-map", where the default signatures are always added, but
    using the selected domain
+ * scripts/dkimproxy.out: use the proper domain when finding signature
+   info in a sender-map
 
 2007-10-17: Jason Long <jlong@messiah.edu>
  * configure.ac: bump to version 1.0

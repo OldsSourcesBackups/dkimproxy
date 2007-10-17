@@ -356,6 +356,17 @@ sub handle_end_of_data
 use Mail::DKIM::Signature;
 use Mail::DKIM::DkSignature;
 
+# lookup_address() - find an address in a map file
+#
+# the address is an email address. this function looks first for
+# the full email address, and if not found, tries more and more
+# general forms of the email addresses
+#
+# returns ($result, $key)
+# where $result is the right-hand value found in the map
+# and $key is the left-hand key corresponding to the found value
+# (a derivative of $address)
+#
 sub lookup_address
 {
 	my ($mapfile, $address) = @_;
@@ -388,9 +399,9 @@ sub lookup_address
 	foreach my $key (@lookup_keys)
 	{
 		my $result = lookup($mapfile, $key);
-		return $result if defined $result;
+		return ($result, $key) if defined $result;
 	}
-	return;
+	return (undef, undef);
 }
 
 sub lookup
@@ -451,11 +462,14 @@ sub get_signature_options
 		# determine what signatures to add based on the domain of the
 		# "sender" of this message
 		my $sender = $signer->message_sender->address;
-		my $result = lookup_address($sender_mapfile, $sender);
+		my ($result, $key) = lookup_address($sender_mapfile, $sender);
 		if (defined $result)
 		{
+			$key = $1 if $key =~ /\@(.*)$/;
 			my @result = split_by_commas($result);
-			return map { parse_signature_options($_) } @result;
+			return
+				map { +{ domain => $key, %$_ } }
+				map { parse_signature_options($_) } @result;
 		}
 	}
 
