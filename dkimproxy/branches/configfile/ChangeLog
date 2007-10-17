@@ -1,4 +1,9 @@
 2007-10-17: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: treat a --domain=a,b,c argument as a second
+   "sender-map", where the default signatures are always added, but
+   using the selected domain
+
+2007-10-17: Jason Long <jlong@messiah.edu>
  * configure.ac: bump to version 1.0
 
 2007-10-17: Jason Long <jlong@messiah.edu>
@@ -7,7 +12,6 @@
  * scripts/dkimproxy.out: Net::Server's option parsing doesn't like hyphens,
    so use Getopt::Long for hyphened-arguments, and prefer underscores
    in new options
-
 2007-10-15: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.out: document how configuration will be done;
    let Net::Server process dkimproxy's arguments (so they can be specified

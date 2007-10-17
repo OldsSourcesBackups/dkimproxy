@@ -459,7 +459,22 @@ sub get_signature_options
 		}
 	}
 
-	return @default_signatures;
+	# if multiple domains were specified in the --domain argument,
+	# pick one of those domains to use
+	my $domain = $domain_arg;
+	my @domains = split /,/, $domain;
+	if (@domains > 1)
+	{
+		# determine which of the available domains to use based
+		# on the domain of the "sender" of this message
+		my $sender_domain = $signer->message_sender->host;
+		$domain = best_domain($sender_domain, @domains)
+			or return ();
+	}
+
+	return map {
+		+{ domain => $domain, %$_ }
+		} @default_signatures;
 }
 
 # my $signature_domain = best_domain($message_domain, @key_domains);
@@ -480,7 +495,7 @@ sub best_domain
 		return $d if (grep { $_ eq $d } @domains);
 		(undef, $d) = split /\./, $d, 2;
 	}
-	return $domains[0];
+	return undef;
 }
 
 sub signer_policy
@@ -490,6 +505,22 @@ sub signer_policy
 	my @signatures = get_signature_options($signer);
 	foreach my $options (@signatures)
 	{
+		# a DomainKey-Signature should only be added if the
+		# signature's domain matches the message's sender
+		if ($options->{signature} eq "domainkeys")
+		{
+			my $is_domain_or_subdomain = sub {
+				return 1 if $_[0] eq $_[1];
+				my $end = ".$_[1]";
+				return 1 if substr($_[0], -length($end)) eq $end;
+			};
+
+			my $message_sender = $signer->message_sender->host;
+			my $signature_domain = $options->{domain};
+			next unless $is_domain_or_subdomain->(
+				$message_sender, $signature_domain);
+		}
+
 		my %signature_type_classes = (
 			dkim => "Mail::DKIM::Signature",
 			domainkeys => "Mail::DKIM::DkSignature",
@@ -497,28 +528,18 @@ sub signer_policy
 		my $cls = $signature_type_classes{$options->{signature}}
 			or die "unrecognized signature type: $options->{signature}\n";
 
-		# if multiple domains specified, pick the best domain
-		my $domain = $options->{domain};
-		if ((my @domains = split /,/, $domain) > 1)
-		{
-			my $message_domain = $options->{signature} eq "domainkeys"
-				? $signer->message_sender->host
-				: $signer->message_author->host;
-			$domain = best_domain($message_domain, @domains);
-		}
-
 		# construct a DKIM-Signature or DomainKey-Signature
 		my $sig = $cls->new(
 				Algorithm => $options->{algorithm},
 				Method => $options->{method},
-				Domain => $domain,
+				Domain => $options->{domain},
 				Selector => $options->{selector},
 				KeyFile => $options->{keyfile},
 				Headers => $signer->headers,
 				);
 		$signer->add_signature($sig);
 	}
-	return;
+	return; #needed, otherwise Mail::DKIM will add the default signature
 }
 
 __END__
