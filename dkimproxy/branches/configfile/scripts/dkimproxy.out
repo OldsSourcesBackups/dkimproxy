@@ -565,12 +565,19 @@ dkimproxy.out - SMTP proxy for adding DKIM signatures to email
 =head1 SYNOPSIS
 
   dkimproxy.out [options] --keyfile=FILENAME --selector=SELECTOR \
-                 --domain=DOMAIN listen.addr:port talk.addr:port
-    options:
+                 --domain=DOMAIN LISTENADDR:PORT RELAYADDR:PORT
+    smtp options:
       --conf_file=FILENAME
-      --signature=dkim|domainkeys
-      --method=simple|nowsp|relaxed|nofws
+      --listen=LISTENADDR:PORT
+      --relay=RELAYADDR:PORT
       --reject-error
+
+    signing options:
+      --signature=dkim|domainkeys
+      --keyfile=FILENAME
+      --selector=SELECTOR
+      --method=simple|nowsp|relaxed|nofws
+      --domain=DOMAIN
 
     daemon options:
       --daemonize

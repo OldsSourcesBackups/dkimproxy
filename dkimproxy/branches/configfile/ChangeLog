@@ -4,6 +4,7 @@
    using the selected domain
  * scripts/dkimproxy.out: use the proper domain when finding signature
    info in a sender-map
+ * scripts/dkimproxy.out: enhance --help output
 
 2007-10-17: Jason Long <jlong@messiah.edu>
  * configure.ac: bump to version 1.0
