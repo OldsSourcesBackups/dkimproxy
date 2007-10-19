@@ -1,6 +1,7 @@
 2007-10-19: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.out: --relay and --listen should only set port
    numbers if actually specified in the argument
+ * scripts/dkimproxy.out (lookup): do map file lookups in a single pass
 
 2007-10-17: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.out: treat a --domain=a,b,c argument as a second

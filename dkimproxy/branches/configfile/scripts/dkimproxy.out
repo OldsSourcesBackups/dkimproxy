@@ -398,17 +398,15 @@ sub lookup_address
 	# a catch-all key
 	push @lookup_keys, ".";
 
-	foreach my $key (@lookup_keys)
-	{
-		my $result = lookup($mapfile, $key);
-		return ($result, $key) if defined $result;
-	}
-	return (undef, undef);
+	return lookup($mapfile, \@lookup_keys);
 }
 
 sub lookup
 {
-	my ($mapfile, $key) = @_;
+	my ($mapfile, $keys_arrayref) = @_;
+
+	my $best_idx = @$keys_arrayref;
+	my $best_result;
 
 	open my $fh, "<", $mapfile
 		or die "Error: cannot read $mapfile: $!\n";
@@ -419,11 +417,18 @@ sub lookup
 		next if /^\s*[#;]/;
 		if (/^(\S+)\s+(.*)$/)
 		{
-			return $2 if ($1 eq $key)
+			for (my $i = 0; $i < $best_idx; $i++)
+			{
+				if ($1 eq $keys_arrayref->[$i])
+				{
+					$best_idx = $i;
+					$best_result = $2;
+				}
+			}
 		}
 	}
 	close $fh;
-	return;
+	return ($best_result, $keys_arrayref->[$best_idx]);
 }
 
 # split the result by commas, but not commas within
