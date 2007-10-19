@@ -118,13 +118,13 @@ sub configure
 	{
 		my ($host, $port) = split /:/, $tmp, 2;
 		$self->{server}->{host} = $host;
-		$self->{server}->{port} = $port;
+		$self->{server}->{port} = $port if defined $port;
 	}
 	if (my $tmp = $self->{server}->{relay})
 	{
 		my ($host, $port) = split /:/, $tmp, 2;
 		$self->{server}->{relay_host} = $host;
-		$self->{server}->{relay_port} = $port || DEFAULT_RELAY_PORT;
+		$self->{server}->{relay_port} = $port if defined $port
 	}
 
 	if (not defined $self->{server}->{port})
@@ -243,6 +243,8 @@ sub check_signature_options
 sub setup_client_socket
 {
 	my $self = shift;
+
+	$self->{server}->{relay_port} ||= DEFAULT_RELAY_PORT;
 
 	# create an object for sending the outgoing SMTP commands
 	#  (and the signed message)
