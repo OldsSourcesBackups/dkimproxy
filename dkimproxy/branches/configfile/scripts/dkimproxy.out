@@ -683,10 +683,9 @@ connections.
 =head1 DESCRIPTION
 
 dkimproxy.out listens on the IP address and TCP port specified by its
-first argument, and sends the traffic mostly unmodified to the SMTP
-server specified by the address and port in the second argument.
-The SMTP protocol is propogated literally, but message bodies get
-signed with a DKIM signature.
+first argument (the "listen" port), and sends the traffic it receives
+onto the second argument (the "relay" port), with messages getting
+modified to have a DKIM or DomainKeys signature.
 
 =head1 EXAMPLE
 
