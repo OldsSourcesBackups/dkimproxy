@@ -254,3 +254,17 @@ Algorithm rsa-sha256
   Add-Signature DomainKeys
 </MessageMatch>
 
+-------------------
+THINKING 2007-10-19
+-------------------
+
+On the command line:
+--client_map=clients.conf
+
+clients.conf:
+153.42           check_sender(senders.conf)
+*                verify(reject_fail)
+
+senders.conf:
+messiah.edu      dkim,domainkey
+
