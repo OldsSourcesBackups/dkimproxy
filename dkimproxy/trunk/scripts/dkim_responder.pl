@@ -29,6 +29,7 @@ unless ($from_line =~ /^From (\S+)/)
 }
 
 my $from = $1;
+my $from_header;
 my $subject;
 my $attach_original_msg;
 
@@ -49,6 +50,11 @@ while (<STDIN>)
 		{
 			$attach_original_msg = 1;
 		}
+	}
+	elsif (/^From:\s*(.*)$/)
+	{
+		$from_header = $1;
+		$from_header =~ s/^.*<(.*)>.*$/$1/;
 	}
 }
 
@@ -99,6 +105,10 @@ if ($subject =~ /confirm/i)
 $subject =~ s/(\w{10})\w+/$1/g;
 
 $subject ||= DEFAULT_SUBJECT;
+if ($from_header && $ENV{EXTENSION} && $ENV{EXTENSION} eq "usefrom")
+{
+	$from = $from_header;
+}
 
 # create a response message
 my $top = MIME::Entity->build(

@@ -1,6 +1,7 @@
 2007-10-24: Jason Long <jlong@messiah.edu>
  * scripts/dkim_responder.pl: report individual signature results when
-   more than one signature was found
+   more than one signature was found; allow reporting to the From header
+   address, if an address extension of "usefrom" was specified
 
 2007-10-15: Jason Long <jlong@messiah.edu>
  * tests: removed the tests subdirectory (this is stuff that was here
