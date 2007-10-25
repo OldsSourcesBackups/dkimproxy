@@ -25,6 +25,8 @@ Desired features:
  - perform fewer passes over the message data
  - add a DomainKey-Signature only when the message's sender matches an
    available domain
+ - alert the client if unable to connect to the relay server
+   (syslog, a 450 greeting, etc)
 
 Possibly desired features:
  - sign/verify in the same program - although...

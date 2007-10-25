@@ -29,6 +29,7 @@ unless ($from_line =~ /^From (\S+)/)
 }
 
 my $from = $1;
+my $from_header;
 my $subject;
 my $attach_original_msg;
 
@@ -50,12 +51,18 @@ while (<STDIN>)
 			$attach_original_msg = 1;
 		}
 	}
+	elsif (/^From:\s*(.*)$/)
+	{
+		$from_header = $1;
+		$from_header =~ s/^.*<(.*)>.*$/$1/;
+	}
 }
 
 # rewind message, and have DKIM verify it
 $fh->seek(0, 0);
 my $result;
 my $result_detail;
+my @signatures;
 my $a_policy;
 my $a_policy_result;
 my $s_policy;
@@ -74,6 +81,8 @@ eval
 	{
 		$attach_original_msg = 1;
 	}
+
+	@signatures = $dkim->signatures;
 
 	$a_policy = $dkim->fetch_author_policy;
 	$a_policy_result = $a_policy->apply($dkim);
@@ -96,6 +105,10 @@ if ($subject =~ /confirm/i)
 $subject =~ s/(\w{10})\w+/$1/g;
 
 $subject ||= DEFAULT_SUBJECT;
+if ($from_header && $ENV{EXTENSION} && $ENV{EXTENSION} eq "usefrom")
+{
+	$from = $from_header;
+}
 
 # create a response message
 my $top = MIME::Entity->build(
@@ -105,6 +118,21 @@ my $top = MIME::Entity->build(
 		To => $from,
 		Subject => $subject,
 	);
+
+my $verify_results_text =
+		"This is the overall result of the message verification:\n" .
+		"  $result_detail\n" .
+		"\n";
+if (@signatures > 1)
+{
+	$verify_results_text .=
+		"These are the results of each signature (in order):\n";
+	foreach my $sig (@signatures)
+	{
+		$verify_results_text .= "  " . make_auth_result($sig) . "\n";
+	}
+	$verify_results_text .= "\n";
+}
 
 my $policy_results_text = "";
 if ($a_policy_result && $a_policy_result ne "neutral")
@@ -149,9 +177,7 @@ $top->attach(
 	Type => "text/plain",
 	Data => [
 		"*** This is an automated response ***\n\n",
-		"This is the result of the message verification:\n",
-		"  $result_detail\n",
-		"\n",
+		$verify_results_text,
 		$policy_results_text,
 		$attach_text,
 		"Please note if your message had multiple signatures, that this\n",
@@ -195,3 +221,18 @@ open MAIL, "| /usr/sbin/sendmail -t -i " . RESULT_BCC
 	or die "open: $!";
 $top->print(\*MAIL);
 close MAIL;
+
+sub make_auth_result
+{
+	my $signature = shift;
+
+	if ($signature->isa("Mail::DKIM::DkSignature"))
+	{
+		return "domainkeys=" . $signature->result_detail;
+	}
+	else
+	{
+		return "dkim=" . $signature->result_detail
+			. " i=" . $signature->identity;
+	}
+}

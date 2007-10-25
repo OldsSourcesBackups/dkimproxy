@@ -1,3 +1,8 @@
+2007-10-24: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_responder.pl: report individual signature results when
+   more than one signature was found; allow reporting to the From header
+   address, if an address extension of "usefrom" was specified
+
 2007-10-19: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.out: --relay and --listen should only set port
    numbers if actually specified in the argument
@@ -20,6 +25,7 @@
  * scripts/dkimproxy.out: Net::Server's option parsing doesn't like hyphens,
    so use Getopt::Long for hyphened-arguments, and prefer underscores
    in new options
+
 2007-10-15: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.out: document how configuration will be done;
    let Net::Server process dkimproxy's arguments (so they can be specified
