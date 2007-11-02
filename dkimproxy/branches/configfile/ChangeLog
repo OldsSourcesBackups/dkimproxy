@@ -2,6 +2,10 @@
  * scripts/dkimproxy.out: per-sender signature options now seems to be
    functional; allow identity to be specified in signature options;
    documentation updates
+ * scripts/dkimproxy.in: copy all the configuration file related stuff
+   from dkimproxy.out to make dkimproxy.in also capable of using configuration
+   files
+ * scripts/dkimproxy.out: allow debugging
 
 2007-10-24: Jason Long <jlong@messiah.edu>
  * scripts/dkim_responder.pl: report individual signature results when

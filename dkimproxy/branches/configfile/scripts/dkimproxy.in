@@ -1,6 +1,6 @@
 #!/usr/bin/perl -I../lib
 #
-# Copyright (c) 2005-2006 Messiah College. This program is free software.
+# Copyright (c) 2005-2007 Messiah College. This program is free software.
 # You can redistribute it and/or modify it under the terms of the
 # GNU Public License as found at http://www.fsf.org/copyleft/gpl.html.
 #
@@ -41,6 +41,28 @@ main->run(
 		server_type => "PreFork",
 	);
 
+sub options
+{
+	my $self = shift;
+	my ($template) = @_;
+
+	$self->SUPER::options(@_);
+
+	# compatibility arguments (older versions of dkimproxy)
+	$template->{daemonize} = \$self->{server}->{setsid};
+	$template->{pidfile} = \$self->{server}->{pid_file};
+
+	$template->{reject_error} = \$reject_error;
+	$template->{reject_fail} = \$reject_fail;
+	$template->{hostname} = \$hostname;
+	$template->{debugtrace} = \$debugtrace;
+
+	$template->{listen} = \$self->{server}->{listen};
+	$template->{relay} = \$self->{server}->{relay};
+	$template->{relay_host} = \$self->{server}->{relay_host};
+	$template->{relay_port} = \$self->{server}->{relay_port};
+}
+
 sub configure
 {
 	my $self = shift;
@@ -63,47 +85,60 @@ sub configure
 	#
 	my $help;
 	GetOptions(
+			"reject-error" => \$reject_error, #Net::Server doesn't like hyphens
 			"reject-fail" => \$reject_fail,
-			"reject-error" => \$reject_error,
-			"hostname=s" => \$hostname,
-			"daemonize" => \$self->{server}->{setsid},
-			"pidfile=s" => \$self->{server}->{pid_file},
-			"debug" => \$debug,
 			"help|?" => \$help)
 		or pod2usage(2);
 	pod2usage(1) if $help;
+
+	if (@ARGV == 2)
+	{
+		$self->{server}->{listen} = shift @ARGV;
+		$self->{server}->{relay} = shift @ARGV;
+	}
+	pod2usage("Error: wrong number of arguments")
+		unless @ARGV == 0;
+
+	if (my $tmp = $self->{server}->{listen})
+	{
+		my ($host, $port) = split /:/, $tmp, 2;
+		$self->{server}->{host} = $host;
+		$self->{server}->{port} = $port if defined $port;
+	}
+	if (my $tmp = $self->{server}->{relay})
+	{
+		my ($host, $port) = split /:/, $tmp, 2;
+		$self->{server}->{relay_host} = $host;
+		$self->{server}->{relay_port} = $port if defined $port
+	}
+
+	if (not defined $self->{server}->{port})
+	{
+		pod2usage("Error: listening port was not specified");
+	}
+	if (not defined $self->{server}->{relay_host})
+	{
+		pod2usage("Error: relay host was not specified");
+	}
 
 	if (not defined $hostname)
 	{
 		use Sys::Hostname;
 		$hostname = hostname;
 	}
-
-	pod2usage("Error: wrong number of arguments")
-		unless @ARGV == 2;
-
-	my ($srcaddr, $srcport) = split /:/, $ARGV[0];
-	my ($dstaddr, $dstport) = split /:/, $ARGV[1];
-	unless (defined($srcport) and defined($dstport))
-	{
-		pod2usage("Error: source or destination port is missing");
-	}
-
-	$self->{server}->{host} = $srcaddr;
-	$self->{server}->{port} = $srcport;
-	$self->{server}->{dest_host} = $dstaddr;
-	$self->{server}->{dest_port} = $dstport;
 }
 
 sub setup_client_socket
 {
 	my $self = shift;
 
+	$self->{server}->{relay_port} ||= DEFAULT_RELAY_PORT;
+
 	# create an object for sending the outgoing SMTP commands
-	#  (and the signed message)
+	#  (and the verified message)
     my $client = MSDW::SMTP::Client->new(
-			interface => $self->{server}->{dest_host},
-			port => $self->{server}->{dest_port});
+			interface => $self->{server}->{relay_host},
+			port => $self->{server}->{relay_port});
 	return $client;
 }
 
@@ -115,7 +150,7 @@ sub process_request
 
 	# initialize syslog
 	openlog("dkimproxy.in", "cons,pid", "mail");
-	$self->{debug} = $debug;
+	$self->{debug} = $debugtrace;
 
 	$self->SUPER::process_request;
 }
@@ -132,7 +167,7 @@ sub handle_end_of_data
 	my $verify_detail;
 	eval
 	{
-		$dkim = Mail::DKIM::Verifier->new_object(
+		$dkim = Mail::DKIM::Verifier->new(
 				Hostname => $hostname,
 			);
 		$dkim->load($fh);

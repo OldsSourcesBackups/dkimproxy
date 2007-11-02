@@ -269,6 +269,7 @@ sub process_request
 
 	# initialize syslog
 	openlog("dkimproxy.out", "cons,pid", "mail");
+	$self->{debug} = $debugtrace;
 
 	$self->SUPER::process_request;
 }
