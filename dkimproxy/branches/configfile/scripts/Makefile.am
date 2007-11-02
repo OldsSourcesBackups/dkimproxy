@@ -6,7 +6,9 @@ perl_scripts = \
 	dkimproxy.in \
 	dkimproxy.out
 
-EXTRA_DIST = $(perl_scripts)
+sysconf_DATA = dkimproxy_in.conf.example dkimproxy_out.conf.example
+
+EXTRA_DIST = $(perl_scripts) $(sysconf_DATA)
 
 install-exec-hook:
 	$(mkinstalldirs) "$(DESTDIR)$(perldir)";
