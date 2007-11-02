@@ -15,6 +15,8 @@ Possible bugs:
    auto-responder can check the signature(s) for "known bad" headers,
    and give a warning to the user if their message got signed by one
    of those headers
+ - verify creates an empty Authentication-Results header if no
+   signatures found
 
 Desired features:
  - support use of multiple signatures, selectors, private keys, etc.
