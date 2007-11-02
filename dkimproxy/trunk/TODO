@@ -14,7 +14,7 @@ Possible bugs:
    causing the spamassassin headers to change... it would be nice if the
    auto-responder can check the signature(s) for "known bad" headers,
    and give a warning to the user if their message got signed by one
-   of those headers
+   of those headers. Known bad headers include: "X-Spam-*", "Return-Path"
 
 Desired features:
  - support use of multiple signatures, selectors, private keys, etc.
