@@ -146,7 +146,7 @@ sub configure
 	foreach my $sig (@signature_arg)
 	{
 		my $options = parse_signature_options($sig);
-		$self->check_signature_options($options);
+		$self->check_signature_options({ domain => $domain_arg, %$options });
 		push @default_signatures, $options;
 	}
 
@@ -166,9 +166,17 @@ sub parse_signature_options
 	my $options = {
 		keyfile => $keyfile,
 		selector => $selector,
-		domain => $domain_arg,
 		method => $method,
 		};
+	my %option_aliases = (
+		key => "keyfile",
+		s => "selector",
+		d => "domain",
+		c => "method",
+		a => "algorithm",
+		h => "headers",
+		i => "identity",
+		);
 
 	my $orig_options_str = $options_str;
 	unless ($options_str =~ s/^(\w+)//)
@@ -183,10 +191,11 @@ sub parse_signature_options
 		foreach my $opt (@opts)
 		{
 			my ($n, $v) = split /=/, $opt, 2;
+			$n = $option_aliases{$n} if exists $option_aliases{$n};
 			$options->{$n} = $v;
 		}
 	}
-	elsif ($options ne "")
+	elsif ($options_str ne "")
 	{
 		die "invalid signature specifier: '$orig_options_str'\n";
 	}
@@ -314,6 +323,7 @@ sub handle_end_of_data
 		my $E = $@;
 		chomp $E;
 		syslog("warning", '%s', "signing error: $E");
+		print STDERR "Warning: signing error: $E\n";
 		$result = "temperror";
 		$result_detail = "$result ($E)";
 	}
@@ -556,6 +566,7 @@ sub signer_policy
 				Domain => $options->{domain},
 				Selector => $options->{selector},
 				KeyFile => $options->{keyfile},
+				Identity => $options->{identity},
 				Headers => $signer->headers,
 				);
 		$signer->add_signature($sig);
@@ -729,7 +740,39 @@ and signature properties on the right. E.g.
   # sign my mail with a EXAMPLE.COM dkim signature
   jason@long.name  dkim(d=example.com)
 
+  # sign WIDGET.EXAMPLE mail with a default domainkeys signature
+  widget.example   domainkeys
+
   # sign EXAMPLE.ORG mail with both a domainkeys and dkim signature
-  example.org      dkim(c=relaxed), domainkeys(c=nofws)
+  example.org      dkim(c=relaxed,a=rsa-sha256), domainkeys(c=nofws)
+
+Right-hand values in a sendar map file is a comma-separated list of
+signature types. Each signature type may have a comma-separated list
+of parameters encosed in parenthesis. The following signature
+parameters are recognized:
+
+=over
+
+=item key
+
+the private key file to use
+
+=item a
+
+the algorithm to use
+
+=item c
+
+the canonicalization method to use
+
+=item d
+
+the domain to use, default is to use the domain matched
+
+=item s
+
+the selector to use
+
+=back
 
 =cut

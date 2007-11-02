@@ -1,3 +1,8 @@
+2007-11-02: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: per-sender signature options now seems to be
+   functional; allow identity to be specified in signature options;
+   documentation updates
+
 2007-10-24: Jason Long <jlong@messiah.edu>
  * scripts/dkim_responder.pl: report individual signature results when
    more than one signature was found; allow reporting to the From header
