@@ -31,10 +31,12 @@ use Mail::DKIM 0.17;
 use Mail::DKIM::Verifier;
 use MySmtpServer;
 
+use constant DEFAULT_RELAY_PORT => 25;
+
 my $hostname;
 my $reject_fail = 0;
 my $reject_error = 0;
-my $debug;
+my $debugtrace;
 
 use base "MySmtpProxyServer";
 main->run(
