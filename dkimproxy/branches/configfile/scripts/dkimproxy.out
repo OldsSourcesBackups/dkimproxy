@@ -659,6 +659,9 @@ to try again later, or bounce it back to the sender (depending on the
 exact error code used). If this option is not specified, the message
 will be allowed to pass through without having a signature added.
 
+The most common cause of an error when signing a message is if the
+signature options are improperly configured.
+
 =item B<--selector=SELECTOR>
 
 This is a required argument. Use it to specify the name of the key
@@ -726,7 +729,7 @@ name of the option, space, then the value of the option. E.g.
   selector postfix
   signature dkim
 
-equivalent to
+is equivalent to
 
   dkimproxy.out --domain=example.org,example.com --keyfile=private.key \
                 --selector=postfix --signature=dkim

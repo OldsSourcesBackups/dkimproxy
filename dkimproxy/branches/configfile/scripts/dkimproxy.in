@@ -253,10 +253,15 @@ dkimproxy.in - SMTP proxy for verifying DKIM signatures
 
 =head1 SYNOPSIS
 
-  dkimproxy.in [options] listen.addr:port talk.addr:port
-    options:
-      --reject-fail
+  dkimproxy.in [options] LISTENADDR:PORT RELAYADDR:PORT
+    smtp options:
+      --conf_file=FILENAME
+      --listen=LISTENADDR:PORT
+      --relay=RELAYADDR:PORT
       --reject-error
+
+    verification options:
+      --reject-fail
       --hostname=HOSTNAME
 
     daemon options:
@@ -283,9 +288,10 @@ GROUP.
 
 =item B<--hostname=HOSTNAME>
 
-Overrides the hostname used in the X-DKIM-Authentication-Results header.
-Use this if the hostname that appears is not fully qualified or you
-want to use an alternate name.
+Overrides the hostname used in the Authentication-Results header.
+This header gets added to every verified message.
+Use this option if the hostname that appears is not fully qualified
+or you want to use an alternate name.
 
 =item B<--pidfile=PIDFILE>
 
@@ -303,8 +309,8 @@ exact error code used). If this option is not specified, the message
 will be passed through with an error listed in the Authentication-Results
 header instead of the verification results.
 
-The most common error will probably be a DNS error when trying to retrieve
-the public key or sender policy.
+The most common cause of an error when verifying a message is a
+DNS error when trying to retrieve a public key or sender policy.
 
 =item B<--reject-fail>
 
@@ -326,10 +332,9 @@ connections.
 =head1 DESCRIPTION
 
 dkimproxy.in listens on the IP address and TCP port specified by its
-first argument, and sends the traffic mostly unmodified to the SMTP
-server specified by the address and port in the second argument.
-The SMTP protocol is propogated literally, but message bodies will get
-prepended with an X-DKIM-Authentication-Results header.
+first argument (the "listen" port), and sends the traffic it receives
+onto the second argument (the "relay" port), with messages getting
+verified and having an "Authentication-Results" header added to them.
 
 =head1 EXAMPLE
 
@@ -339,5 +344,27 @@ For example, if dkimproxy.in is started with:
 
 the proxy will listen on port 10025 and send the verified messages to
 some other SMTP service on port 10026.
+
+=head1 CONFIGURATION FILE
+
+Parameters can be stored in a separate file instead of specifying
+them all on the command-line. Use the conf_file option to specify
+the path to the configuration file, e.g.
+
+  dkimproxy.in --conf_file=/etc/dkimproxy_in.conf
+
+The format of the configuration file is one option per line:
+name of the option, space, then the value of the option. E.g.
+
+  # this is an example config file
+  listen      127.0.0.1:10025
+  relay       127.0.0.1:10026
+  hostname    myhost.example.com
+  reject_fail
+
+is equivalent to
+
+  dkimproxy.out --hostname=myhost.example.com --reject-fail \
+                  127.0.0.1:10025 127.0.0.1:10026
 
 =cut
