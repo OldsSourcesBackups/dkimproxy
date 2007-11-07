@@ -38,6 +38,7 @@ What's New
 Installing
 
    As usual, installation instructions are in the INSTALL file.
+   You will need the "development" release of my Mail::DKIM module.
 
    If you are upgrading, please note that the documentation now suggests
    a different user/group and directory prefix. Upgraders should be

@@ -8,7 +8,7 @@ DKIMproxy Requirements
 
    DKIMproxy is written in Perl. It requires the following Perl modules:
 
-   * Mail::DKIM (version 0.29 or later)
+   * Mail::DKIM (version 0.28_2 or later)
    * Error
    * Net::Server (version 0.91 or later; 0.93, 0.94 and 0.96 are known to work)
 
