@@ -3,6 +3,10 @@ See the ChangeLog file for the details.
 
 Version 1.0
 
+ UPGRADERS TAKE NOTE!
+   Please check the included RELEASE_NOTES for what to watch out for
+   when upgrading to 1.0+.
+
  * Added support for configuration files
  * Added support for specifying multiple signatures
  * Added support for sender-dependent configurations

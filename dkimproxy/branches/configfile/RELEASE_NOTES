@@ -31,22 +31,42 @@ What's New
    sender of the message. This will be helpful for sites hosting
    many domains. They may want to, for example, use a different private
    key or selector for each domain. You do this by specifying the
-   "sender_map" option. The sender_map option specifies a file containing
-   per-sender signature options.
+   "sender_map" option. The sender_map option specifies a file
+   containing per-sender signature options.
 
 
 Installing
 
-  As usual, installation instructions are in the INSTALL file.
+   As usual, installation instructions are in the INSTALL file.
+
+   If you are upgrading, please note that the documentation now suggests
+   a different user/group and directory prefix. Upgraders should be
+   careful to use the old values, or be prepared to move some things
+   around.
+
+
+Changes
+
+   If you are upgrading, please take note of the following changes.
+
+ * The documentation and sample init script have been changed to use
+   "dkim" as the name of the user/group that dkimproxy can run as,
+   and "/usr/local/dkimproxy" as the installation prefix. Upgraders
+   do not need to adopt these new values, but will need to translate
+   as they follow the documentation.
+
+ * Dkimproxy.out will, in certain cases, now add a signature to
+   messages that it would not before. If you start dkimproxy.out
+   and specify just one domain for the --domain argument, and do
+   not specify --signature=domainkeys, then dkimproxy.out will
+   ALWAYS add a DKIM signature, no matter the message's sender's
+   domain.
 
 
 Known Issues
 
  * The verifier (dkimproxy.in) adds an Authentication-Results header
    with no information if the message being verified has no signatures.
- * The signer (dkimproxy.out) will allow a DomainKey signature to be
-   added, even if the address in the From/Sender header does not
-   match the signature domain.
 
 
 Comments/Suggestions
