@@ -14,7 +14,7 @@ Possible bugs:
    causing the spamassassin headers to change... it would be nice if the
    auto-responder can check the signature(s) for "known bad" headers,
    and give a warning to the user if their message got signed by one
-   of those headers
+   of those headers. Known bad headers include: "X-Spam-*", "Return-Path"
  - verify creates an empty Authentication-Results header if no
    signatures found
  - if you start dkimproxy.in using the init script, then delete its
