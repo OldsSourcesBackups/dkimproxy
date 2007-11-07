@@ -607,6 +607,13 @@ dkimproxy.out - SMTP proxy for adding DKIM signatures to email
   dkimproxy.out --help
     to see a full description of the various options
 
+=head1 DESCRIPTION
+
+dkimproxy.out listens on the IP address and TCP port specified by its
+first argument (the "listen" port), and sends the traffic it receives
+onto the second argument (the "relay" port), with messages getting
+modified to have a DKIM or DomainKeys signature.
+
 =head1 OPTIONS
 
 =over
@@ -617,12 +624,12 @@ If specified, the server will run in the background.
 
 =item B<--domain=DOMAIN>
 
-This is a required argument. Use it to specify what domain(s) emails
-are signed for. If you want to sign for multiple domains, specify the
-domains separated by commas. As messages are delivered through the proxy,
-the proxy will attempt to match the message to one of the domains
-specified in this argument. If it sees a match, it will sign the message
-using the matching domain.
+Use this argument to specify what domain(s) you can sign for. You may
+specify multiple domains by separating them with commas. If a single
+domain is specified, DKIMproxy will always use that domain to sign,
+if it can. If multiple domains are specified, DKIMproxy will try to
+match the domain to the message's sender, and only generate a signature
+that will match the sender's domain.
 
 =item B<--group=GROUP>
 
@@ -671,7 +678,7 @@ selector.
 
 If specified, the named file provides signature parameters depending
 on what sender is found in the message. See the section below titled
-"SENDER MAP FILE".
+L</"SENDER MAP FILE">.
 
 =item B<--signature=dkim|domainkeys>
 
@@ -687,6 +694,9 @@ the signature type, e.g.
 
   --signature=dkim(c=relaxed,key=private.key)
 
+The syntax for specifying per-signature options is described in more
+detail in the section below titled L</"SENDER MAP FILE">.
+
 =item B<--user=USER>
 
 If specified, the daemonized process will setuid() to USER after
@@ -694,13 +704,6 @@ completing any necessary privileged operations, but before accepting
 connections.
 
 =back
-
-=head1 DESCRIPTION
-
-dkimproxy.out listens on the IP address and TCP port specified by its
-first argument (the "listen" port), and sends the traffic it receives
-onto the second argument (the "relay" port), with messages getting
-modified to have a DKIM or DomainKeys signature.
 
 =head1 EXAMPLE
 
@@ -715,7 +718,7 @@ some other SMTP service on port 10028.
 =head1 CONFIGURATION FILE
 
 Parameters can be stored in a separate file instead of specifying
-them all on the command-line. Use the conf_file option to specify
+them all on the command-line. Use the C<conf_file> option to specify
 the path to the configuration file, e.g.
 
   dkimproxy.out --conf_file=/etc/dkimproxy_out.conf
@@ -750,9 +753,9 @@ and signature properties on the right. E.g.
   # sign EXAMPLE.ORG mail with both a domainkeys and dkim signature
   example.org      dkim(c=relaxed,a=rsa-sha256), domainkeys(c=nofws)
 
-Right-hand values in a sendar map file is a comma-separated list of
+Right-hand values in a sender map file is a comma-separated list of
 signature types. Each signature type may have a comma-separated list
-of parameters encosed in parenthesis. The following signature
+of parameters enclosed in parenthesis. The following signature
 parameters are recognized:
 
 =over

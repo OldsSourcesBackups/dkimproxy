@@ -1,14 +1,14 @@
-Copyright 2005-2006 Messiah College. All rights reserved.
+Copyright 2005-2007 Messiah College. All rights reserved.
 
-   See the README file for an overview of Dkimproxy.
+   See the README file for an overview of DKIMproxy.
 
 
-Dkimproxy Requirements
+DKIMproxy Requirements
 ======================
 
-   Dkimproxy is written in Perl. It requires the following Perl modules:
+   DKIMproxy is written in Perl. It requires the following Perl modules:
 
-   * Mail::DKIM (version 0.20 or later)
+   * Mail::DKIM (version 0.29 or later)
    * Error
    * Net::Server (version 0.91 or later; 0.93, 0.94 and 0.96 are known to work)
 
@@ -29,29 +29,34 @@ Basic Installation
      `./configure --prefix=' followed by the location in which you want
      to install the filter. E.g.
 
-     ./configure --prefix=/usr/local/dkfilter
+     ./configure --prefix=/usr/local/dkimproxy
+
+     You SHOULD specify a --prefix.
 
   2. Type `make install' to install the programs and any data files and
      documentation. This will install the filter scripts in $prefix/bin
      and the Perl module files in $prefix/lib.
 
-  3. Create a Unix user/group dedicated to running Dkimproxy. E.g. dkfilter.
+  3. Create a Unix user/group dedicated to running DKIMproxy. E.g. dkim.
 
-  4. Create a startup/shutdown script for the filter and install it in
+  4. Copy the example configuration files in $prefix/etc.
+       dkimproxy_in.conf.example => dkimproxy_in.conf
+       dkimproxy_out.conf.example => dkimproxy_out.conf
+     Modify the parameters to suit your tastes.
+
+  5. Create a startup/shutdown script for the filter and install it in
      the location normal for your distribution (e.g. /etc/init.d). A
      sample script is provided... you can copy it as /etc/init.d/dkimproxy.
      Be sure to check, and modify if necessary, the user, group, and paths
-     found in the script. Also, you'll want to adjust the command-line
-     arguments used to start the filters, as this is how Dkimproxy is
-     configured.
+     found in the script.
 
 
 
-Dkimproxy Setup
+DKIMproxy Setup
 ===============
 
    Information on setting up dkimproxy is currently only available online.
    See http://jason.long.name/dkimproxy/ for the details.
 
 
-This document last updated 2006-10-23.
+This document last updated 2007-11-06.

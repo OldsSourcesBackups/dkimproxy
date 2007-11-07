@@ -1,6 +1,9 @@
 2007-11-06: Jason Long <jlong@messiah.edu>
  * sample-dkim-init-script.sh: a bit more generalized now, supports
    configuration files
+ * configure.ac, INSTALL: now requiring 0.29 of Mail::DKIM
+ * INSTALL: refresh some of the phrasing
+ * dkimproxy.out: documentation updates, fixed a few doc typos, etc.
 
 2007-11-02: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.out: per-sender signature options now seems to be
