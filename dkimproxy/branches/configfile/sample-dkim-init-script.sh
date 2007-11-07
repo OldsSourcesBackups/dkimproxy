@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (c) 2005-2006 Messiah College.
+# Copyright (c) 2005-2007 Messiah College.
 #
 ### BEGIN INIT INFO
 # Default-Start:  3 4 5
@@ -8,21 +8,29 @@
 # Description:    Runs dkimproxy
 ### END INIT INFO
 
-DKIMPROXYUSER=dkfilter
-DKIMPROXYGROUP=dkfilter
-DKIMPROXYDIR=/usr/local/dkfilter
+### BEGIN CONFIGURABLE BITS
+DKIMPROXYDIR=/usr/local/dkimproxy
+DKIMPROXYUSER=dkim
+DKIMPROXYGROUP=dkim
+### END CONFIGURABLE BITS
+
+### IF YOU MOVE THE CONFIG FILES, CHANGE THIS:
+DKIMPROXY_IN_CFG="$DKIMPROXYDIR/etc/dkimproxy_in.conf"
+DKIMPROXY_OUT_CFG="$DKIMPROXYDIR/etc/dkimproxy_out.conf"
+
+if [ ! '(' -f "$DKIMPROXY_IN_CFG" -o -f "$DKIMPROXY_OUT_CFG" ')' ]; then
+	echo "Error: one or both of the following files must be created:" >&2
+	echo "$DKIMPROXY_IN_CFG" >&2
+	echo "$DKIMPROXY_OUT_CFG" >&2
+	exit 1
+fi
 
 HOSTNAME=`hostname -f`
-DOMAIN=`hostname -d`
 DKIMPROXY_IN_ARGS="
 	--hostname=$HOSTNAME
-	127.0.0.1:10025 127.0.0.1:10026"
+	--conf_file=$DKIMPROXY_IN_CFG"
 DKIMPROXY_OUT_ARGS="
-	--keyfile=$DKIMPROXYDIR/private.key
-	--selector=selector1
-	--domain=$DOMAIN
-	--method=relaxed
-	127.0.0.1:10027 127.0.0.1:10028"
+	--conf_file=$DKIMPROXY_OUT_CFG"
 
 DKIMPROXY_COMMON_ARGS="
 	--user=$DKIMPROXYUSER
@@ -71,6 +79,11 @@ case "$1" in
 		fi
 		;;
 
+	start)
+		test -f $DKIMPROXY_IN_CFG && $0 start-in || exit $?
+		test -f $DKIMPROXY_OUT_CFG && $0 start-out || exit $?
+		;;
+
 	stop-in)
 		echo -n "Shutting down inbound DKIM-proxy (dkimproxy.in)..."
 		if [ -f $DKIMPROXY_IN_PID ]; then
@@ -82,6 +95,7 @@ case "$1" in
 			echo not running.
 		fi
 		;;
+
 	stop-out)
 		echo -n "Shutting down outbound DKIM-proxy (dkimproxy.out)..."
 		if [ -f $DKIMPROXY_OUT_PID ]; then
@@ -93,16 +107,17 @@ case "$1" in
 			echo not running.
 		fi
 		;;
-	start)
-		$0 start-in && $0 start-out || exit $?
-		;;
+
 	stop)
-		$0 stop-in && $0 stop-out || exit $?
+		test -f $DKIMPROXY_IN_CFG && $0 stop-in || exit $?
+		test -f $DKIMPROXY_OUT_CFG && $0 stop-out || exit $?
 		;;
+
 	restart)
 		$0 stop && $0 start || exit $?
 		;;
-	status)
+
+	status-in)
 		echo -n "dkimproxy.in..."
 		if [ -f $DKIMPROXY_IN_PID ]; then
 			pid=`cat $DKIMPROXY_IN_PID`
@@ -114,6 +129,9 @@ case "$1" in
 		else
 			echo " stopped"
 		fi
+		;;
+
+	status-out)
 		echo -n "dkimproxy.out..."
 		if [ -f $DKIMPROXY_OUT_PID ]; then
 			pid=`cat $DKIMPROXY_OUT_PID`
@@ -125,6 +143,11 @@ case "$1" in
 		else
 			echo " stopped"
 		fi
+		;;
+
+	status)
+		test -f $DKIMPROXY_IN_CFG && $0 status-in || exit $?
+		test -f $DKIMPROXY_OUT_CFG && $0 status-out || exit $?
 		;;
 	*)
 		echo "Usage: $0 {start|stop|restart|status}"

@@ -17,6 +17,8 @@ Possible bugs:
    of those headers
  - verify creates an empty Authentication-Results header if no
    signatures found
+ - if you start dkimproxy.in using the init script, then delete its
+   config file, the init script will not stop the daemon
 
 Desired features:
  - support use of multiple signatures, selectors, private keys, etc.
