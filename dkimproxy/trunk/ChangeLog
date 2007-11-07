@@ -15,6 +15,7 @@
  * scripts/dkimproxy.out: allow debugging
  * scripts/dkimproxy_in.conf.example, dkimproxy_out.conf.example:
    example configuration files that will be installed
+ * RELEASE_NOTES: new file
 
 2007-10-24: Jason Long <jlong@messiah.edu>
  * scripts/dkim_responder.pl: report individual signature results when
