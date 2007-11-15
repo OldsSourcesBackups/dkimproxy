@@ -12,7 +12,7 @@ signature dkim(c=relaxed)
 signature domainkeys(c=nofws)
 
 # specify location of the private key
-keyfile   private.key
+keyfile   /full/path/to/private.key
 
 # specify the selector (i.e. the name of the key record put in DNS)
 selector  selector1
