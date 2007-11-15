@@ -1,3 +1,6 @@
+2007-11-15: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy_out.conf.example: change example path to private.key
+
 2007-11-06: Jason Long <jlong@messiah.edu>
  * sample-dkim-init-script.sh: a bit more generalized now, supports
    configuration files
