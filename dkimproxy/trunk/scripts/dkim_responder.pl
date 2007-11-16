@@ -11,7 +11,7 @@ use warnings;
 use IO::File;
 use MIME::Entity;
 
-use Mail::DKIM 0.27;
+use Mail::DKIM 0.29;
 use Mail::DKIM::Verifier;
 
 use constant FROM_ADDR => 'admin@dkimtest.jason.long.name';
@@ -46,7 +46,7 @@ while (<STDIN>)
 	if (/^Subject:\s*(.*)$/)
 	{
 		$subject = "Re: $1";
-		if ($subject =~ /dkim|test/i)
+		if ($subject =~ /dkim|domainkey|test/i)
 		{
 			$attach_original_msg = 1;
 		}
@@ -196,6 +196,9 @@ $top->attach(
 if ($attach_original_msg)
 {
 	# part two, original message
+	my @lines = @message_lines;
+	s/\015\012$/\n/s foreach (@lines);
+
 	$top->attach(
 		Type => "text/plain",
 		Filename => "rfc822.txt",
@@ -226,13 +229,11 @@ sub make_auth_result
 {
 	my $signature = shift;
 
-	if ($signature->isa("Mail::DKIM::DkSignature"))
-	{
-		return "domainkeys=" . $signature->result_detail;
-	}
-	else
-	{
-		return "dkim=" . $signature->result_detail
-			. " i=" . $signature->identity;
-	}
+	my $type = $signature->isa("Mail::DKIM::DkSignature")
+		? "domainkeys" : "dkim";
+	my $tag = $signature->can("identity_tag")
+		? $signature->identity_tag : "i";
+
+	return "$type=" . $signature->result_detail
+		. " $tag=" . $signature->identity;
 }

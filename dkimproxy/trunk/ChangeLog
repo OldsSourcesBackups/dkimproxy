@@ -1,3 +1,7 @@
+2007-11-16: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_responder.pl: always report what identity is validated;
+   include original message attachment if "domainkey" is in the subject
+
 2007-11-15: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy_out.conf.example: change example path to private.key
 
