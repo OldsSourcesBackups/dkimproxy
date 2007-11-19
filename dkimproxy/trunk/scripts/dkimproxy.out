@@ -541,16 +541,9 @@ sub signer_policy
 		# signature's domain matches the message's sender
 		if ($options->{signature} eq "domainkeys")
 		{
-			my $is_domain_or_subdomain = sub {
-				return 1 if $_[0] eq $_[1];
-				my $end = ".$_[1]";
-				return 1 if substr($_[0], -length($end)) eq $end;
-			};
-
 			my $message_sender = $signer->message_sender->host;
 			my $signature_domain = $options->{domain};
-			next unless $is_domain_or_subdomain->(
-				$message_sender, $signature_domain);
+			next unless $message_sender =~ /(^|\.)\Q$signature_domain\E$/is;
 		}
 
 		my %signature_type_classes = (

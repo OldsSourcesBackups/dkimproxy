@@ -1,3 +1,7 @@
+2007-11-19: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: simplify- use regular expression to match
+   domains, rather than a complicated, hard-to-read string matching
+
 2007-11-16: Jason Long <jlong@messiah.edu>
  * scripts/dkim_responder.pl: always report what identity is validated;
    include original message attachment if "domainkey" is in the subject
