@@ -77,3 +77,38 @@ sub version
 }
 
 1;
+
+__END__
+
+=head1 BUGS
+
+This module should have the capability of parsing
+Authentication-Results headers and extracting the useful information
+out of them. I need to take time to consider what sorts of results
+will be useful.
+
+For instance, if I was an MUA, what information will I want to
+know from this header?
+
+=over
+
+=item 1.
+
+can this header be trusted... i.e. was it added my a trusted
+mail server, or was it part of the original untrusted message
+
+=item 2.
+
+which identities in the header (i.e. the "From" address,
+the "Sender" address, other addresses) can be trusted,
+and what methods were used to verify
+
+E.g. maybe a UI like this
+
+  From: Jason Long <jlong@messiah.edu>    ** DKIM VERIFIED **
+  Sender: George <george@example.com>     not verified
+  Return-Path: George <george@example.com> ** SPF VERIFIED **
+
+=back
+
+=cut
