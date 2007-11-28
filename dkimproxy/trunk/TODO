@@ -3,6 +3,7 @@ Bugs:
    (FIXED- set required version to be 0.91)
  - dkimproxy prints out "Becoming sub class of "Net::Server::PreFork";
    caused by 2007-05-15 bugfix
+ - "listen" argument has two meanings
 
 Possible bugs:
  - if signature fails on an email using a subdomain of the key's domain,

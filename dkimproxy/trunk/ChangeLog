@@ -1,3 +1,7 @@
+2007-11-28: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out, dkimproxy.in: port property should be an
+   arrayref, not a simple scalar
+
 2007-11-19: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.out: simplify- use regular expression to match
    domains, rather than a complicated, hard-to-read string matching

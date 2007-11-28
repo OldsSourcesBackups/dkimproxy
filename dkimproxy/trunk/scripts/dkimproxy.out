@@ -118,7 +118,7 @@ sub configure
 	{
 		my ($host, $port) = split /:/, $tmp, 2;
 		$self->{server}->{host} = $host;
-		$self->{server}->{port} = $port if defined $port;
+		$self->{server}->{port} = [ $port ] if defined $port;
 	}
 	if (my $tmp = $self->{server}->{relay})
 	{
