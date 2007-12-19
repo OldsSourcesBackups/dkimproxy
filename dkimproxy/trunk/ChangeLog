@@ -1,3 +1,7 @@
+2007-12-19: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: move map-lookup functionality to LookupMap.pm
+ * lib/LookupMap.pm: new file to make map-lookup functionality abstract
+
 2007-11-28: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.out, dkimproxy.in: port property should be an
    arrayref, not a simple scalar

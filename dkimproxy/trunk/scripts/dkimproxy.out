@@ -30,6 +30,7 @@ use Sys::Syslog;
 use Mail::DKIM 0.20;
 use Mail::DKIM::Signer;
 use MySmtpServer;
+use LookupMap;
 
 #enable support for "pretty" signatures, if available
 eval "require Mail::DKIM::TextWrap";
@@ -44,6 +45,7 @@ my $domain_arg;
 my $method;
 my $debugtrace = undef;
 my $sender_mapfile;
+my $sender_map;
 
 my @default_signatures;
 
@@ -152,10 +154,7 @@ sub configure
 
 	if ($sender_mapfile)
 	{
-		unless (-f $sender_mapfile)
-		{
-			die "Error: $sender_mapfile: file not found\n";
-		}
+		$sender_map = LookupMap->load($sender_mapfile);
 	}
 }
 
@@ -369,79 +368,6 @@ sub handle_end_of_data
 use Mail::DKIM::Signature;
 use Mail::DKIM::DkSignature;
 
-# lookup_address() - find an address in a map file
-#
-# the address is an email address. this function looks first for
-# the full email address, and if not found, tries more and more
-# general forms of the email addresses
-#
-# returns ($result, $key)
-# where $result is the right-hand value found in the map
-# and $key is the left-hand key corresponding to the found value
-# (a derivative of $address)
-#
-sub lookup_address
-{
-	my ($mapfile, $address) = @_;
-
-	$address = lc $address;
-	my @lookup_keys = ($address);
-
-	if ($address =~ s/\+(.*)\@//)
-	{
-		# local part of address has a extension, lookup same
-		# address without extension
-		# e.g. jason+extra@long.name => jason@long.name
-		push @lookup_keys, $address;
-	}
-
-	if ($address =~ s/^(.*)\@//)
-	{
-		# lookup just the domain of the address
-		push @lookup_keys, $address;
-	}
-	while ($address =~ s/^([^.]+\.)//)
-	{
-		# domain has at least two parts, try again with
-		# the first part removed
-		push @lookup_keys, $address;
-	}
-	# a catch-all key
-	push @lookup_keys, ".";
-
-	return lookup($mapfile, \@lookup_keys);
-}
-
-sub lookup
-{
-	my ($mapfile, $keys_arrayref) = @_;
-
-	my $best_idx = @$keys_arrayref;
-	my $best_result;
-
-	open my $fh, "<", $mapfile
-		or die "Error: cannot read $mapfile: $!\n";
-	while (<$fh>)
-	{
-		chomp;
-		next if /^\s*$/;
-		next if /^\s*[#;]/;
-		if (/^(\S+)\s+(.*)$/)
-		{
-			for (my $i = 0; $i < $best_idx; $i++)
-			{
-				if ($1 eq $keys_arrayref->[$i])
-				{
-					$best_idx = $i;
-					$best_result = $2;
-				}
-			}
-		}
-	}
-	close $fh;
-	return ($best_result, $keys_arrayref->[$best_idx]);
-}
-
 # split the result by commas, but not commas within
 # parenthesis
 sub split_by_commas
@@ -475,12 +401,12 @@ sub get_signature_options
 {
 	my $signer = shift;
 
-	if ($sender_mapfile)
+	if ($sender_map)
 	{
 		# determine what signatures to add based on the domain of the
 		# "sender" of this message
 		my $sender = $signer->message_sender->address;
-		my ($result, $key) = lookup_address($sender_mapfile, $sender);
+		my ($result, $key) = $sender_map->lookup_address($sender);
 		if (defined $result)
 		{
 			$key = $1 if $key =~ /\@(.*)$/;
