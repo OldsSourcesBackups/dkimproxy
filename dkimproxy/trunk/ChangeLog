@@ -1,6 +1,8 @@
 2007-12-19: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.out: move map-lookup functionality to LookupMap.pm
  * lib/LookupMap.pm: new file to make map-lookup functionality abstract
+ * lib/LookupMap.pm: changed to read the file into memory, and use the
+   copy in memory until the file's mtime changes
 
 2007-11-28: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.out, dkimproxy.in: port property should be an

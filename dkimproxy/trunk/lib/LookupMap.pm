@@ -98,34 +98,64 @@ sub lookup
 
 	$keys_arrayref = [ $keys_arrayref ] if not ref $keys_arrayref;
 
-	my $best_idx = @$keys_arrayref;
-	my $best_result;
+	my $map = $self->read_map();
 
-	open my $fh, "<", $self->{file}
-		or die "Error: cannot read $self->{file}: $!\n";
-	while (<$fh>)
+	foreach my $key (@$keys_arrayref)
 	{
-		chomp;
-		next if /^\s*$/;
-		next if /^\s*[#;]/;
-		if (/^(\S+)\s+(.*)$/)
+		my $result = $map->{$key};
+		if (defined $result)
 		{
-			for (my $i = 0; $i < $best_idx; $i++)
+			if (wantarray)
 			{
-				if ($1 eq $keys_arrayref->[$i])
-				{
-					$best_idx = $i;
-					$best_result = $2;
-				}
+				return ($result, $key);
+			}
+			else
+			{
+				return $result;
 			}
 		}
 	}
-	close $fh;
-	if (wantarray)
+	return;
+}
+
+# read_map() - private function - reads the map file into memory
+#
+# this function loads the map file and reads it into a hash.
+# to avoid having to reread the entire file every time, it
+# saves the contents of the map in memory, and on subsequent
+# calls, it compares the mtime of the file with that in memory
+#
+sub read_map
+{
+	my $self = shift;
+
+	open my $fh, "<", $self->{file}
+		or die "Error: cannot read $self->{file}: $!\n";
+	my $map_mtime = (stat $fh)[9];
+
+	# FIXME- if the file is changed multiple times in the same second,
+	# then we may be caching an old version of the file
+	#
+	if (!$self->{cached}
+		|| $map_mtime > $self->{cached_mtime})
 	{
-		return ($best_result, $keys_arrayref->[$best_idx]);
+		my $map = {};
+		while (<$fh>)
+		{
+			chomp;
+			next if /^\s*$/;
+			next if /^\s*[#;]/;
+			if (/^(\S+)\s+(.*)$/)
+			{
+				$map->{$1} = $2;
+			}
+		}
+		$self->{cached} = $map;
+		$self->{cached_mtime} = $map_mtime;
 	}
-	return $best_result;
+	close $fh;
+
+	return $self->{cached};
 }
 
 1;
