@@ -3,6 +3,23 @@ use warnings;
 
 package LookupMap;
 
+=head1 NAME
+
+LookupMap - query a Dkimproxy-compatible lookup table
+
+=head1 SYNOPSIS
+
+  my $map = LookupMap->load("/path/to/mapfile");
+  my $result = $map->lookup(
+=head1 CONSTRUCTOR
+
+=head2 load() - load a lookup table
+
+  my $map = LookupMap->load("/path/to/mapfile");
+  my $result = $map->lookup_address('bob@example.org');
+
+=cut
+
 sub load
 {
 	my $class = shift;
@@ -17,17 +34,23 @@ sub load
 	return $self;
 }
 
-# lookup_address() - find an address in a map file
-#
-# the address is an email address. this function looks first for
-# the full email address, and if not found, tries more and more
-# general forms of the email addresses
-#
-# returns ($result, $key)
-# where $result is the right-hand value found in the map
-# and $key is the left-hand key corresponding to the found value
-# (a derivative of $address)
-#
+=head1 METHODS
+
+=head2 lookup_address() - find an address in a map file
+
+  my ($result, $key) = $map->lookup_address('bob@example.com');
+
+The address is an email address. this function looks first for
+the full email address, and if not found, tries more and more
+general forms of the email addresses
+
+The result is a two element list. The first element is the result
+found in the map. The second element is the key by which the value
+was found. E.g. if you looked up bob@example.com but the map only
+had an entry for example.com, the key would be example.com.
+
+=cut
+
 sub lookup_address
 {
 	my $self = shift;
@@ -61,10 +84,19 @@ sub lookup_address
 	return $self->lookup(\@lookup_keys);
 }
 
+=head2 lookup() - lookup a raw value in the map file
+
+  my $result = $map->lookup('10.20.30.40');
+  my ($result, $key) = $map->lookup([ '10.20.30.40', '10.20.30', '10.20', '10' ]);
+
+=cut
+
 sub lookup
 {
 	my $self = shift;
 	my ($keys_arrayref) = @_;
+
+	$keys_arrayref = [ $keys_arrayref ] if not ref $keys_arrayref;
 
 	my $best_idx = @$keys_arrayref;
 	my $best_result;
@@ -89,7 +121,11 @@ sub lookup
 		}
 	}
 	close $fh;
-	return ($best_result, $keys_arrayref->[$best_idx]);
+	if (wantarray)
+	{
+		return ($best_result, $keys_arrayref->[$best_idx]);
+	}
+	return $best_result;
 }
 
 1;
