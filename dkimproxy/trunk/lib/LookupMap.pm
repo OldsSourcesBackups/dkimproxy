@@ -31,6 +31,7 @@ sub load
 	}
 
 	my $self = bless { file => $mapfile }, $class;
+	$self->read_map();
 	return $self;
 }
 
@@ -98,7 +99,7 @@ sub lookup
 
 	$keys_arrayref = [ $keys_arrayref ] if not ref $keys_arrayref;
 
-	my $map = $self->read_map();
+	my $map = $self->{map};
 
 	foreach my $key (@$keys_arrayref)
 	{
@@ -121,9 +122,6 @@ sub lookup
 # read_map() - private function - reads the map file into memory
 #
 # this function loads the map file and reads it into a hash.
-# to avoid having to reread the entire file every time, it
-# saves the contents of the map in memory, and on subsequent
-# calls, it compares the mtime of the file with that in memory
 #
 sub read_map
 {
@@ -131,31 +129,22 @@ sub read_map
 
 	open my $fh, "<", $self->{file}
 		or die "Error: cannot read $self->{file}: $!\n";
-	my $map_mtime = (stat $fh)[9];
 
-	# FIXME- if the file is changed multiple times in the same second,
-	# then we may be caching an old version of the file
-	#
-	if (!$self->{cached}
-		|| $map_mtime > $self->{cached_mtime})
+	my $map = {};
+	while (<$fh>)
 	{
-		my $map = {};
-		while (<$fh>)
+		chomp;
+		next if /^\s*$/;
+		next if /^\s*[#;]/;
+		if (/^(\S+)\s+(.*)$/)
 		{
-			chomp;
-			next if /^\s*$/;
-			next if /^\s*[#;]/;
-			if (/^(\S+)\s+(.*)$/)
-			{
-				$map->{$1} = $2;
-			}
+			$map->{$1} = $2;
 		}
-		$self->{cached} = $map;
-		$self->{cached_mtime} = $map_mtime;
 	}
 	close $fh;
 
-	return $self->{cached};
+	$self->{map} = $map;
+	return;
 }
 
 1;
