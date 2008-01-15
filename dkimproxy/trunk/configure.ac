@@ -1,12 +1,12 @@
 dnl Initialize automake/autoconf
-AC_INIT(dkimproxy, 1.0beta2)
+AC_INIT(dkimproxy, 1.1beta1)
 AM_INIT_AUTOMAKE
 
 dnl Check for Perl
 AC_PATH_PROG(PERL, perl, perl)
 
 dnl Check for Perl dependencies
-local_CHECK_PERL_MODULE(Mail::DKIM 0.29)
+local_CHECK_PERL_MODULE(Mail::DKIM 0.30)
 local_CHECK_PERL_MODULE(Error)
 local_CHECK_PERL_MODULE(Net::Server 0.91)
 

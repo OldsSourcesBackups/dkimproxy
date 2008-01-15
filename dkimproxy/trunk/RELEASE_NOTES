@@ -1,54 +1,24 @@
-Release 1.0beta2
-
-Warning: this is a Beta release of the latest-and-greatest development
-on DKIMproxy. I would love to have some people test it and report
-how the upgrade went, but just understand that when you apply this
-upgrade, watch out for changes in behavior.
+Release 1.1
 
 
-What's New
+What's New (since 1.0)
 
- * DKIMproxy can now be configured using configuration files, instead of
-   only through command-line arguments.
-
-   New installations will want to take advantage of this. Editing a
-   configuration file is much nicer than having to edit the startup
-   script.
-
- * DKIMproxy now lets you tell it to add multiple signatures in one
-   pass. You do this by supplying two or more "signature" options.
-   For example,
-
-     ./dkimproxy.out --signature=dkim --signature=domainkeys
-
-   will tell it to add a DKIM signature then a DomainKeys signature
-   to the message. The DKIM signature will appear before the DomainKeys
-   signature.
-
-   Note: it's a good idea to always put the DomainKeys signature last.
-
- * DKIMproxy now lets you add different signatures depending on the
-   sender of the message. This will be helpful for sites hosting
-   many domains. They may want to, for example, use a different private
-   key or selector for each domain. You do this by specifying the
-   "sender_map" option. The sender_map option specifies a file
-   containing per-sender signature options.
+   nothing new yet
 
 
 Installing
 
    As usual, installation instructions are in the INSTALL file.
-   You will need the "development" release of my Mail::DKIM module.
+   You will need the accompanying release of my Mail::DKIM module.
 
-   If you are upgrading, please note that the documentation now suggests
-   a different user/group and directory prefix. Upgraders should be
-   careful to use the old values, or be prepared to move some things
-   around.
+   If you are upgrading from a version prior to 1.0, please consult
+   the release notes for version 1.0 as well.
 
 
 Changes
 
-   If you are upgrading, please take note of the following changes.
+   If you are upgrading from a version prior to 1.0, please take note
+   of the following changes.
 
  * The documentation and sample init script have been changed to use
    "dkim" as the name of the user/group that dkimproxy can run as,
