@@ -1,0 +1,156 @@
+This file summarizes what's changed between releases of dkimproxy.
+See the ChangeLog file for the details.
+
+Version 1.0 - released 2008-02-01
+
+ - beta2
+
+ * Sender-dependent maps are now read into memory at startup.
+   If you make a change to a map, you will need to restart dkimproxy.
+
+ - beta1
+
+ UPGRADERS TAKE NOTE!
+   Please check the included RELEASE_NOTES for what to watch out for
+   when upgrading to 1.0+.
+
+ * Added support for configuration files
+ * Added support for specifying multiple signatures
+ * Added support for sender-dependent configurations
+
+
+Version 0.16 - released 2007-05-24
+
+ * Fixed a bug where --max_servers and --min_servers still were not
+   recognized as valid parameters.
+ * Use new "pretty signatures" feature if Mail::DKIM 0.25 or better
+   is installed. (This makes all generated signatures line wrapped.)
+
+
+Version 0.15 - released 2007-03-02
+
+ * The signer can now output DomainKeys signatures instead of DKIM signatures.
+ * The online help (see dkimproxy.in --help or dkimproxy.out --help) has
+   been improved quite a bit.
+ * The dkimproxy daemons accept all options documented in Perl module
+   Net::Server::PreFork. E.g. --max_servers, --min_servers.
+
+
+Version 0.14 - released 2006-09-21
+
+ * The sample init script has been rewritten; it should now work on Linux
+   distributions other than Suse.
+
+
+Version 0.13 - released 2006-05-26
+
+ UPGRADERS TAKE NOTE!
+   If you have installed version 0.12 (or lower) of DKIM proxy,
+   please delete the $prefix/lib/Mail/DKIM directory before upgrading.
+
+ * Mail::DKIM is now a separate download, so please download it (from
+   the same location as dkimproxy is available) and install it
+   separately. Mail::DKIM version 0.17 includes support for draft ietf-01
+   of the DKIM specification.
+ * Some tweaks have been made to the init script, and a new argument
+   --pidfile can be specified to create a PID file on startup.
+ * Fixed an issue where only one SMTP client could be connected at a time.
+
+
+Version 0.12 - released 2006-02-23
+
+ * A few bugs were fixed with regard to DKIM specifications.
+ * Mail::DomainKeys is no longer needed, and no longer included with the
+   dkimproxy package.
+
+
+Version 0.11 - released 2005-12-06
+
+ * Renamed to dkimproxy
+ * DKIM draft 01 now supported (report bugs, please)
+
+
+Version 0.10 (not released)
+
+ * Incremental signing/verifying is now implemented in the DKIM filter;
+   as a result, the Crypt::RSA Perl module is now required, in addition
+   to Crypt::OpenSSL::RSA. Requiring both of these modules was not
+   desired, but so far it seems necessary.
+
+
+Version 0.9 - released 2005-10-28
+
+ * Started working on DKIM support. The signing process appears to be
+   more-or-less complete (at least until the next revision of the DKIM
+   drafts), but has received very little testing. I recommend against
+   putting this into production.
+ * DKIM verification support is rudimentary as well. Once again, I must
+   recommend against using it in production.
+ * No changes to the DomainKeys signing and verification, so there's
+   no reason for users to upgrade.
+
+
+Version 0.8 - released 2005-07-13
+
+ * Implemented an autoconf/automake build system. The recommended install can
+   now be achieved with:
+     ./configure --prefix=/usr/local/dkfilter
+     make install
+ * The filter scripts, dkfilter.in and dkfilter.out, are now installed to
+   $(prefix)/bin, e.g. /usr/local/dkfilter/bin/. This is different than
+   before, so if upgrading make the appropriate adjustments to your startup
+   script.
+
+
+Version 0.7 - released 2005-06-21
+
+ * Fixed a bug where the TERM signal was not properly handled.
+ * Includes auto_responder.pl, a Perl script for creating an auto-resonding
+   interoperability tester
+
+
+Version 0.6 - released 2005-06-02
+
+ * Fixed a few bugs with message parsing and domain comparisons
+
+
+Version 0.5 - released 2005-05-05
+
+ * The "simple" and "nofws" canonicalization routines are now able to pass
+   the "torture tests" provided on http://domainkeys.sourceforge.net
+ * Support generation of "h" tag (headers) when creating a signature.
+   To use, add --headers to the command-line arguments of dkfilter.out.
+ * Failed signatures for domains in "testing mode" will result in a "neutral"
+   result, rather than "softfail".
+ * DNS time-outs now get reported in the Authentication-Results header,
+   unless "--reject-errors" is being used, in which case the message is
+   not even accepted.
+
+
+Version 0.4 - released 2005-05-02
+
+ * DNS queries now have a 10-second timeout, which prevents the SMTP proxy
+   from taking too long to respond to Postfix
+
+
+Version 0.3 - released 2005-04-29
+
+ * you can now specify a canonicalization method; use the --method argument:
+   either --method=simple or --method=nofws
+ * the signer can now be responsible for multiple source domains; simply
+   specify the domains separated by commas on the --domain argument,
+   e.g. --domain=example.org,example.com
+
+
+Version 0.2 - released 2005-04-27
+
+ * fixed a minor logging bug
+ * include better reasons for why verification fails in the
+   Authentication-Results header
+ * now properly verifies a signature that uses a parent domain of the
+   domain in the from/sender address
+
+
+Version 0.1 - released 2005-04-26
+
+ * initial release
