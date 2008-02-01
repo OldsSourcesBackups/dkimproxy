@@ -1,13 +1,14 @@
 This file summarizes what's changed between releases of dkimproxy.
 See the ChangeLog file for the details.
 
-Version 1.0 - beta2
+Version 1.0 - released 2008-02-01
+
+ - beta2
 
  * Sender-dependent maps are now read into memory at startup.
    If you make a change to a map, you will need to restart dkimproxy.
 
-
-Version 1.0 - beta1
+ - beta1
 
  UPGRADERS TAKE NOTE!
    Please check the included RELEASE_NOTES for what to watch out for
