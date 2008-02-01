@@ -1,9 +1,10 @@
-Release 1.0beta2
+Release 1.0
 
-Warning: this is a Beta release of the latest-and-greatest development
-on DKIMproxy. I would love to have some people test it and report
-how the upgrade went, but just understand that when you apply this
-upgrade, watch out for changes in behavior.
+This is my overdue release for 1.0. There are no changes since 1.0beta2.
+Some people attach special meaning to a "1.0" release, perhaps expecting
+a more "finished" and "bugfree" program than a e.g. "0.16" release.
+Well, I hope that's true, but the only meaning I attach to 1.0 is it's
+a major upgrade from 0.16 :).
 
 
 What's New
@@ -38,12 +39,13 @@ What's New
 Installing
 
    As usual, installation instructions are in the INSTALL file.
-   You will need the "development" release of my Mail::DKIM module.
+   You will need to install my Mail::DKIM perl module, available
+   on CPAN. You will need version 0.30 or better.
 
    If you are upgrading, please note that the documentation now suggests
-   a different user/group and directory prefix. Upgraders should be
-   careful to use the old values, or be prepared to move some things
-   around.
+   a different user/group and directory prefix. Upgraders can
+   continue to use the original user/group and prefix, or else be
+   prepared to move some things around.
 
 
 Changes
