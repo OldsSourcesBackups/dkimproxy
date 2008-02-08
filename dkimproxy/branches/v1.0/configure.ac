@@ -1,5 +1,5 @@
 dnl Initialize automake/autoconf
-AC_INIT(dkimproxy, 1.0)
+AC_INIT(dkimproxy, 1.0.1)
 AM_INIT_AUTOMAKE
 
 dnl Check for Perl

@@ -1,6 +1,12 @@
 This file summarizes what's changed between releases of dkimproxy.
 See the ChangeLog file for the details.
 
+Version 1.0.1 - released 2008-02-08
+
+ * Fixed a bug where the "key" parameter didn't work in a sender_map
+   file.
+
+
 Version 1.0 - released 2008-02-01
 
  - beta2
