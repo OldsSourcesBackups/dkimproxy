@@ -1,0 +1,83 @@
+Release 1.0.1
+
+After a long delay I released 1.0 a week ago. Unfortunately, I've
+already discovered a bug. This release, 1.0.1, contains a fix for
+that bug. The rest of this document describes what's new and changed
+in the version 1.0 from the previous versions.
+
+
+What's New
+
+ * DKIMproxy can now be configured using configuration files, instead of
+   only through command-line arguments.
+
+   New installations will want to take advantage of this. Editing a
+   configuration file is much nicer than having to edit the startup
+   script.
+
+ * DKIMproxy now lets you tell it to add multiple signatures in one
+   pass. You do this by supplying two or more "signature" options.
+   For example,
+
+     ./dkimproxy.out --signature=dkim --signature=domainkeys
+
+   will tell it to add a DKIM signature then a DomainKeys signature
+   to the message. The DKIM signature will appear before the DomainKeys
+   signature.
+
+   Note: it's a good idea to always put the DomainKeys signature last.
+
+ * DKIMproxy now lets you add different signatures depending on the
+   sender of the message. This will be helpful for sites hosting
+   many domains. They may want to, for example, use a different private
+   key or selector for each domain. You do this by specifying the
+   "sender_map" option. The sender_map option specifies a file
+   containing per-sender signature options.
+
+
+Installing
+
+   As usual, installation instructions are in the INSTALL file.
+   You will need to install my Mail::DKIM perl module, available
+   on CPAN. You will need version 0.30 or better.
+
+   If you are upgrading, please note that the documentation now suggests
+   a different user/group and directory prefix. Upgraders can
+   continue to use the original user/group and prefix, or else be
+   prepared to move some things around.
+
+
+Changes
+
+   If you are upgrading, please take note of the following changes.
+
+ * The documentation and sample init script have been changed to use
+   "dkim" as the name of the user/group that dkimproxy can run as,
+   and "/usr/local/dkimproxy" as the installation prefix. Upgraders
+   do not need to adopt these new values, but will need to translate
+   as they follow the documentation.
+
+ * Dkimproxy.out will, in certain cases, now add a signature to
+   messages that it would not before. If you start dkimproxy.out
+   and specify just one domain for the --domain argument, and do
+   not specify --signature=domainkeys, then dkimproxy.out will
+   ALWAYS add a DKIM signature, no matter the message's sender's
+   domain.
+
+
+Known Issues
+
+ * The verifier (dkimproxy.in) adds an Authentication-Results header
+   with no information if the message being verified has no signatures.
+
+
+Comments/Suggestions
+
+  Send comments/suggestions to the dkimproxy-users mailing list on
+  SourceForge. Or, you can add a bug or feature request to the SourceForge
+  tracker system. Or, you can post a message in one of the DKIMproxy
+  SourceForge forums.
+
+  Finally, as a last resort, you can email the author directly,
+  Jason Long <jlong@messiah.edu>.
+
