@@ -1,3 +1,14 @@
+ -- VERSION 1.0.1 --
+
+2008-02-08: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: fix a bug where the "key=" parameter was
+   ignored in the sender_map file
+
+ -- VERSION 1.0 --
+
+2008-02-01: Jason Long <jlong@messiah.edu>
+ * RELEASE_NOTES: some final adjustments for 1.0
+
 2007-12-19: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.out: move map-lookup functionality to LookupMap.pm
  * lib/LookupMap.pm: new file to make map-lookup functionality abstract
