@@ -485,10 +485,10 @@ sub signer_policy
 				Method => $options->{method},
 				Domain => $options->{domain},
 				Selector => $options->{selector},
-				KeyFile => $options->{keyfile},
 				Identity => $options->{identity},
 				Headers => $signer->headers,
 				);
+		$sig->{KeyFile} = $options->{keyfile};
 		$signer->add_signature($sig);
 	}
 	return; #needed, otherwise Mail::DKIM will add the default signature

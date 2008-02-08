@@ -1,3 +1,7 @@
+2008-02-08: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: fix a bug where the "key=" parameter was
+   ignored in the sender_map file
+
 2008-02-01: Jason Long <jlong@messiah.edu>
  * RELEASE_NOTES: some final adjustments for 1.0
 
