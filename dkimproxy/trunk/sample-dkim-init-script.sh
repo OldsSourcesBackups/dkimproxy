@@ -80,8 +80,8 @@ case "$1" in
 		;;
 
 	start)
-		test -f $DKIMPROXY_IN_CFG && $0 start-in || exit $?
-		test -f $DKIMPROXY_OUT_CFG && $0 start-out || exit $?
+		test -f $DKIMPROXY_IN_CFG && { $0 start-in || exit $?; }
+		test -f $DKIMPROXY_OUT_CFG && { $0 start-out || exit $?; }
 		;;
 
 	stop-in)
@@ -109,8 +109,8 @@ case "$1" in
 		;;
 
 	stop)
-		test -f $DKIMPROXY_IN_CFG && $0 stop-in || exit $?
-		test -f $DKIMPROXY_OUT_CFG && $0 stop-out || exit $?
+		test -f $DKIMPROXY_IN_CFG && { $0 stop-in || exit $?; }
+		test -f $DKIMPROXY_OUT_CFG && { $0 stop-out || exit $?; }
 		;;
 
 	restart)
