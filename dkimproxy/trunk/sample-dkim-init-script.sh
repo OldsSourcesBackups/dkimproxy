@@ -146,8 +146,8 @@ case "$1" in
 		;;
 
 	status)
-		test -f $DKIMPROXY_IN_CFG && $0 status-in || exit $?
-		test -f $DKIMPROXY_OUT_CFG && $0 status-out || exit $?
+		test -f $DKIMPROXY_IN_CFG && { $0 status-in || exit $?; }
+		test -f $DKIMPROXY_OUT_CFG && { $0 status-out || exit $?; }
 		;;
 	*)
 		echo "Usage: $0 {start|stop|restart|status}"
