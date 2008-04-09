@@ -11,7 +11,7 @@ use warnings;
 use IO::File;
 use MIME::Entity;
 
-use Mail::DKIM 0.32;
+use Mail::DKIM 0.29;
 use Mail::DKIM::Verifier;
 
 use constant FROM_ADDR => 'admin@dkimtest.jason.long.name';
@@ -35,7 +35,7 @@ my $attach_original_msg;
 
 # read message from stdin, catching from address and subject
 my @message_lines;
-my %canonicalized;
+my $canonicalized = "";
 while (<STDIN>)
 {
 	s/\n\z/\015\012/;
@@ -70,7 +70,7 @@ my $s_policy_result;
 eval
 {
 	my $dkim = Mail::DKIM::Verifier->new(
-			Debug_Canonicalization => \&debug_canonicalization,
+			Debug_Canonicalization => \$canonicalized,
 		);
 	$dkim->load($fh);
 
@@ -205,21 +205,18 @@ if ($attach_original_msg)
 		Disposition => "attachment",
 		Data => \@message_lines);
 }
-if ($attach_original_msg)
+if ($attach_original_msg && length($canonicalized))
 {
 	# part three, canonicalized message
 	# FIXME - by attaching it as text/plain, the linefeed characters
 	# are subject to conversion during the encoding/decoding process.
 	# It may be better to attach as a binary object?
-	foreach my $canonicalized (values %canonicalized)
-	{
-		$top->attach(
-			Type => "application/octet-stream",
-			Encoding => "base64",
-			Filename => "canonicalized.txt",
-			Disposition => "attachment",
-			Data => $canonicalized->{text});
-	}
+	$top->attach(
+		Type => "application/octet-stream",
+		Encoding => "base64",
+		Filename => "canonicalized.txt",
+		Disposition => "attachment",
+		Data => $canonicalized);
 }
 
 # send it
@@ -239,13 +236,4 @@ sub make_auth_result
 
 	return "$type=" . $signature->result_detail
 		. " $tag=" . $signature->identity;
-}
-
-sub debug_canonicalization
-{
-	my ($text, $canonicalization) = @_;
-
-	$canonicalized{$canonicalization}
-		||= { text => "", canon => $canonicalization };
-	$canonicalized{$canonicalization}->{text} .= $text;
 }
