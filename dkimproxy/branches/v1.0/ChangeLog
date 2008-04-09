@@ -1,3 +1,8 @@
+2008-04-09: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_responder.pl: response will now include multiple
+   canonicalized.txt attachments-- one for each canonicalization object
+   that was used
+
  -- VERSION 1.0.1 --
 
 2008-02-08: Jason Long <jlong@messiah.edu>
