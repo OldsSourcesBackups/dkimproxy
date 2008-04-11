@@ -234,8 +234,8 @@ sub make_auth_result
 
 	my $type = $signature->isa("Mail::DKIM::DkSignature")
 		? "domainkeys" : "dkim";
-	my $tag = $signature->can("identity_tag")
-		? $signature->identity_tag : "i";
+	my $tag = $signature->can("identity_source")
+		? $signature->identity_source : "header.i";
 
 	return "$type=" . $signature->result_detail
 		. " $tag=" . $signature->identity;

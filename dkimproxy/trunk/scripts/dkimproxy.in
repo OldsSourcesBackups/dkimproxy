@@ -227,8 +227,8 @@ sub handle_end_of_data
 	{
 		# output authentication results header
 		my $auth_results = join("; ",
-			map { "dkim=" . $_->result_detail
-				. " header.i=" . $_->identity } $dkim->signatures);
+			map { make_auth_result($_) }
+			$dkim->signatures);
 		$client->write_data_line("Authentication-Results: $hostname; "
 			. $auth_results . "\015\012");
 
@@ -245,6 +245,19 @@ sub handle_end_of_data
 		$client->yammer($fh);
 	}
 	return 1;
+}
+
+sub make_auth_result
+{
+	my $signature = shift;
+
+	my $type = $signature->isa("Mail::DKIM::DkSignature")
+		? "domainkeys" : "dkim";
+	my $tag = $signature->can("identity_source")
+		? $signature->identity_source : "header.i";
+
+	return "$type=" . $signature->result_detail
+		. " $tag=" . $signature->identity;
 }
 
 __END__

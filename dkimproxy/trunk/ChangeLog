@@ -1,3 +1,7 @@
+2008-04-11: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_responder.pl, dkimproxy.in: fix authentication results
+   header so it displays identity source properly
+
 2008-04-09: Jason Long <jlong@messiah.edu>
  * scripts/dkim_responder.pl: response will now include multiple
    canonicalized.txt attachments-- one for each canonicalization object
