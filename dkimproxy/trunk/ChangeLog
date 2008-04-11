@@ -1,6 +1,6 @@
 2008-04-11: Jason Long <jlong@messiah.edu>
  * scripts/dkim_responder.pl, dkimproxy.in: fix authentication results
-   header so it displays identity source properly
+   header so it displays identity source properly (issue #1940393)
 
 2008-04-09: Jason Long <jlong@messiah.edu>
  * scripts/dkim_responder.pl: response will now include multiple

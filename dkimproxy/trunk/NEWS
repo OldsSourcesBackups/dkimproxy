@@ -3,6 +3,9 @@ See the ChangeLog file for the details.
 
 Version 1.1 - not yet released
 
+ * Fixed a bug in dkimproxy.in where DomainKey signatures were not
+   reported correctly in the Authentication-Results header.
+
 
 Version 1.0.1 - released 2008-02-08
 
