@@ -4,7 +4,9 @@ See the ChangeLog file for the details.
 Version 1.1 - not yet released
 
  * Fixed a bug in dkimproxy.in where DomainKey signatures were not
-   reported correctly in the Authentication-Results header.
+   reported correctly in the Authentication-Results header. I.e.
+   Authentication-Results header now report "domainkeys=pass"
+   and "header.from=whatever" for DomainKeys signatures.
 
 
 Version 1.0.1 - released 2008-02-08
