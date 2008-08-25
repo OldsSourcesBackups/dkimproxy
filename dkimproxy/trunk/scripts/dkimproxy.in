@@ -144,7 +144,7 @@ sub setup_client_socket
 	if (my $E = $@)
 	{
 		chomp $E;
-		$self->{smtp_server}->fail("421 Service not available, closing transmission channel");
+		print "421 Internal error (Next hop is down)\n";
 		die "$E\n";
 	}
 
@@ -162,9 +162,19 @@ sub process_request
 	$ENV{REMOTE_ADDR} = inet_ntoa($iaddr);
 
 	# initialize syslog
-	openlog("dkimproxy.in", "perror,pid", "mail");
-	syslog("debug", '%s',
-			"got connection from $ENV{REMOTE_ADDR}");
+	eval
+	{
+		openlog("dkimproxy.in", "perror,pid,ndelay", "mail");
+		syslog("debug", '%s',
+				"got connection from $ENV{REMOTE_ADDR}");
+	};
+	if (my $E = $@)
+	{
+		chomp $E;
+		print "421 Internal error (Syslog is down)\n";
+		die "$E\n";
+	}
+
 	$self->{debug} = $debugtrace;
 
 	$self->SUPER::process_request;
