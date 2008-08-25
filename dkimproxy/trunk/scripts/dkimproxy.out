@@ -272,8 +272,16 @@ sub process_request
 {
 	my $self = shift;
 
+	# try to determine peer's address
+	use Socket;
+	my $peersockaddr = getpeername(STDOUT);
+	my ($port, $iaddr) = sockaddr_in($peersockaddr);
+	$ENV{REMOTE_ADDR} = inet_ntoa($iaddr);
+
 	# initialize syslog
-	openlog("dkimproxy.out", "cons,pid", "mail");
+	openlog("dkimproxy.out", "perror,pid", "mail");
+	syslog("debug", '%s',
+			"got connection from $ENV{REMOTE_ADDR}");
 	$self->{debug} = $debugtrace;
 
 	$self->SUPER::process_request;

@@ -3,6 +3,7 @@
    report an error to the client instead of just dropping the connection
  * scripts/dkimproxy.{in,out}: detect syslog errors and report them
    to the client, instead of just dropping the connection
+ * scripts/dkimproxy.{in,out}: report client address to syslog
 
 2008-04-11: Jason Long <jlong@messiah.edu>
  * scripts/dkim_responder.pl, dkimproxy.in: fix authentication results
