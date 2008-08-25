@@ -3,7 +3,10 @@ Release 1.1
 
 What's New (since 1.0)
 
-   nothing new yet
+ * The verifier now adds a DomainKey-specific Authentication-Results
+   header when verifying a DomainKey signature.
+
+ * Improved error-handling for some configuration problems.
 
 
 Installing

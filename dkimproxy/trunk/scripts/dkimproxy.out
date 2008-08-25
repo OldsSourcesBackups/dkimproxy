@@ -328,7 +328,8 @@ sub handle_end_of_data
 	{
 		my $E = $@;
 		chomp $E;
-		syslog("warning", '%s', "signing error: $E");
+		$E =~ s/\n/ /gs;
+		eval { syslog("warning", '%s', "signing error: $E") };
 		print STDERR "Warning: signing error: $E\n";
 		$result = "temperror";
 		$result_detail = "$result ($E)";

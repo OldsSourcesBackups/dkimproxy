@@ -194,7 +194,8 @@ sub handle_end_of_data
 	{
 		my $E = $@;
 		chomp $E;
-		syslog("warning", '%s', "verify error: $E");
+		$E =~ s/\n/ /gs;
+		eval { syslog("warning", '%s', "verify error: $E") };
 		print STDERR "verify error: $E\n";
 		$verify_result = "temperror";
 		$verify_detail = "$verify_result ($E)";

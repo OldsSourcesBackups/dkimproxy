@@ -1,3 +1,9 @@
+2008-08-25: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.{in,out}: if unable to connect to relay host,
+   report an error to the client instead of just dropping the connection
+ * scripts/dkimproxy.{in,out}: detect syslog errors and report them
+   to the client, instead of just dropping the connection
+
 2008-04-11: Jason Long <jlong@messiah.edu>
  * scripts/dkim_responder.pl, dkimproxy.in: fix authentication results
    header so it displays identity source properly (issue #1940393)
