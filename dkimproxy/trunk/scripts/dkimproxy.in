@@ -138,9 +138,16 @@ sub setup_client_socket
 
 	# create an object for sending the outgoing SMTP commands
 	#  (and the verified message)
-    my $client = MSDW::SMTP::Client->new(
+    my $client = eval { MSDW::SMTP::Client->new(
 			interface => $self->{server}->{relay_host},
-			port => $self->{server}->{relay_port});
+			port => $self->{server}->{relay_port}) };
+	if (my $E = $@)
+	{
+		chomp $E;
+		$self->{smtp_server}->fail("421 Service not available, closing transmission channel");
+		die "$E\n";
+	}
+
 	return $client;
 }
 
