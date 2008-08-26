@@ -3,6 +3,14 @@ See the ChangeLog file for the details.
 
 Version 1.1 - not yet released
 
+ - release candidate 2
+
+ * Copyright/permission notices have been clarified on several files
+   that make up this project. It should now be clear this project is
+   GPL2 or later.
+
+ - release candidate 1
+
  * Fixed a bug in dkimproxy.in where DomainKey signatures were not
    reported correctly in the Authentication-Results header. I.e.
    Authentication-Results header now report "domainkeys=pass"
