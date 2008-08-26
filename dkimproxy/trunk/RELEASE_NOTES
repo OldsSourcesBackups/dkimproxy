@@ -1,12 +1,18 @@
-Release 1.1
+Release 1.1rc1
+
+This is "Release-Candidate 1" of DKIMproxy 1.1. If all goes well,
+version 1.1 will be pretty much the same as this.
 
 
 What's New (since 1.0)
 
- * The verifier now adds a DomainKey-specific Authentication-Results
-   header when verifying a DomainKey signature.
+ * The Authentication-Results header, added by the verifier, has been
+   changed so that results for DomainKey signatures can be distinguished
+   from results for DKIM signatures.
 
- * Improved error-handling for some configuration problems.
+ * Both the signer and verifier, when errors occur (such as the next
+   host being unavailable), will now give an error message to the client
+   via SMTP before disconnecting.
 
 
 Installing

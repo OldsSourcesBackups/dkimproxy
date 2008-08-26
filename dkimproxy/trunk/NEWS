@@ -8,7 +8,8 @@ Version 1.1 - not yet released
    Authentication-Results header now report "domainkeys=pass"
    and "header.from=whatever" for DomainKeys signatures.
  * Better error-handling for when the relay host is down or
-   syslog is down.
+   syslog is down (the error is reported to the client via SMTP
+   before the connection is terminated).
 
 
 Version 1.0.1 - released 2008-02-08
