@@ -1,9 +1,11 @@
 Jason Long <jlong@messiah.edu>
 
-Uses code from smtpprox:
+This project incorporates code from the "smtpprox" program:
   http://bent.latency.net/smtpprox/
   Bennett Todd <bet@rahul.net>
+  Copyright (C) 2001 Morgan Stanley Dean Witter, licensed under GPL2+.
 
-and code from Mail::DomainKeys:
+and code from the "Mail::DomainKeys" Perl module:
   http://killa.net/infosec/Mail-DomainKeys/
   Anthony D. Urso <anthonyu@cpan.org>
+  Copyright (C) 2004 Anthony D. Urso, licensed same as Perl (GPL2+).

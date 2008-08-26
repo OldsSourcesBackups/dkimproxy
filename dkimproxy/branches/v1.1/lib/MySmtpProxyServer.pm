@@ -1,23 +1,36 @@
 #!/usr/bin/perl -I../lib
 #
-# Copyright (c) 2005 Messiah College. This program is free software.
-# You can redistribute it and/or modify it under the terms of the
-# GNU Public License as found at http://www.fsf.org/copyleft/gpl.html.
+# This file is part of DKIMproxy, an SMTP-proxy implementing DKIM.
+# Copyright (c) 2005-2008 Messiah College.
+# Written by Jason Long <jlong@messiah.edu>.
 #
-# Written by Jason Long, jlong@messiah.edu.
-
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-#   This code is Copyright (C) 2001 Morgan Stanley Dean Witter, and
-#   is distributed according to the terms of the GNU Public License
-#   as found at <URL:http://www.fsf.org/copyleft/gpl.html>.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor,
+# Boston, MA  02110-1301, USA.
+#
+# This file incorporates work covered by the following copyright and
+# permission notice. See the top-level AUTHORS file for more details.
+#
+#     This code is Copyright (C) 2001 Morgan Stanley Dean Witter, and
+#     is distributed according to the terms of the GNU Public License
+#     as found at <URL:http://www.fsf.org/copyleft/gpl.html>.
+#
+#     Written by Bennett Todd <bet@rahul.net>.
 #
 #
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
 #
-# Written by Bennett Todd <bet@rahul.net>
+#
 
 use warnings;
 use strict;

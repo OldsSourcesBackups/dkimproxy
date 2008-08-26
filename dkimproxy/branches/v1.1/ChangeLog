@@ -1,6 +1,8 @@
 2008-08-26: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.{in,out}: slight wording change in how client
    IP addresses are logged
+ * various files: updated/replaced copyright notice... now it
+   explicitly specifies version 2 or later of GPL
 
  -- VERSION 1.1RC1 --
 

@@ -1,3 +1,6 @@
+About
+=====
+
 DKIMproxy is an SMTP-proxy that implements the DKIM and DomainKeys
 standards, to sign and verify email messages using digital signatures
 and DNS records. It can be used to add DKIM support to nearly any
@@ -7,13 +10,14 @@ integrate it with Postfix.  It comprises two separate proxies, an
 verifying signatures of incoming email. With Postfix, the proxies can
 operate as either Before-Queue or After-Queue content filters.
 
-See the INSTALL file for installation instructions. Or, check the website
-at http://dkimproxy.sourceforge.net/.
+See the INSTALL file for installation instructions. Or, check the
+website at http://dkimproxy.sourceforge.net/.
 
 DKIMproxy has evolved from my earlier project, Dkfilter. It is based on
 smtpprox and Mail::DomainKeys. My thanks go out to Bennett Todd for
 providing smtpprox and Anthony D. Urso for providing Mail::DomainKeys.
 
-DKIMproxy is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation.
+DKIMproxy is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.

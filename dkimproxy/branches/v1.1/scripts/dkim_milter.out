@@ -2,6 +2,7 @@
 #
 # This file is part of DKIMproxy, an SMTP-proxy implementing DKIM.
 # Copyright (c) 2006 Messiah College.
+# Written by Jason Long <jlong@messiah.edu>.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
