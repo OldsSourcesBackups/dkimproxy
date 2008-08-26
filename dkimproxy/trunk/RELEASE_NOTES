@@ -1,22 +1,12 @@
-Release 1.1rc1
+Release 1.2beta1
 
-This is "Release-Candidate 1" of DKIMproxy 1.1. If all goes well,
-version 1.1 will be pretty much the same as this.
+This is the "Beta" of DKIMproxy 1.2. It is used for testing some of the
+changes going into version 1.2.
 
 
-What's New (since 1.0)
+What's New (since 1.1)
 
- * The Authentication-Results header, added by the verifier, has been
-   changed so that results for DomainKey signatures can be distinguished
-   from results for DKIM signatures.
 
- * Both the signer and verifier, when errors occur (such as the next
-   host being unavailable), will now give an error message to the client
-   via SMTP before disconnecting.
-
-Note: if you're wondering why this version grew so much (15%) for so
-few changes, the answer is the generated Makefile scripts inside are
-much bigger, thanks to a new version of autoconf/automake.
 
 
 Installing
