@@ -1,0 +1,61 @@
+Release 1.1rc1
+
+This is "Release-Candidate 1" of DKIMproxy 1.1. If all goes well,
+version 1.1 will be pretty much the same as this.
+
+
+What's New (since 1.0)
+
+ * The Authentication-Results header, added by the verifier, has been
+   changed so that results for DomainKey signatures can be distinguished
+   from results for DKIM signatures.
+
+ * Both the signer and verifier, when errors occur (such as the next
+   host being unavailable), will now give an error message to the client
+   via SMTP before disconnecting.
+
+
+Installing
+
+   As usual, installation instructions are in the INSTALL file.
+   You will need the accompanying release of my Mail::DKIM module.
+
+   If you are upgrading from a version prior to 1.0, please consult
+   the release notes for version 1.0 as well.
+
+
+Changes
+
+   If you are upgrading from a version prior to 1.0, please take note
+   of the following changes.
+
+ * The documentation and sample init script have been changed to use
+   "dkim" as the name of the user/group that dkimproxy can run as,
+   and "/usr/local/dkimproxy" as the installation prefix. Upgraders
+   do not need to adopt these new values, but will need to translate
+   as they follow the documentation.
+
+ * Dkimproxy.out will, in certain cases, now add a signature to
+   messages that it would not before. If you start dkimproxy.out
+   and specify just one domain for the --domain argument, and do
+   not specify --signature=domainkeys, then dkimproxy.out will
+   ALWAYS add a DKIM signature, no matter the message's sender's
+   domain.
+
+
+Known Issues
+
+ * The verifier (dkimproxy.in) adds an Authentication-Results header
+   with no information if the message being verified has no signatures.
+
+
+Comments/Suggestions
+
+  Send comments/suggestions to the dkimproxy-users mailing list on
+  SourceForge. Or, you can add a bug or feature request to the SourceForge
+  tracker system. Or, you can post a message in one of the DKIMproxy
+  SourceForge forums.
+
+  Finally, as a last resort, you can email the author directly,
+  Jason Long <jlong@messiah.edu>.
+
