@@ -165,8 +165,7 @@ sub process_request
 	eval
 	{
 		openlog("dkimproxy.in", "perror,pid,ndelay", "mail");
-		syslog("debug", '%s',
-				"got connection from $ENV{REMOTE_ADDR}");
+		syslog("debug", '%s', "connect from $ENV{REMOTE_ADDR}");
 	};
 	if (my $E = $@)
 	{
