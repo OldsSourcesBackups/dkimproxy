@@ -1,8 +1,17 @@
+2008-08-26: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.{in,out}: slight wording change in how client
+   IP addresses are logged
+ * various files: updated/replaced copyright notice... now it
+   explicitly specifies version 2 or later of GPL
+
+ -- VERSION 1.1RC1 --
+
 2008-08-25: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.{in,out}: if unable to connect to relay host,
    report an error to the client instead of just dropping the connection
  * scripts/dkimproxy.{in,out}: detect syslog errors and report them
-   to the client, instead of just dropping the connection
+   to the client, instead of just dropping the connection (issue
+   #2068222)
  * scripts/dkimproxy.{in,out}: report client address to syslog
 
 2008-04-11: Jason Long <jlong@messiah.edu>
