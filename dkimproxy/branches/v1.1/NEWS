@@ -1,9 +1,7 @@
 This file summarizes what's changed between releases of dkimproxy.
 See the ChangeLog file for the details.
 
-Version 1.1 - not yet released
-
- - release candidate 2
+Version 1.1 - released 2008-10-23
 
  * Copyright/permission notices have been clarified on several files
    that make up this project. It should now be clear this project is

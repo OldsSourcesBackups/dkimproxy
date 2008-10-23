@@ -1,7 +1,8 @@
-Release 1.1rc1
+Release 1.1
 
-This is "Release-Candidate 1" of DKIMproxy 1.1. If all goes well,
-version 1.1 will be pretty much the same as this.
+This is an overdue release for 1.1. There are a couple cosmetic changes
+since 1.1rc1. Basically, the wording of an error message was changed
+slightly, and the copyright notices were updated on all the files.
 
 
 What's New (since 1.0)
