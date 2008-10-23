@@ -1,0 +1,6 @@
+Makefile.in
+aclocal.m4
+configure
+install-sh
+missing
+mkinstalldirs

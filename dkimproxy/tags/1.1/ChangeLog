@@ -1,0 +1,412 @@
+2008-08-26: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.{in,out}: slight wording change in how client
+   IP addresses are logged
+ * various files: updated/replaced copyright notice... now it
+   explicitly specifies version 2 or later of GPL
+
+ -- VERSION 1.1RC1 --
+
+2008-08-25: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.{in,out}: if unable to connect to relay host,
+   report an error to the client instead of just dropping the connection
+ * scripts/dkimproxy.{in,out}: detect syslog errors and report them
+   to the client, instead of just dropping the connection (issue
+   #2068222)
+ * scripts/dkimproxy.{in,out}: report client address to syslog
+
+2008-04-11: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_responder.pl, dkimproxy.in: fix authentication results
+   header so it displays identity source properly (issue #1940393)
+
+2008-04-09: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_responder.pl: response will now include multiple
+   canonicalized.txt attachments-- one for each canonicalization object
+   that was used
+
+2008-02-13: Jason Long <jlong@messiah.edu>
+ * sample-dkim-init-script.sh: fix for bug 1892220
+
+ -- VERSION 1.0.1 --
+
+2008-02-08: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: fix a bug where the "key=" parameter was
+   ignored in the sender_map file
+
+ -- VERSION 1.0 --
+
+2008-02-01: Jason Long <jlong@messiah.edu>
+ * RELEASE_NOTES: some final adjustments for 1.0
+
+2007-12-19: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: move map-lookup functionality to LookupMap.pm
+ * lib/LookupMap.pm: new file to make map-lookup functionality abstract
+ * lib/LookupMap.pm: changed to read the file into memory, and use the
+   copy in memory until the file's mtime changes
+ * lib/LookupMap.pm: read file into memory at constructor time,
+   ignore changes to mtime (it was too unreliable)...
+   admins will need to restart dkimproxy whenever the map file changes
+
+2007-11-28: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out, dkimproxy.in: port property should be an
+   arrayref, not a simple scalar
+
+2007-11-19: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: simplify- use regular expression to match
+   domains, rather than a complicated, hard-to-read string matching
+
+2007-11-16: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_responder.pl: always report what identity is validated;
+   include original message attachment if "domainkey" is in the subject
+
+2007-11-15: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy_out.conf.example: change example path to private.key
+
+2007-11-06: Jason Long <jlong@messiah.edu>
+ * sample-dkim-init-script.sh: a bit more generalized now, supports
+   configuration files
+ * configure.ac, INSTALL: now requiring 0.29 of Mail::DKIM
+ * INSTALL: refresh some of the phrasing
+ * dkimproxy.out: documentation updates, fixed a few doc typos, etc.
+
+2007-11-02: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: per-sender signature options now seems to be
+   functional; allow identity to be specified in signature options;
+   documentation updates
+ * scripts/dkimproxy.in: copy all the configuration file related stuff
+   from dkimproxy.out to make dkimproxy.in also capable of using configuration
+   files
+ * scripts/dkimproxy.out: allow debugging
+ * scripts/dkimproxy_in.conf.example, dkimproxy_out.conf.example:
+   example configuration files that will be installed
+ * RELEASE_NOTES: new file
+
+2007-10-24: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_responder.pl: report individual signature results when
+   more than one signature was found; allow reporting to the From header
+   address, if an address extension of "usefrom" was specified
+
+2007-10-19: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: --relay and --listen should only set port
+   numbers if actually specified in the argument
+ * scripts/dkimproxy.out (lookup): do map file lookups in a single pass
+
+2007-10-17: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: treat a --domain=a,b,c argument as a second
+   "sender-map", where the default signatures are always added, but
+   using the selected domain
+ * scripts/dkimproxy.out: use the proper domain when finding signature
+   info in a sender-map
+ * scripts/dkimproxy.out: enhance --help output
+
+2007-10-17: Jason Long <jlong@messiah.edu>
+ * configure.ac: bump to version 1.0
+
+2007-10-17: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out (split_by_commas): my first attempt at this didn't
+   work, so this is a rewrite of this method
+ * scripts/dkimproxy.out: Net::Server's option parsing doesn't like hyphens,
+   so use Getopt::Long for hyphened-arguments, and prefer underscores
+   in new options
+
+2007-10-15: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: document how configuration will be done;
+   let Net::Server process dkimproxy's arguments (so they can be specified
+   in a configuration file)
+ * scripts/dkimproxy.out (options): fix bug where server_type parameter
+   was getting ignored;
+ * scripts/dkimproxy.out: allow listen address and relay address to be
+   specified as options; dest_host and dest_port are now stored as
+   relay_host and relay_port
+ * scripts/dkimproxy.out: implement signature options parsing;
+   default signature parameters are now stored in an object, instead of
+   individual global variables; cleanup of some previous configfile trials
+ * scripts/dkimproxy.out: implement lookup logic for sender map;
+   (get_signature_options): new method to determine what signatures
+   will get added to the message
+ * scripts/dkimproxy.out: some general cleanup of configfile-type changes
+ * scripts/dkimproxy.out: collect lookup keys in array before looking
+   in the sender-map-file; get multiple domains working again
+
+2007-10-15: Jason Long <jlong@messiah.edu>
+ * tests: removed the tests subdirectory (this is stuff that was here
+   before the Mail-DKIM/dkimproxy split)
+
+2007-10-10: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.in: experimenting with using a proper
+   "Authentication-Results" header
+
+2007-08-06: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_responder.pl: show both DKIM and DK policy results
+ * configure.ac: allow perl lib directory to be specified
+
+2007-07-18: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_responder.pl: respond with a bit about how the policy
+   is applied
+
+2007-06-01: Jason Long <jlong@messiah.edu>
+ * lib/MySmtpProxyServer.pm: copied some functionality from SmtpServer
+   to here (the chat method) so that a handle_message_chunk method
+   could be implemented. This will allow (in the near future) computing
+   the signature as the message is received.
+
+2007-05-24: Jason Long <jlong@messiah.edu>
+ * configure.ac: bump version to 0.17
+
+ -- VERSION 0.16 --
+
+2007-05-24: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: use "pretty" signatures if available
+ * scripts/dkimsign.pl: use "pretty" signatures if available
+
+2007-05-15: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: fix bug where arguments for Net::Server::PreFork
+   were not recognized
+ * scripts/dkimproxy.in: same
+
+2007-05-03: Jason Long <jlong@messiah.edu>
+ * configure.ac: Bernhard D Rohrer reports version 0.90 of Net::Server
+   doesn't work with dkimproxy, but 0.96 does. I don't know which version
+   in between is the required minimum.
+ * configure.ac: bump current version to 0.16
+
+ -- VERSION 0.15 --
+
+2007-03-02: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: allow nofws canonicalization with DomainKeys
+   signatures; select default canonicalization based on signature type;
+   update online documentation
+ * scripts/dkimproxy.in: minor updates to documentation
+
+2007-02-28: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: allow use of DomainKeys signatures (using the
+   --signature argument)
+
+2007-02-07: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: change default canonicalization to relaxed
+
+2007-02-01: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_responder.pl: protect against abuse of the auto-responder
+ * scripts/dkimproxy.in: document the daemon options
+
+2007-01-26: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.in, scripts/dkimproxy.out: do argument-processing
+   within Net::Server framework, so it's easier for the user to specify
+   additional Net::Server parameters
+
+2006-12-18: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_responder.pl: use a Sender header of @messiah.edu so a
+   DKIM signature will get added on the reply; include a note in the reply
+   about multiple signatures
+ * scripts/dkimproxy.out: show how to add DomainKey signatures
+
+2006-10-23: Jason Long <jlong@messiah.edu>
+ * configure.ac, INSTALL: dkimproxy now requires 0.20 or better of Mail::DKIM
+ * scripts/dkimproxy.in: change dkimfilter.in to dkimproxy.in
+ * scripts/dkimproxy.out: change dkimfilter.out to dkimproxy.out;
+   support multiple signatures
+ * lib/MySmtpProxyServer.pm: no longer prints "running" on startup
+
+2006-10-19: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_milter.out: added experimental milter script
+
+2006-09-21: Jason Long <jlong@messiah.edu>
+ * Released version 0.14, now working on 0.15.
+
+ -- VERSION 0.14 --
+
+2006-09-21: Jason Long <jlong@messiah.edu>
+ * init-script.sh: rewrote sample init script; it no longer needs Suse's
+   startproc and killproc utilities; it also supports a "status" mode,
+   where it reports whether the dkimproxy.in and dkimproxy.out processes
+   are still running
+ * scripts/dkimproxy.in: support --user, --group, --daemonize arguments
+ * scripts/dkimproxy.out: support --user, --group, --daemonize arguments
+ * acinclude.m4: created Autoconf macro for checking Perl modules
+ * configure.ac: added Perl module checks to configure script
+
+2006-05-26: Jason Long <jlong@messiah.edu>
+ * Released version 0.13, now working on 0.14.
+
+ -- VERSION 0.13 --
+
+2006-05-26: Jason Long <jlong@messiah.edu>
+ * lib/Mail/DKIM: removed this directory... the Dkim proxy now expects
+   the Mail::DKIM module to be installed from CPAN (i.e. it's no longer
+   bundled)
+ * scripts/dkimproxy.in, scripts/dkimproxy.out: added support for --pidfile
+   argument
+
+2006-05-23: Jason Long <jlong@messiah.edu>
+ * init-script.sh: sample init script updated to include SLB headers (to
+   describe what runlevels dkimproxy should run under)
+
+2006-03-28: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.in, scripts/dkimproxy.out: new option "--debug"
+   can be specified, which will cause the server to spit out every SMTP
+   command it sees to STDERR
+ * lib/MySmtpProxyServer.pm: now uses Net::Server::MultiType so that
+   different server types (e.g. forking, preforking) can be selected
+   at runtime; server type now set to "PreFork" by default; provide
+   support for --debug option
+
+2006-02-23: Jason Long <jlong@messiah.edu>
+ * Now working on version 0.13.
+
+ -- VERSION 0.12 --
+
+2006-02-22: Jason Long <jlong@messiah.edu>
+ * lib/Mail/DKIM/Key.pm: copied this file from Mail::DomainKeys and
+   renamed to Mail::DKIM::Key
+
+2006-02-20: Jason Long <jlong@messiah.edu>
+ * lib/Mail/DKIM/Algorithm/rsa_sha1.pm: fixed a bug where a missing c=
+   tag in the signature was causing an "unsupported canonicalization"
+   error
+ * lib/Mail/DKIM/Canonicalization/relaxed.pm: the latest spec clarifies
+   what to do with a space between the header field name and the colon.
+   This space is now removed.
+ * lib/Mail/DKIM/Signature.pm: new method "canonicalization", replaces
+   "method" method, to access the c= tag. This new method splits the
+   value between the header and body canonicalization, filling in the
+   defaults if either is not specified.
+
+2005-12-07: Jason Long <jlong@messiah.edu>
+ * lib/Mail/DKIM/KeyValueList.pm: common base class for Signature and
+   PublicKey, both of which have the same format
+ * lib/Mail/DKIM/PublicKey.pm: checks public key to see if it's valid
+ * scripts/dkimsign.pl: added documentation and --help argument
+
+2005-12-06: Jason Long <jlong@messiah.edu>
+ * Now working on version 0.12.
+ * lib/Mail/DKIM/Common.pm, Verifier.pm: fixed bug in parsing of
+   DKIM-Signature header... the capitalization of the field name was not
+   being preserved.
+ * NEWS, INSTALL, scripts/dkim_responder.pl: replaced occurrences of
+   'dkfilter' with 'dkimproxy'
+
+ -- VERSION 0.9 - 0.11 --
+
+2005-12-06: Jason Long <jlong@messiah.edu>
+ * Added DKIM support.
+   (see lib/Mail/DKIM subdirectory)
+ * Renamed project to dkimproxy.
+
+2005-07-13: Jason Long <jlong@messiah.edu>
+ * Released version 0.8, now working on 0.9.
+
+ -- VERSION 0.8 --
+
+2005-07-12: Jason Long <jlong@messiah.edu>
+ * Makefile.am, configure.ac:
+   - yep, I implemented an autoconf/automake-style build system. Now it's
+     easy to install anywhere... just do ./configure --prefix=/anywhere &&
+	 make install.
+ * README, INSTALL:
+   - updated this documentation
+ * lib/, scripts/:
+   - library files have been moved to the lib subdirectory.
+   - program files have been moved to the scripts subdirectory. Furthermore,
+     program files are now installed under $prefix/bin, so startup scripts
+	 will need to be changed.
+ * init-script.sh:
+   - find filter scripts in /usr/local/dkfilter/bin
+
+2005-06-21: Jason Long <jlong@messiah.edu>
+ * Released version 0.7, now working on 0.8.
+
+ -- VERSION 0.7 --
+
+2005-06-16: Jason Long <jlong@messiah.edu>
+ * dkfilter.in, dkfilter.out:
+   - TERM signal handler now "dies", so that the wait system call is properly
+     interrupted... I suspect this only needs to happen on Perl 5.8.0+, and
+     indeed may not even work with older versions of Perl
+   - everything the server does is now enclosed in an eval { } block, so
+     that the TERM signal's "die" can be properly caught
+   - this fixes a bug where sending the parent process a TERM signal would
+     not cause the program to shut down as expected
+
+2005-06-07: Jason Long <jlong@messiah.edu>
+ * auto_responder.pl:
+   - this is a new Perl script for creating an auto-responding
+	 interoperability tester
+
+2005-06-03: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - minor cosmetic change to inline documentation
+
+2005-05-11: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - bugfix - message-parse-error had caused "Odd number of elements..."
+     warning to be output by Perl
+
+ -- VERSION 0.6 --
+
+2005-05-10: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - bugfix - use case-INsensitive comparision of sender domain name
+     to domain name used to sign
+ * dkfilter.out:
+   - bugfix - did not check parent domain correctly
+ * Mail/DomainKeys/Signature.pm:
+   - bugfix - use case-INsensitive comparision of sender domain name
+     to domain name found in signature
+
+2005-05-05: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - put an eval { } block around the message verification call, to catch
+     and report errors (e.g. DNS errors) during verification
+   - for testing mode, changed results to "neutral"
+
+2005-05-04: Jason Long <jlong@messiah.edu>
+ * Mail/DomainKeys/Message.pm:
+   - fixed canonicalization methods so they can pass the canonicalization
+     torturetest
+   - added support for generating "h" tag (headers) in signature
+   - detect duplicate From: and Sender: headers, but currently nothing is
+     done about it when detected
+ * dkfilter.out:
+   - added command-line argument for turning on "headers" support (--headers)
+   - fixed bug where --reject-error was turned on by default (and there was
+     no way to turn it off)
+
+2005-04-30: Jason Long <jlong@messiah.edu>
+ * Mail/DomainKeys/Key/Public.pm:
+   - use ALRM signal to catch a long-running DNS query; currently the timeout
+     is 10 seconds; if you're verifying in an After-Queue filter, it should
+     be safe to set this timeout higher
+ * Mail/DomainKeys/Policy.pm:
+   - use ALRM signal to catch a long-running DNS query
+ * dkfilter.in, dkfilter.out:
+   - fixed another glitch in the way errors were reported
+
+2005-04-29: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - added senderdomain method, to get the host part of the address used
+     to sign or verify
+
+2005-04-28: Jason Long <jlong@messiah.edu>
+ * dkfilter.out:
+   - added "method" command-line argument to specify what canonicalization
+     method should be used to sign messages ("simple" or "nofws")
+   - "domain" argument can now take multiple domains, separated by commas
+   - when signing a message, pick the best matching domain (from the
+     "domain" argument) for the address used in the Sender: or From: header
+
+2005-04-27: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - added documentation
+ * dkfilter.in:
+   - error messages may not have been logged correctly; it should work
+     better now
+ * init-script.sh:
+   - determine FQDN hostname using `hostname -f` and pass it to the
+     inbound filter for use in Authentication-Results headers
+
+2005-04-26: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - if signature verification fails, put the reason in the syslog and
+     in the Authentication-Results header
+ * Mail/DomainKeys/Signature.pm:
+   - allow signatures that use a parent domain of the message's from/sender
+     domain
