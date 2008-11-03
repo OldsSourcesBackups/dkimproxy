@@ -12,8 +12,8 @@ What's New (since 1.0)
    from results for DKIM signatures.
 
  * Both the signer and verifier, when errors occur (such as the next
-   host being unavailable), will now give an error message to the client
-   via SMTP before disconnecting.
+   host being unavailable, or the syslog service is down), will now
+   give an error message to the client via SMTP before disconnecting.
 
 Note: if you're wondering why this version grew so much (15%) for so
 few changes, the answer is the generated Makefile scripts inside are
