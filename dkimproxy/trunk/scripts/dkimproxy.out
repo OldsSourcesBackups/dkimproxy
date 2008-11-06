@@ -87,6 +87,7 @@ sub options
 	$template->{selector} = \$selector;
 	$template->{method} = \$method;
 	$template->{domain} = \$domain_arg;
+	$template->{identity} = \$identity_arg;
 
 	$template->{listen} = \$self->{server}->{listen};
 	$template->{relay} = \$self->{server}->{relay};
@@ -161,7 +162,10 @@ sub configure
 	foreach my $sig (@signature_arg)
 	{
 		my $options = parse_signature_options($sig);
-		$self->check_signature_options({ domain => $domain_arg, %$options });
+		$self->check_signature_options({
+			domain => $domain_arg,
+			identity => $identity_arg,
+			%$options });
 		push @default_signatures, $options;
 	}
 
@@ -553,6 +557,7 @@ dkimproxy.out - SMTP proxy for adding DKIM signatures to email
       --selector=SELECTOR
       --method=simple|nowsp|relaxed|nofws
       --domain=DOMAIN
+      --identity=IDENTITY
 
     daemon options:
       --daemonize
@@ -591,6 +596,11 @@ that will match the sender's domain.
 
 If specified, the daemonized process will setgid() to the specified
 GROUP.
+
+=item B<--identity=IDENTITY>
+
+If specified, any DKIM signature created will have an i= argument
+containing the value specified.
 
 =item B<--keyfile=FILENAME>
 
@@ -731,6 +741,10 @@ the canonicalization method to use
 =item d
 
 the domain to use, default is to use the domain matched
+
+=item i
+
+the identity to use, default is to not include an i= parameter
 
 =item s
 
