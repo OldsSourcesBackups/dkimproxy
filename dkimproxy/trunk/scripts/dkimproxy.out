@@ -55,6 +55,7 @@ my @signature_arg;
 my $keyfile;
 my $selector;
 my $domain_arg;
+my $identity_arg;
 my $method;
 my $debugtrace = undef;
 my $sender_mapfile;
