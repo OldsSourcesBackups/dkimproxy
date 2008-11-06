@@ -492,7 +492,9 @@ sub best_domain
 	my $d = $target_domain;
 	while (defined $d)
 	{
-		return $d if (grep { $_ eq $d } @domains);
+		my ($match) = grep { lc $_ eq lc $d } @domains;
+		return $match if $match;
+
 		(undef, $d) = split /\./, $d, 2;
 	}
 	return undef;

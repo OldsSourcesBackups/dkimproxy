@@ -3,6 +3,11 @@ See the ChangeLog file for the details.
 
 Version 1.2 - not yet released
 
+ - beta 1
+
+ * Fixed a bug in dkimproxy.out where domain matching was done with
+   a case sensitive string match. Domains should be case-insensitive.
+
 
 Version 1.1 - released 2008-10-23
 

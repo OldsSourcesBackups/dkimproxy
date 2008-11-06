@@ -2,6 +2,7 @@
  * scripts/dkimproxy.out: implement the "identity" config option,
    for specifying the i= of the signatures; document the "i" signature
    option
+ * scripts/dkimproxy.out: domain matching should be case-insensitive
 
  -- VERSION 1.1 --
 
