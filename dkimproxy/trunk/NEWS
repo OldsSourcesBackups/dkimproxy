@@ -7,6 +7,7 @@ Version 1.2 - not yet released
 
  * Fixed a bug in dkimproxy.out where domain matching was done with
    a case sensitive string match. Domains should be case-insensitive.
+ * Implemented some (but not complete) IPv6 support.
 
 
 Version 1.1 - released 2008-10-23
