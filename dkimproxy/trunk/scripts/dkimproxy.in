@@ -299,7 +299,15 @@ sub make_auth_result
 sub split_host_port
 {
 	my $str = shift;
-	return split /:/, $str, 2;
+	if ($str =~ /^\[(.*)\](?::(\d+))?$/)
+	{
+		return ($1, $2);
+	}
+	elsif ($str =~ /^([^:]+):(\d+)$/)
+	{
+		return ($1, $2);
+	}
+	return $str;
 }
 
 __END__
