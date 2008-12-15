@@ -1,3 +1,7 @@
+2008-12-15: Jason Long <jlong@messiah.edu>
+ * lib/MSDW/SMTP/Client.pm: use IPv6-capable socket, when available,
+   to connect to the relay host
+
 2008-11-06: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.out: implement the "identity" config option,
    for specifying the i= of the signatures; document the "i" signature

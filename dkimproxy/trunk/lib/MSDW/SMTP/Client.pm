@@ -10,6 +10,17 @@
 #
 # Written by Bennett Todd <bet@rahul.net>
 
+#enable support for IPv6, if available
+eval "require IO::Socket::INET6";
+if ($@ && $@ =~ /^Can't locate/)
+{
+	# a dummy INET6 module that falls back on IO::Socket::INET
+	eval q|
+		package IO::Socket::INET6;
+		use base "IO::Socket::INET";
+		|;
+}
+
 package MSDW::SMTP::Client;
 use IO::Socket;
 
@@ -95,7 +106,7 @@ sub new {
     my ($this, @opts) = @_;
     my $class = ref($this) || $this;
     my $self = bless { timeout => 300, @opts }, $class;
-    $self->{sock} = IO::Socket::INET->new(
+    $self->{sock} = IO::Socket::INET6->new(
 	PeerAddr => $self->{interface},
 	PeerPort => $self->{port},
 	Timeout => $self->{timeout},
