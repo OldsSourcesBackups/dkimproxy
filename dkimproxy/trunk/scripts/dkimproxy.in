@@ -116,13 +116,13 @@ sub configure
 
 	if (my $tmp = $self->{server}->{listen})
 	{
-		my ($host, $port) = split /:/, $tmp, 2;
+		my ($host, $port) = split_host_port($tmp);
 		$self->{server}->{host} = $host;
 		$self->{server}->{port} = [ $port ] if defined $port;
 	}
 	if (my $tmp = $self->{server}->{relay})
 	{
-		my ($host, $port) = split /:/, $tmp, 2;
+		my ($host, $port) = split_host_port($tmp);
 		$self->{server}->{relay_host} = $host;
 		$self->{server}->{relay_port} = $port if defined $port
 	}
@@ -294,6 +294,12 @@ sub make_auth_result
 
 	return "$type=" . $signature->result_detail
 		. " $tag=" . $signature->identity;
+}
+
+sub split_host_port
+{
+	my $str = shift;
+	return split /:/, $str, 2;
 }
 
 __END__

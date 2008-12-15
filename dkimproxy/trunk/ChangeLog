@@ -1,6 +1,8 @@
 2008-12-15: Jason Long <jlong@messiah.edu>
  * lib/MSDW/SMTP/Client.pm: use IPv6-capable socket, when available,
    to connect to the relay host
+ * scripts/dkimproxy.{in,out}: create a function for parsing the IP
+   address and port number from a "host:port" string
 
 2008-11-06: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.out: implement the "identity" config option,
