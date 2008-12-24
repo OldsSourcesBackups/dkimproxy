@@ -12,7 +12,7 @@ AC_DEFUN([local_CHECK_PERL_MODULE],
 
 AC_MSG_CHECKING(for Perl module '$1')
 
-if perl -e 'use $1 $2' 2>/dev/null; then
+if "$PERL" -e 'use $1 $2' 2>/dev/null; then
 	AC_MSG_RESULT(found)
 else
 	AC_MSG_RESULT(not found)
