@@ -1,6 +1,8 @@
 2008-12-24: Jason Long <jlong@messiah.edu>
  * acinclude.m4: the CHECK_PERL_MODULE macro should use the user-
    requested Perl
+ * scripts/Makefile.am (install-exec-hook): allow installation to prefix
+   with a space in it
 
 2008-12-15: Jason Long <jlong@messiah.edu>
  * lib/MSDW/SMTP/Client.pm: use IPv6-capable socket, when available,
