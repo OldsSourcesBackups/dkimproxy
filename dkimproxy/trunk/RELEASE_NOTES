@@ -6,7 +6,11 @@ changes going into version 1.2.
 
 What's New (since 1.1)
 
-
+   IPv6 support - partial
+      You can now specify an IPv6 address as your relay host.
+      But you'll need to install the IO::Socket::INET6 module from CPAN.
+      And you still cannot "listen" on an IPv6 address (this is because
+      the Net::Server module does not support IPv6).
 
 
 Installing
