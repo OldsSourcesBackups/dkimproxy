@@ -604,7 +604,8 @@ If specified, the server will run in the background.
 
 Use this argument to specify what domain(s) you can sign for. You may
 specify multiple domains by separating them with commas. If a single
-domain is specified, DKIMproxy will always use that domain to sign,
+domain is specified, DKIMproxy will sign every message it sees with
+that domain,
 if it can. If multiple domains are specified, DKIMproxy will try to
 match the domain to the message's sender, and only generate a signature
 that will match the sender's domain.
