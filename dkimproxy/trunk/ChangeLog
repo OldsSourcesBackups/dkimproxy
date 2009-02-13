@@ -1,3 +1,7 @@
+2009-02-13: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.in: process DomainKeys policies in addition to DKIM
+   policies
+
 2008-12-24: Jason Long <jlong@messiah.edu>
  * acinclude.m4: the CHECK_PERL_MODULE macro should use the user-
    requested Perl

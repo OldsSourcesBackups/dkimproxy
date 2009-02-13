@@ -3,6 +3,9 @@ See the ChangeLog file for the details.
 
 Version 1.2 - not yet released
 
+ * Inbound filter now processes DomainKeys signer policies in
+   addition to DKIM signer policies
+
  - beta 1
 
  * Fixed a bug in dkimproxy.out where domain matching was done with
