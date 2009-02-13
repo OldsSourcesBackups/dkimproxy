@@ -257,6 +257,25 @@ sub handle_end_of_data
 		return 0;
 	}
 
+	# evaluate the DomainKey policy
+	my $dk_policy_result = "none";
+	eval
+	{
+		my $dk_policy = $dkim->fetch_sender_policy;
+		$dk_policy_result = $dk_policy->apply($dkim);
+	};
+	if ($@)
+	{
+		$dk_policy_result = "error";
+	}
+
+	if ($dk_policy_result eq "reject" && $reject_fail)
+	{
+		# failed
+		$server->fail("550 5.7.1 DomainKeys - $verify_detail");
+		return 0;
+	}
+
 	$fh->seek(0,0);
 
 	if ($dkim)
