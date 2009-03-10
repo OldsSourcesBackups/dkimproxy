@@ -1,4 +1,4 @@
-Release 1.2beta1
+Release 1.2beta2
 
 This is the "Beta" of DKIMproxy 1.2. It is used for testing some of the
 changes going into version 1.2.
@@ -11,6 +11,10 @@ What's New (since 1.1)
       But you'll need to install the IO::Socket::INET6 module from CPAN.
       And you still cannot "listen" on an IPv6 address (this is because
       the Net::Server module does not support IPv6).
+
+   DomainKeys policies
+      DomainKeys signing policies (as in RFC4870) are now checked and
+      enforced when the "reject_fail" option is enabled for dkimproxy.in.
 
 
 Installing

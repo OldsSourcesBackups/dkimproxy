@@ -1,3 +1,6 @@
+2009-03-10: Jason Long <jlong@messiah.edu>
+ * configure.ac: release 1.2beta2
+
 2009-02-13: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.in: process DomainKeys policies in addition to DKIM
    policies
