@@ -6,9 +6,20 @@ perl_scripts = \
 	dkimproxy.in \
 	dkimproxy.out
 
+man_MANS = \
+	dkimproxy_in.8 \
+	dkimproxy_out.8
+
+dkimproxy_in.8: dkimproxy.in
+	pod2man "$(srcdir)/$<" > $@
+
+dkimproxy_out.8: dkimproxy.out
+	pod2man "$(srcdir)/$<" > $@
+
 sysconf_DATA = dkimproxy_in.conf.example dkimproxy_out.conf.example
 
-EXTRA_DIST = $(perl_scripts) $(sysconf_DATA)
+EXTRA_DIST = $(perl_scripts) $(sysconf_DATA) $(man_MANS)
+MAINTAINERCLEANFILES = $(man_MANS)
 
 install-exec-hook:
 	$(mkinstalldirs) '$(DESTDIR)$(perldir)';
