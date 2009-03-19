@@ -1,3 +1,6 @@
+2009-03-19: Jason Long <jlong@messiah.edu>
+ * scripts/Makefile.am: create man pages for the two daemon processes
+
 2009-03-10: Jason Long <jlong@messiah.edu>
  * configure.ac: release 1.2beta2
 
