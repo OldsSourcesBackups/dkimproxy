@@ -451,4 +451,8 @@ is equivalent to
   dkimproxy.out --hostname=myhost.example.com --reject-fail \
                   127.0.0.1:10025 127.0.0.1:10026
 
+=head1 AUTHOR
+
+Jason Long
+
 =cut
