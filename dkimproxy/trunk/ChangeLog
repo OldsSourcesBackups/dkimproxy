@@ -1,4 +1,8 @@
 2009-04-03: Jason Long <jlong@messiah.edu>
+ * Makefile.am: create a "download-rfcs" target to download the standard
+   documents I use to write Mail::DKIM and dkimproxy
+
+2009-04-03: Jason Long <jlong@messiah.edu>
  * scripts/dkim_responder.pl: use the new policies() api to enumerate
    the policies applying to a message
 
