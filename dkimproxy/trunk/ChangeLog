@@ -1,3 +1,7 @@
+2009-04-03: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_responder.pl: use the new policies() api to enumerate
+   the policies applying to a message
+
 2009-03-19: Jason Long <jlong@messiah.edu>
  * scripts/Makefile.am: create man pages for the two daemon processes
 

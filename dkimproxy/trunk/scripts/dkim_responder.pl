@@ -25,7 +25,7 @@ use warnings;
 use IO::File;
 use MIME::Entity;
 
-use Mail::DKIM 0.32;
+use Mail::DKIM 0.34;
 use Mail::DKIM::Verifier;
 
 use constant FROM_ADDR => 'admin@dkimtest.jason.long.name';
@@ -77,10 +77,8 @@ $fh->seek(0, 0);
 my $result;
 my $result_detail;
 my @signatures;
-my $a_policy;
-my $a_policy_result;
-my $s_policy;
-my $s_policy_result;
+my @policies;
+my @policy_results;
 eval
 {
 	my $dkim = Mail::DKIM::Verifier->new(
@@ -97,11 +95,8 @@ eval
 	}
 
 	@signatures = $dkim->signatures;
-
-	$a_policy = $dkim->fetch_author_policy;
-	$a_policy_result = $a_policy->apply($dkim);
-	$s_policy = $dkim->fetch_sender_policy;
-	$s_policy_result = $s_policy->apply($dkim);
+	@policies = $dkim->policies;
+	@policy_results = map { $_->apply($dkim) } @policies;
 };
 if ($@)
 {
@@ -149,20 +144,17 @@ if (@signatures > 1)
 }
 
 my $policy_results_text = "";
-if ($a_policy_result && $a_policy_result ne "neutral")
+for (my $i = 0; $i < @policies; $i++)
 {
-	my $location = $a_policy->location;
-	$policy_results_text =
-"This is the result after checking the DKIM policy at \"$location\":
-  $a_policy_result
-\n";
-}
-if ($s_policy_result && $s_policy_result ne "neutral")
-{
-	my $location = $s_policy->location;
-	$policy_results_text =
-"This is the result after checking the DomainKeys policy at \"$location\":
-  $s_policy_result
+	my $policy = $policies[$i];
+	my $policy_result = $policy_results[$i];
+
+	next unless $policy_result && $policy_result ne "neutral";
+	my $location = $policy->location;
+	my $policy_type = $policy->name;
+	$policy_results_text .=
+"This is the result after checking the $policy_type policy at \"$location\":
+  $policy_result
 \n";
 }
 
