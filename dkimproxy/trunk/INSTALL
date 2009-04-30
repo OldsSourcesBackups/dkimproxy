@@ -55,8 +55,33 @@ Basic Installation
 DKIMproxy Setup
 ===============
 
-   Information on setting up DKIMproxy is currently only available online.
+   To create signatures, you will need to generate a private/public key
+   pair using OpenSSL. The following two commands generate two files:
+   private.key and public.key, containing the private and public keys
+   in Base64 format:
+
+       openssl genrsa -out private.key 1024
+       openssl rsa -in private.key -pubout -out public.key
+
+   Modify the permissions on private.key so that only the DKIMproxy user
+   can read it (the user created in step 3 above).
+
+   Pick a selector name... e.g. "selector1".
+
+   Put the public-key data in DNS, in your domain, using the selector
+   name you picked. Take the contents of the public.key file and remove
+   the PEM header and footer, and concatenate the lines of the file
+   into one big line. Then create a TXT entry, like this:
+
+   selector1._domainkey    IN  TXT  "k=rsa; t=s; p=MHwwDQYJK ... OprwIDAQAB"
+
+   where selector1 is the name of the selector chosen above and the p=
+   parameter contains the public-key as one long string of characters.
+
+
+   More information on setting up DKIMproxy is currently only available
+   online.
    See http://dkimproxy.sourceforge.net/ for the details.
 
 
-This document last updated 2007-11-06.
+This document last updated 2009-04-30.
