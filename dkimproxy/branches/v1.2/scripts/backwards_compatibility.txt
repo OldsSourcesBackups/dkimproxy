@@ -1,0 +1,24 @@
+in major release 0,
+
+the administrator would specify a list of all domains which
+the server had the private key for
+
+dkimproxy would look at a message, decide:
+ 1) whether the message could be signed, and if so,
+ 2) which domain to use
+
+in both cases the decision is based on the message's sender
+
+
+in major release 1,
+
+the administrator can use a sender-dependent configuration map,
+in which case we always know which domain to use in the signature
+
+or he can specify a single domain on the command-line,
+in which case we always use that domain
+
+or he can specify multiple domains on the command-line
+(needed for backward-compatibility),
+in which case we select the domain to use based on the message sender
+(as before) and sign using only that domain
