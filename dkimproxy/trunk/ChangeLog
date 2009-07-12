@@ -1,3 +1,5 @@
+ -- VERSION 1.2 --
+
 2009-04-03: Jason Long <jlong@messiah.edu>
  * Makefile.am: create a "download-rfcs" target to download the standard
    documents I use to write Mail::DKIM and dkimproxy

@@ -1,7 +1,12 @@
-Release 1.2beta2
+Release 1.2
 
-This is the "Beta" of DKIMproxy 1.2. It is used for testing some of the
-changes going into version 1.2.
+It was time to get out a new regular release of DKIMproxy. I had
+initially planned to wait until full IPv6 support was available, but
+I wasn't finding time to work on this, so now I've decided to go ahead
+and release what I had.
+
+If you had installed any of the 1.2 "beta" releases, check the NEWS
+file for what's new since then.
 
 
 What's New (since 1.1)
