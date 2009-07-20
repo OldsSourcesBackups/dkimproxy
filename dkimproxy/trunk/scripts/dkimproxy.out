@@ -748,23 +748,23 @@ parameters are recognized:
 
 the private key file to use
 
-=item a
+=item a, algorithm
 
 the algorithm to use
 
-=item c
+=item c, method
 
 the canonicalization method to use
 
-=item d
+=item d, domain
 
 the domain to use, default is to use the domain matched
 
-=item i
+=item i, identity
 
 the identity to use, default is to not include an i= parameter
 
-=item s
+=item s, selector
 
 the selector to use
 
