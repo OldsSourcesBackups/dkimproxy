@@ -274,7 +274,7 @@ sub setup_client_socket
 
 	# create an object for sending the outgoing SMTP commands
 	#  (and the signed message)
-    my $client = eval { MSDW::SMTP::Client->new(
+	my $client = eval { MSDW::SMTP::Client->new(
 			interface => $self->{server}->{relay_host},
 			port => $self->{server}->{relay_port}) };
 	if (my $E = $@)
