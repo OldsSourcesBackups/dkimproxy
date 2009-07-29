@@ -1,0 +1,27 @@
+This file summarizes what's changed between releases of dkfilter.
+See the ChangeLog file for the details.
+
+Version 0.4 - released 2005-05-02
+
+ * DNS queries now have a 10-second timeout, which prevents the SMTP proxy
+   from taking too long to respond to Postfix
+
+Version 0.3 - released 2005-04-29
+
+ * you can now specify a canonicalization method; use the --method argument:
+   either --method=simple or --method=nofws
+ * the signer can now be responsible for multiple source domains; simply
+   specify the domains separated by commas on the --domain argument,
+   e.g. --domain=example.org,example.com
+
+Version 0.2 - released 2005-04-27
+
+ * fixed a minor logging bug
+ * include better reasons for why verification fails in the
+   Authentication-Results header
+ * now properly verifies a signature that uses a parent domain of the
+   domain in the from/sender address
+
+Version 0.1 - released 2005-04-26
+
+ * initial release
