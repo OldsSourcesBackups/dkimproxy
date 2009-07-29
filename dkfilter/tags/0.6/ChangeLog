@@ -1,0 +1,73 @@
+2005-05-11: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - bugfix - message-parse-error had caused "Odd number of elements..."
+     warning to be output by Perl
+
+2005-05-10: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - bugfix - use case-INsensitive comparision of sender domain name
+     to domain name used to sign
+ * dkfilter.out:
+   - bugfix - did not check parent domain correctly
+ * Mail/DomainKeys/Signature.pm:
+   - bugfix - use case-INsensitive comparision of sender domain name
+     to domain name found in signature
+
+2005-05-05: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - put an eval { } block around the message verification call, to catch
+     and report errors (e.g. DNS errors) during verification
+   - for testing mode, changed results to "neutral"
+
+2005-05-04: Jason Long <jlong@messiah.edu>
+ * Mail/DomainKeys/Message.pm:
+   - fixed canonicalization methods so they can pass the canonicalization
+     torturetest
+   - added support for generating "h" tag (headers) in signature
+   - detect duplicate From: and Sender: headers, but currently nothing is
+     done about it when detected
+ * dkfilter.out:
+   - added command-line argument for turning on "headers" support (--headers)
+   - fixed bug where --reject-error was turned on by default (and there was
+     no way to turn it off)
+
+2005-04-30: Jason Long <jlong@messiah.edu>
+ * Mail/DomainKeys/Key/Public.pm:
+   - use ALRM signal to catch a long-running DNS query; currently the timeout
+     is 10 seconds; if you're verifying in an After-Queue filter, it should
+     be safe to set this timeout higher
+ * Mail/DomainKeys/Policy.pm:
+   - use ALRM signal to catch a long-running DNS query
+ * dkfilter.in, dkfilter.out:
+   - fixed another glitch in the way errors were reported
+
+2005-04-29: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - added senderdomain method, to get the host part of the address used
+     to sign or verify
+
+2005-04-28: Jason Long <jlong@messiah.edu>
+ * dkfilter.out:
+   - added "method" command-line argument to specify what canonicalization
+     method should be used to sign messages ("simple" or "nofws")
+   - "domain" argument can now take multiple domains, separated by commas
+   - when signing a message, pick the best matching domain (from the
+     "domain" argument) for the address used in the Sender: or From: header
+
+2005-04-27: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - added documentation
+ * dkfilter.in:
+   - error messages may not have been logged correctly; it should work
+     better now
+ * init-script.sh:
+   - determine FQDN hostname using `hostname -f` and pass it to the
+     inbound filter for use in Authentication-Results headers
+
+2005-04-26: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - if signature verification fails, put the reason in the syslog and
+     in the Authentication-Results header
+ * Mail/DomainKeys/Signature.pm:
+   - allow signatures that use a parent domain of the message's from/sender
+     domain
