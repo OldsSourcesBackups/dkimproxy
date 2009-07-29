@@ -1,0 +1,4 @@
+This is dkfilter, an DomainKeys SMTP-proxy designed for Postfix.
+
+See http://jason.long.name/dkfilter/ for more information, including
+installation instructions and known issues.

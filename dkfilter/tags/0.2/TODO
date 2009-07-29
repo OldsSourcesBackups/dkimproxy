@@ -1,0 +1,12 @@
+Desired features:
+ - allow canonicalization method to be specified (e.g. "nofws" or "simple")
+ - support multiple sending domains, multiple selectors, multiple private keys
+   (the signing process must use the sending domain to determine what
+   private key and selector should be used to sign the message)
+ - sign/verify a message without having to read it completely into memory
+ - sign/verify in the same program
+
+Possible bugs:
+ - the Mail::DomainKeys module frequently makes assumptions that it's in
+   a Unix environment ... e.g. it uses "\r\n" where it should use "\015\012"
+   (see perlport(1)'s discussion of Newlines)
