@@ -1,0 +1,238 @@
+#!/usr/bin/perl -I../lib
+#
+# Copyright (c) 2005-2006 Messiah College. This program is free software.
+# You can redistribute it and/or modify it under the terms of the
+# GNU Public License as found at http://www.fsf.org/copyleft/gpl.html.
+#
+
+#   This code is Copyright (C) 2001 Morgan Stanley Dean Witter, and
+#   is distributed according to the terms of the GNU Public License
+#   as found at <URL:http://www.fsf.org/copyleft/gpl.html>.
+#
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+# Written by Bennett Todd <bet@rahul.net>
+
+use strict;
+use warnings;
+
+use Getopt::Long;
+use Pod::Usage;
+use IO::File;
+use Sys::Syslog;
+
+use DKMessage;
+use MySmtpServer;
+
+my $hostname;
+my $reject_fail = 0;
+my $reject_error = 0;
+my $pidfile;
+my $debug;
+my $help;
+GetOptions(
+		"reject-fail" => \$reject_fail,
+		"reject-error" => \$reject_error,
+		"hostname=s" => \$hostname,
+		"pidfile=s" => \$pidfile,
+		"debug" => \$debug,
+		"help|?" => \$help)
+	or pod2usage(2);
+pod2usage(1) if $help;
+pod2usage("Error: one or more required arguments are missing")
+	unless @ARGV == 2;
+
+my ($srcaddr, $srcport) = split /:/, $ARGV[0];
+my ($dstaddr, $dstport) = split /:/, $ARGV[1];
+unless (defined($srcport) and defined($dstport))
+{
+	pod2usage("Error: source or destination port is missing");
+}
+
+if (defined $hostname)
+{
+	DKMessage::use_hostname($hostname);
+}
+
+use base "MySmtpProxyServer";
+main->run(
+		host => $srcaddr,
+		port => $srcport,
+		server_type => "PreFork",
+		pid_file => $pidfile,
+	);
+
+sub setup_client_socket
+{
+	# create an object for sending the outgoing SMTP commands
+	#  (and the signed message)
+    my $client = MSDW::SMTP::Client->new(
+			interface => $dstaddr,
+			port => $dstport);
+	return $client;
+}
+
+sub process_request
+{
+	my $self = shift;
+
+	# initialize syslog
+	openlog("dkfilter.in", "cons,pid", "mail");
+	$self->{debug} = $debug;
+
+	$self->SUPER::process_request;
+}
+
+# handle_end_of_data
+#
+# Called when the source finishes transmitting the message. This method
+# may filter the message and if desired, transmit the message to
+# $client. Alternatively, this method can respond to the server with
+# some sort of rejection (temporary or permanent).
+#
+# Usage: $result = handle_end_of_data($server, $client);
+#
+# Returns:
+#   nonzero if a message was transmitted to the next server and its response
+#     returned to the source server
+#   zero if the message was rejected and the connection to the next server
+#     should be dropped
+#
+sub handle_end_of_data
+{
+	my $self = shift;
+	my $server = $self->{smtp_server};
+	my $client = $self->{smtp_client};
+
+	my $fh = $server->{data};
+	my $mess;
+	my $result;
+	my $result_detail;
+	eval
+	{
+		$mess = DKMessage->new_from_handle($fh);
+		$result = $mess->verify;
+		$result_detail = $mess->result_detail;
+
+		syslog("info", '%s',
+			"DomainKeys verification - $result_detail; "
+			. join(", ", $mess->info));
+	};
+	if ($@)
+	{
+		my $E = $@;
+		chomp $E;
+		syslog("warning", '%s', "verification error: $E");
+		$result = "temperror";
+		$result_detail = "$result ($E)";
+	}
+
+	# check validation result
+	if ($result eq "fail" && $reject_fail)
+	{
+		# failed
+		$server->fail("550 5.7.1 DomainKeys - $result_detail");
+		return 0;
+	}
+	elsif ($result =~ /error$/ && $reject_error)
+	{
+		# temporary or permanent error
+		$server->fail(
+			($result eq "permerror" ? "550" : "450")
+			. " DomainKeys - $result_detail");
+		return 0;
+	}
+
+	$fh->seek(0,0);
+
+	if ($mess)
+	{
+		# send the message as modified by the verification process
+		while (my $line = $mess->readline)
+		{
+			$client->write_data_line($line);
+			#DEBUGGING:
+			#$line =~ s/[\015\012]+$//;
+			#print "--> $line\n";
+		}
+		$client->{sock}->print(".\015\012")
+			or die "write error: $!";
+	}
+	else
+	{
+		# send the message unaltered
+		$client->yammer($fh);
+	}
+	return 1;
+
+}
+
+__END__
+
+=head1 NAME
+
+  dkfilter.in -- SMTP proxy for verifying Yahoo! DomainKeys signatures
+
+=head1 SYNOPSIS
+
+  dkfilter.in [options] listen.addr:port talk.addr:port
+    options:
+      --reject-fail
+      --reject-error
+      --hostname=HOSTNAME
+
+  dkfilter.in --help
+    to see a full description of the various options
+
+=head1 OPTIONS
+
+=over
+
+=item B<--reject-fail>
+
+This option specifies what to do if verification fails and the sender
+signing policy says to reject the message. If this option is specified,
+the message will be rejected with an SMTP error code.
+This will result in the sending MTA to
+bounce the message back to the sender. If this option is not specified,
+the message will pass through as normal.
+
+=item B<--reject-error>
+
+This option specifies what to do if an error occurs during verification
+of a message. If this option is specified, the message will be rejected
+with an SMTP error code. This will result in the MTA sending the message
+to try again later, or bounce it back to the sender (depending on the
+exact error code used). If this option is not specified, the message
+will be passed through with an error listed in the Authentication-Results
+header instead of the verification results.
+
+The most common error will probably be a DNS error when trying to retrieve
+the public key or sender policy.
+
+=item B<--hostname=HOSTNAME>
+
+Overrides the hostname used in the Authentication-Results header.
+Use this if the hostname that appears is not fully qualified or you
+want to use an alternate name.
+
+=back
+
+=head1 DESCRIPTION
+
+dkfilter.in listens on the addr and port specified by its first arg,
+and sends the traffic mostly unmodified to the SMTP server whose addr and
+port are listed as its second arg. The SMTP protocol is propogated
+literally, but message bodies are analyzed for a DomainKeys signature
+and authentication results are inserted into the message by prepending
+a Authentication-Results header.
+
+=head1 EXAMPLE
+
+  dkfilter.in --hostname=mx1.example.org 127.0.0.1:10025 127.0.0.1:10026
+
+=cut

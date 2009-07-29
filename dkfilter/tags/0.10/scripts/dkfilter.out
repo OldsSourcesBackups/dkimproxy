@@ -1,0 +1,317 @@
+#!/usr/bin/perl -I../lib
+#
+# Copyright (c) 2005-2006 Messiah College. This program is free software.
+# You can redistribute it and/or modify it under the terms of the
+# GNU Public License as found at http://www.fsf.org/copyleft/gpl.html.
+#
+# Written by Jason Long, jlong@messiah.edu.
+
+#
+#   This code is Copyright (C) 2001 Morgan Stanley Dean Witter, and
+#   is distributed according to the terms of the GNU Public License
+#   as found at <URL:http://www.fsf.org/copyleft/gpl.html>.
+#
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+# Written by Bennett Todd <bet@rahul.net>
+
+use strict;
+use strict;
+
+use Getopt::Long;
+use Pod::Usage;
+use IO::File;
+use Sys::Syslog;
+
+use DKMessage;
+use MySmtpServer;
+
+use Sys::Hostname;
+my $hostname = hostname;
+
+my $reject_fail = 0;  # not actually used in this filter
+my $reject_error = 0;
+my $keyfile;
+my $selector;
+my $domain_arg;
+my $method = "simple";
+my $headers = 0;
+my $pidfile;
+my $debug;
+my $help;
+GetOptions(
+		"reject-fail" => \$reject_fail,
+		"reject-error" => \$reject_error,
+		"hostname=s" => \$hostname,
+		"keyfile=s" => \$keyfile,
+		"selector=s" => \$selector,
+		"domain=s" => \$domain_arg,
+		"method=s" => \$method,
+		"headers" => \$headers,
+		"pidfile=s" => \$pidfile,
+		"debug" => \$debug,
+		"help|?" => \$help)
+	or pod2usage(2);
+pod2usage(1) if $help;
+pod2usage("Error: one or more required arguments are missing")
+	unless @ARGV == 2;
+
+if ($pidfile)
+{
+	open my $fh, ">", $pidfile
+		or die "Error: cannot write $pidfile: $!\n";
+	print $fh "$$\n";
+	close $fh;
+}
+
+my ($srcaddr, $srcport) = split /:/, $ARGV[0];
+my ($dstaddr, $dstport) = split /:/, $ARGV[1];
+unless (defined($srcport) and defined($dstport))
+{
+	pod2usage("Error: source or destination port is missing");
+}
+
+unless (defined $keyfile)
+{
+	pod2usage("Error: no keyfile specified");
+}
+unless (-r $keyfile)
+{
+	pod2usage("Error: cannot read keyfile $keyfile");
+}
+unless (defined $selector)
+{
+	pod2usage("Error: selector not specified");
+}
+unless (defined $domain_arg)
+{
+	pod2usage("Error: domain not specified");
+}
+my @domains = split(/,\s*/, $domain_arg);
+unless (@domains)
+{
+	pod2usage("Error: domain not specified");
+}
+unless ($method eq "simple" || $method eq "nofws")
+{
+	die "Error: invalid method; must be simple or nofws\n";
+}
+
+use base "MySmtpProxyServer";
+main->run(
+		host => $srcaddr,
+		port => $srcport,
+		server_type => "PreFork",
+	);
+
+sub setup_client_socket
+{
+	# create an object for sending the outgoing SMTP commands
+	#  (and the signed message)
+    my $client = MSDW::SMTP::Client->new(
+			interface => $dstaddr,
+			port => $dstport);
+	return $client;
+}
+
+sub process_request
+{
+	my $self = shift;
+
+	# initialize syslog
+	openlog("dkfilter.out", "cons,pid", "mail");
+
+	$self->{debug} = $debug;
+	$self->SUPER::process_request;
+}
+
+# handle_end_of_data
+#
+# Called when the source finishes transmitting the message. This method
+# may filter the message and if desired, transmit the message to
+# $client. Alternatively, this method can respond to the server with
+# some sort of rejection (temporary or permanent).
+#
+# Usage: $result = handle_end_of_data($server, $client);
+#
+# Returns:
+#   nonzero if a message was transmitted to the next server and its response
+#     returned to the source server
+#   zero if the message was rejected and the connection to the next server
+#     should be dropped
+#
+sub handle_end_of_data
+{
+	my $self = shift;
+	my $server = $self->{smtp_server};
+	my $client = $self->{smtp_client};
+
+	my $fh = $server->{data};
+	my $mess;
+	my $result;
+	my $result_detail;
+	eval
+	{
+		$mess = DKMessage->new_from_handle($fh);
+
+		# determine what domain to use
+		my $domain;
+		if ($domain = lc $mess->senderdomain)
+		{
+			while ($domain)
+			{
+				if (grep { lc($_) eq $domain } @domains)
+				{
+					last;
+				}
+				# try the parent domain
+				(undef, $domain) = split(/\./, $domain, 2);
+			}
+		}
+		unless ($domain)
+		{
+			# message has no senderdomain
+			$domain = $domains[0];
+		}
+
+		$result = $mess->sign(
+			Method => $method,
+			Selector => $selector,
+			Domain => $domain,
+			KeyFile => $keyfile,
+			Headers => $headers
+			);
+		$result_detail = $mess->result_detail;
+
+		syslog("info", '%s',
+			"DomainKeys signing - $result_detail; "
+			. join(", ", $mess->info));
+	};
+	if ($@)
+	{
+		my $E = $@;
+		chomp $E;
+		syslog("warning", '%s', "signing error: $E");
+		$result = "temperror";
+		$result_detail = "$result ($E)";
+	}
+
+	# check signing result
+	if ($result =~ /error$/ && $reject_error)
+	{
+		# temporary or permanent error
+		$server->fail(
+			($result eq "permerror" ? "550" : "450")
+			. " DomainKeys - $result_detail");
+		return 0;
+	}
+
+	$fh->seek(0,0);
+
+	if ($mess)
+	{
+		# send the message as modified by the verification process
+		while (my $line = $mess->readline)
+		{
+			$client->write_data_line($line);
+			#DEBUGGING:
+			#$line =~ s/[\015\012]+$//;
+			#print "--> $line\n";
+		}
+		$client->{sock}->print(".\015\012")
+			or die "write error: $!";
+	}
+	else
+	{
+		# send the message unaltered
+		$client->yammer($fh);
+	}
+	return 1;
+}
+
+__END__
+
+=head1 NAME
+
+  dkfilter.out -- SMTP proxy for adding Yahoo! DomainKeys signatures
+
+=head1 SYNOPSIS
+
+  dkfilter.out [options] listen.addr:port talk.addr:port
+    options:
+      --reject-error
+      --keyfile=filename
+      --selector=SELECTOR
+      --domain=DOMAIN
+      --method=simple|nofws
+      --headers
+
+  dkfilter.out --help
+    to see a full description of the various options
+
+=head1 OPTIONS
+
+=over
+
+=item B<--reject-error>
+
+This option specifies what to do if an error occurs during signing
+of a message. If this option is specified, the message will be rejected
+with an SMTP error code. This will result in the MTA sending the message
+to try again later, or bounce it back to the sender (depending on the
+exact error code used). If this option is not specified, the message
+will be passed through without modification, and the error will be logged.
+
+The most common error is a message parse error.
+
+=item B<--keyfile=FILENAME>
+
+This is a required argument. Use it to specify the filename containing
+the private key used in signing outgoing messages.
+
+=item B<--selector=SELECTOR>
+
+This is a required argument. Use it to specify the name of the key
+selector.
+
+=item B<--domain=DOMAIN>
+
+This is a required argument. Use it to specify what domain(s) emails
+are signed for. If you want to sign for multiple domains, specify the
+domains separated by commas. As messages are delivered through the filter,
+the filter will attempt to match the message to one of the domains
+specified in this argument. If it sees a match, it will sign the message
+using the matching domain.
+
+=item B<--method=simple|nofws>
+
+This option specifies the canonicalization algorithm to use for signing
+messages. Specify either C<simple> or C<nofws>. If not specified,
+the default is C<simple>.
+
+=item B<--headers>
+
+Specifying this will create signatures with an h tag, which lists all
+the header names found in the signed message.
+
+=back
+
+=head1 DESCRIPTION
+
+dkfilter.out listens on the addr and port specified by its first arg,
+and sends the traffic mostly unmodified to the SMTP server whose addr and
+port are listed as its second arg. The SMTP protocol is propogated
+literally, but message bodies are conditionally signed with the specified
+private key by prepending a DomainKey-Signature header to the message
+content.
+
+=head1 EXAMPLE
+
+  dkfilter.out --keyfile=private.key --selector=sydney \
+          --domain=example.org 127.0.0.1:10027 127.0.0.1:10028
+
+=cut
