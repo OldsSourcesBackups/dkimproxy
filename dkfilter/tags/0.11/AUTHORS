@@ -1,0 +1,9 @@
+Jason Long <jlong@messiah.edu>
+
+Uses code from smtpprox:
+  http://bent.latency.net/smtpprox/
+  Bennett Todd <bet@rahul.net>
+
+and code from Mail::DomainKeys:
+  http://killa.net/infosec/Mail-DomainKeys/
+  Anthony D. Urso <anthonyu@cpan.org>
