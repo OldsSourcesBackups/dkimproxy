@@ -1,0 +1,23 @@
+Yuck, I hate writing documentation.  You get what you pay for, though.  I
+intend to do a full documentation set once the interfaces are finalized.
+
+If you are downloading this from CPAN, you probably want the qpsmtpd plugin,
+too. http://killa.net/infosec/domainkeys/
+
+Installation is ala mode:
+
+perl Makefile.PL
+make
+make test
+make install
+
+Please send bug reports to <anthonyu@cpan.org>.  Sign them with DomainKeys
+if possible. :)  Please include the version numbers of the following
+modules:
+
+Crypt::OpenSSL::RSA
+Mail::Address
+MIME::Base64
+Net::DNS
+
+Thanks!

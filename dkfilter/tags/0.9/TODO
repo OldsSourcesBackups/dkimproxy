@@ -1,0 +1,34 @@
+Testing:
+ - test what happens if DNS is unavailable when fetching key or domain policy
+ - use "torture tests" from domainkeys.sourceforge.net to test canonicalization
+
+Desired features:
+ - sign/verify a message without having to read it completely into memory
+     - Digest::SHA1 can generate the digest incrementally, but I still
+       need a way to sign the digest
+
+Possible bugs:
+ - the Mail::DomainKeys module frequently makes assumptions that it's in
+   a Unix environment ... e.g. it uses "\r\n" where it should use "\015\012"
+   (see perlport(1)'s discussion of Newlines)
+ - smtpprox does the same thing, so maybe it's not an issue
+ - check header parsing algorithm in Mail::DomainKeys::Message, as it may
+   not do the right thing when headers are in the wrong order or duplicate
+   headers occur
+ - h= tag in signature header contains multiple occurrences of same header
+   name
+ - if signature fails on an email using a subdomain of the key's domain,
+   policy lookup should be for key's domain, not sender domain (i.e.
+   sender domain should only be used if the key domain doesn't match,
+   or there is no signature)
+ - message parse error occurs on headers without colons
+
+Possibly desired features:
+ - support use of multiple selectors, multiple private keys
+   (the signing process would use a lookup table of some sort, using the
+   sender address's domain to pick a selector and a key to use)
+ - sign/verify in the same program - although...
+     - messages coming from within the organization should be signed
+     - messages coming from outside should be verified
+   having one program do both actions requires it to know which way the
+   message is going, a decision I don't want to be responsible for

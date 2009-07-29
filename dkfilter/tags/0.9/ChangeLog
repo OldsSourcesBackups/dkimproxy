@@ -1,0 +1,119 @@
+2005-07-13: Jason Long <jlong@messiah.edu>
+ * Released version 0.8, now working on 0.9.
+
+ -- VERSION 0.8 --
+
+2005-07-12: Jason Long <jlong@messiah.edu>
+ * Makefile.am, configure.ac:
+   - yep, I implemented an autoconf/automake-style build system. Now it's
+     easy to install anywhere... just do ./configure --prefix=/anywhere &&
+	 make install.
+ * README, INSTALL:
+   - updated this documentation
+ * lib/, scripts/:
+   - library files have been moved to the lib subdirectory.
+   - program files have been moved to the scripts subdirectory. Furthermore,
+     program files are now installed under $prefix/bin, so startup scripts
+	 will need to be changed.
+ * init-script.sh:
+   - find filter scripts in /usr/local/dkfilter/bin
+
+2005-06-21: Jason Long <jlong@messiah.edu>
+ * Released version 0.7, now working on 0.8.
+
+ -- VERSION 0.7 --
+
+2005-06-16: Jason Long <jlong@messiah.edu>
+ * dkfilter.in, dkfilter.out:
+   - TERM signal handler now "dies", so that the wait system call is properly
+     interrupted... I suspect this only needs to happen on Perl 5.8.0+, and
+     indeed may not even work with older versions of Perl
+   - everything the server does is now enclosed in an eval { } block, so
+     that the TERM signal's "die" can be properly caught
+   - this fixes a bug where sending the parent process a TERM signal would
+     not cause the program to shut down as expected
+
+2005-06-07: Jason Long <jlong@messiah.edu>
+ * auto_responder.pl:
+   - this is a new Perl script for creating an auto-responding
+	 interoperability tester
+
+2005-06-03: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - minor cosmetic change to inline documentation
+
+2005-05-11: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - bugfix - message-parse-error had caused "Odd number of elements..."
+     warning to be output by Perl
+
+ -- VERSION 0.6 --
+
+2005-05-10: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - bugfix - use case-INsensitive comparision of sender domain name
+     to domain name used to sign
+ * dkfilter.out:
+   - bugfix - did not check parent domain correctly
+ * Mail/DomainKeys/Signature.pm:
+   - bugfix - use case-INsensitive comparision of sender domain name
+     to domain name found in signature
+
+2005-05-05: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - put an eval { } block around the message verification call, to catch
+     and report errors (e.g. DNS errors) during verification
+   - for testing mode, changed results to "neutral"
+
+2005-05-04: Jason Long <jlong@messiah.edu>
+ * Mail/DomainKeys/Message.pm:
+   - fixed canonicalization methods so they can pass the canonicalization
+     torturetest
+   - added support for generating "h" tag (headers) in signature
+   - detect duplicate From: and Sender: headers, but currently nothing is
+     done about it when detected
+ * dkfilter.out:
+   - added command-line argument for turning on "headers" support (--headers)
+   - fixed bug where --reject-error was turned on by default (and there was
+     no way to turn it off)
+
+2005-04-30: Jason Long <jlong@messiah.edu>
+ * Mail/DomainKeys/Key/Public.pm:
+   - use ALRM signal to catch a long-running DNS query; currently the timeout
+     is 10 seconds; if you're verifying in an After-Queue filter, it should
+     be safe to set this timeout higher
+ * Mail/DomainKeys/Policy.pm:
+   - use ALRM signal to catch a long-running DNS query
+ * dkfilter.in, dkfilter.out:
+   - fixed another glitch in the way errors were reported
+
+2005-04-29: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - added senderdomain method, to get the host part of the address used
+     to sign or verify
+
+2005-04-28: Jason Long <jlong@messiah.edu>
+ * dkfilter.out:
+   - added "method" command-line argument to specify what canonicalization
+     method should be used to sign messages ("simple" or "nofws")
+   - "domain" argument can now take multiple domains, separated by commas
+   - when signing a message, pick the best matching domain (from the
+     "domain" argument) for the address used in the Sender: or From: header
+
+2005-04-27: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - added documentation
+ * dkfilter.in:
+   - error messages may not have been logged correctly; it should work
+     better now
+ * init-script.sh:
+   - determine FQDN hostname using `hostname -f` and pass it to the
+     inbound filter for use in Authentication-Results headers
+
+2005-04-26: Jason Long <jlong@messiah.edu>
+ * DKMessage.pm:
+   - if signature verification fails, put the reason in the syslog and
+     in the Authentication-Results header
+ * Mail/DomainKeys/Signature.pm:
+   - allow signatures that use a parent domain of the message's from/sender
+     domain
