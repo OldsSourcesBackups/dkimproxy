@@ -80,7 +80,8 @@ sub process_message_file
 	my ($msgfile) = @_;
 
 	use Net::SMTP;
-	my $smtp = Net::SMTP->new("localhost:$self->{proxy_port}");
+	my $smtp = Net::SMTP->new("localhost:$self->{proxy_port}")
+		or die "Error: cannot connect to DKIMproxy: $!\n";
 	$smtp->mail("nobody");
 	$smtp->to("nobody");
 	$smtp->data;
