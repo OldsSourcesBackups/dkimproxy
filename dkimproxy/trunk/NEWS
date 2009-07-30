@@ -1,6 +1,9 @@
 This file summarizes what's changed between releases of dkimproxy.
 See the ChangeLog file for the details.
 
+Version 1.3
+
+
 Version 1.2 - released 2009-07-12
 
  * Man pages are now generated for dkimproxy.in and dkimproxy.out.
