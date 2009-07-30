@@ -59,7 +59,9 @@ my $identity_arg;
 my $method;
 my $debugtrace = undef;
 my $sender_mapfile;
+my $listid_mapfile;
 my $sender_map;
+my $listid_map;
 
 my @default_signatures;
 
@@ -81,6 +83,7 @@ sub options
 
 	$template->{reject_error} = \$reject_error;
 	$template->{sender_map} = \$sender_mapfile;
+	$template->{listid_map} = \$listid_mapfile;
 	$template->{debugtrace} = \$debugtrace;
 
 	$template->{signature} = \@signature_arg;
@@ -153,7 +156,7 @@ sub configure
 		pod2usage("Error: relay host was not specified");
 	}
 
-	unless (@signature_arg || defined($sender_mapfile))
+	unless (@signature_arg || defined($sender_mapfile) || defined($listid_mapfile))
 	{
 		# backwards-compatible... if no --signature argument,
 		# and no --sender_map argument, then we create a dkim signature
@@ -173,6 +176,10 @@ sub configure
 	if ($sender_mapfile)
 	{
 		$sender_map = LookupMap->load($sender_mapfile);
+	}
+	if ($listid_mapfile)
+	{
+		$listid_map = LookupMap->load($listid_mapfile);
 	}
 }
 
@@ -442,6 +449,29 @@ sub split_by_commas
 sub get_signature_options
 {
 	my $signer = shift;
+
+	if ($listid_map)
+	{
+		# determine what signatures to add based on the
+		# "List-Id" header of this message
+		if (my $listid = $signer->{headers_by_name}->{"list-id"})
+		{
+			$listid = $1 if $listid =~ /<(.*?)>/;
+
+			my ($result, $key) = $listid_map->lookup_address($listid);
+			if (defined $result)
+			{
+				if (lc $key eq lc $listid)
+				{
+					$key = $1 if $key =~ /\.(.*)$/;
+				}
+				my @result = split_by_commas($result);
+				return
+					map { +{ domain => $key, %$_ } }
+					map { parse_signature_options($_) } @result;
+			}
+		}
+	}
 
 	if ($sender_map)
 	{
