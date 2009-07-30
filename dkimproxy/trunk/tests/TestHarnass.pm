@@ -43,6 +43,12 @@ sub start_servers
 
 	# give it enough time to start
 	sleep 1;
+	my $tmp = <$sink_fh>;
+	if (not $tmp)
+	{
+		$self->shutdown_servers;
+		die "Error: smtp_sink.pl failed to start\n";
+	}
 
 	print "# have pids $self->{sink_pid}, $self->{proxy_pid}\n";
 	return;
