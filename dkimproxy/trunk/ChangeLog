@@ -2,6 +2,8 @@
  * scripts/dkimproxy.out: implement support for "listid_map", which
    generates signatures based on the "List-Id" header found in the
    outgoing message
+ * tests/listid_map.t: a test script for testing the "listid_map"
+   feature; includes some sample messages
 
 2009-07-30: Jason Long <jlong@messiah.edu>
  * tests/TestHarnass.pm: a module to allow multiple test scripts to do
