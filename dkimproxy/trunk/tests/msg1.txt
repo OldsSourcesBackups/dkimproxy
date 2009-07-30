@@ -1,0 +1,6 @@
+From: Jason Long <jlong@messiah.edu>
+Subject: test 001
+
+should be signed, with
+DomainKeys and DKIM
+d=messiah.edu
