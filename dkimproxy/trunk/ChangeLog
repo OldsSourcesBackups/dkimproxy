@@ -1,4 +1,13 @@
 2009-07-30: Jason Long <jlong@messiah.edu>
+ * tests/TestHarnass.pm: a module to allow multiple test scripts to do
+   the same sort of things to test the dkimproxy daemon
+ * tests/smtp_sink.pl: a helper program that receives SMTP messages on
+   a particular port and feeds the result back to the caller
+   (you need to install Net::SMTP::Server to use this)
+ * tests/single_domain.t: modify the test script so it uses
+   TestHarnass.pm
+
+2009-07-30: Jason Long <jlong@messiah.edu>
  * tests/single_domain.t: a test script that will do some regression
    testing (still a work in progress)
  * tests/msg1.txt: a sample message to be signed by the test scripts

@@ -3,26 +3,20 @@
 use strict;
 use warnings;
 
-my $path = "../scripts";
-my @signatures;
-@signatures = generate_signatures("msg1.txt");
+use TestHarnass;
+use Test::More tests => 3;
 
-
-print "ok\n";
-
-sub generate_signatures
-{
-	my $msgfile = shift;
-
-	system("$path/dkimproxy.out",
+my $tester = TestHarnass->new;
+$tester->{proxy_args} = [
 		"--conf_file=single_domain.conf",
-		"--pidfile=pidfile",
-		"--daemonize=1",
-		"127.0.0.1:20025",
-		"smtp.messiah.edu:25",
-		) == 0 or exit 2;
-	sleep 2;
+		];
+$tester->start_servers;
 
+my @signatures;
+@signatures = $tester->generate_signatures("msg1.txt");
+ok(@signatures == 2, "should be two signatures");
+ok($signatures[0]->domain eq "domain1.example", "found expected d= argument");
+ok($signatures[1]->domain eq "domain1.example", "found expected d= argument");
 
-	return ();
-}
+$tester->shutdown_servers;
+
