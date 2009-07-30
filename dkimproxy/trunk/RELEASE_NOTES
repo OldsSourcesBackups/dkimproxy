@@ -1,25 +1,11 @@
-Release 1.2
+Release 1.3
 
-It was time to get out a new regular release of DKIMproxy. I had
-initially planned to wait until full IPv6 support was available, but
-I wasn't finding time to work on this, so now I've decided to go ahead
-and release what I had.
-
-If you had installed any of the 1.2 "beta" releases, check the NEWS
-file for what's new since then.
+*TODO*
 
 
-What's New (since 1.1)
+What's New (since 1.2)
 
-   IPv6 support - partial
-      You can now specify an IPv6 address as your relay host.
-      But you'll need to install the IO::Socket::INET6 module from CPAN.
-      And you still cannot "listen" on an IPv6 address (this is because
-      the Net::Server module does not support IPv6).
-
-   DomainKeys policies
-      DomainKeys signing policies (as in RFC4870) are now checked and
-      enforced when the "reject_fail" option is enabled for dkimproxy.in.
+   *TODO*
 
 
 Installing
