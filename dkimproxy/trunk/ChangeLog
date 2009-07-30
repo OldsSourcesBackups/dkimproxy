@@ -1,3 +1,8 @@
+2009-07-30: Jason Long <jlong@messiah.edu>
+ * tests/single_domain.t: a test script that will do some regression
+   testing (still a work in progress)
+ * tests/msg1.txt: a sample message to be signed by the test scripts
+
 2009-07-20: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.out: document the long versions of the available
    signature parameters
