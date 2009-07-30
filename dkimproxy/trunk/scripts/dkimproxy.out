@@ -1,7 +1,7 @@
 #!/usr/bin/perl -I../lib
 #
 # This file is part of DKIMproxy, an SMTP-proxy implementing DKIM.
-# Copyright (c) 2005-2008 Messiah College.
+# Copyright (c) 2005-2009 Messiah College.
 # Written by Jason Long <jlong@messiah.edu>.
 #
 # This program is free software; you can redistribute it and/or
@@ -658,6 +658,14 @@ verify, you will need to publish the corresponding public key in
 DNS, using the selector name specified by C<--selector>, under
 the domain(s) specified in C<--domain>.
 
+=item B<--listid_map=FILENAME>
+
+If specified, the named file provides signature parameters depending
+on the "List-Id" header found in the message. Use this if your mail
+server sends out mailing list messages and you want to generate
+different signatures depending on which mailing list is sending
+messages. See the section below titled L</"LIST-ID MAP FILE">.
+
 =item B<--method=simple|nowsp|relaxed|nofws>
 
 This option specifies the canonicalization algorithm to use for signing
@@ -799,6 +807,26 @@ the identity to use, default is to not include an i= parameter
 the selector to use
 
 =back
+
+=head1 LIST-ID MAP FILE
+
+This works very much like a sender map file, except it selects based
+on the "List-Id" header rather than the "Sender" or "From" header.
+You can match on the full list-id value, or just a suffix.
+Here is an example file:
+
+  kernel.org                   dkim(d=kernel.org)
+  xorg-devel.lists.x.org       dkim(d=lists.x.org)
+  dev.spamassassin.apache.org  dkim(d=apache.org)
+
+For details on the syntax of the right-hand values, see
+L</"SENDER MAP FILE"> above.
+
+If no "List-Id" header is found in the message to be signed, or no
+entry in the map file matches the found "List-Id" header,
+then DKIMproxy will proceed as if no listid_map option was specified.
+That is, it will add the default signature (if a "domain" or
+"signature" option was specified), or leave the message as is.
 
 =head1 AUTHOR
 
