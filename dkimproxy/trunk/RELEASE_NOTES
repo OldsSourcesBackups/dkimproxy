@@ -5,7 +5,14 @@ Release 1.3
 
 What's New (since 1.2)
 
-   *TODO*
+   The "listid_map" option has been added. With this option, you can
+   have DKIMproxy generate signatures based on the "List-Id" header
+   of outgoing messages. This header is used if your server sends out
+   mailing list traffic. You can use this header to determine which
+   mailing list is being distributed, and have DKIMproxy generate
+   different signatures for different mailing lists. For more
+   information, run `perldoc scripts/dkimproxy.out' and look for
+   the "LIST-ID MAP FILE" section.
 
 
 Installing
