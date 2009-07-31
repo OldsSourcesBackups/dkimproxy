@@ -1,0 +1,128 @@
+[% WRAPPER common.tt2 %]
+
+
+<h2 id="req">Requirements</h2>
+
+<p>
+Mail::DKIM requires the following Perl modules:
+<ul>
+<li>Crypt::OpenSSL::RSA</li>
+<li>Digest::SHA</li>
+<li>Mail::Address</li>
+<li>MIME::Base64</li>
+<li>Net::DNS</li>
+</ul>
+</p>
+
+<p>
+DKIMproxy is written in Perl. It requires the Mail::DKIM module, found
+on this page, as well as the following Perl modules:
+<ul>
+<li>Net::Server (use the latest version, if possible)</li>
+</ul>
+</p>
+
+<a name="download">
+<h2>Download</h2>
+
+<p>
+Download the Mail-DKIM Perl module:
+<a href="http://search.cpan.org/CPAN/authors/id/J/JA/JASLONG/Mail-DKIM-0.36.tar.gz">Version 0.36</a> [CPAN].
+</p>
+<p>
+See <a href="http://search.cpan.org/src/JASLONG/Mail-DKIM-0.36/Changes">what's new in this release</a>.
+</p>
+<!--
+<p>
+<em>Note: Version 0.18 has not been released to CPAN yet. I will
+be releasing it on CPAN in the next week or two.</em>
+</p>
+-->
+
+<p>
+<!--
+<strong>
+DKIMproxy is currently beta-quality software, and still under development.
+Certain circumstances may result in it mangling, discarding, bouncing,
+or duplicating your email. That said, if you are comfortable working with
+email transfer, and willing to give it a try, please do.
+</strong>
+-->
+<strong>
+DKIMproxy is distributed in the hope that it will be useful,
+but (like any software) <em>without any warranty</em>;
+without even the implied warranty of merchantability
+or fitness for a particular purpose.
+</strong>
+<p>
+</p>
+<strong>
+Be careful when installing and using DKIMproxy!
+Because of how email delivery works,
+improper configuration or undiscovered bugs in DKIMproxy
+may result in it mangling, discarding, bouncing, or duplicating
+your email.
+You are advised to do some testing of DKIMproxy before using
+it on your production systems.
+</strong>
+</p>
+<p>
+Download the current version of DKIMproxy:
+<a href="http://downloads.sourceforge.net/dkimproxy/dkimproxy-1.2.tar.gz">Version 1.2</a> [SourceForge].
+</p>
+<p>
+Download the <em>development</em> version of DKIMproxy:
+<a href="/dkimproxy-1.3beta1.tar.gz">Version 1.3beta1</a>.
+</p>
+<p>
+See <a href="NEWS.txt">what's new in this release</a>.
+</p>
+
+<p>
+See also: the
+<a href="http://sourceforge.net/projects/dkimproxy">
+DKIMproxy Project Page</a>, on SourceForge.
+</p>
+
+<p>
+DKIMproxy has evolved from my earlier project,
+<a href="http://jason.long.name/dkfilter/">Dkfilter</a>,
+which was based on <a href="http://bent.latency.net/smtpprox/">smtpprox</a>
+and <a href="http://killa.net/infosec/Mail-DomainKeys/">Mail::DomainKeys</a>.
+My thanks go out to Bennett Todd for providing smtpprox and
+Anthony D. Urso for providing Mail::DomainKeys.
+</p>
+
+
+
+<h2>Installing DKIMproxy</h2>
+
+<p>
+The following steps are recommended for installing dkimproxy:
+<ol>
+<li>Determine where you want to install dkimproxy's program files,
+e.g. <tt>/usr/local/dkimproxy</tt>.</li>
+<li>"cd" to the directory containing dkimproxy's source code and type
+<b>./configure --prefix=</b> followed by the location in which you want
+to install the filter. E.g.
+<pre>
+./configure --prefix=/usr/local/dkimproxy
+</pre>
+</li>
+<li>Run <b>make install</b> to install the program files to the desired
+directory. If you used /usr/local/dkimproxy as the prefix, the filter
+scripts will be installed in /usr/local/dkimproxy/bin and the Perl module
+files will be in /usr/local/dkimproxy/lib.</li>
+<li>Create a Unix user/group dedicated to running dkimproxy. E.g.
+<tt>dkim</tt>.</li>
+<li>Create a startup/shutdown script for the filter. A sample script
+(<tt>sample-dkim-init-script.sh</tt>) is provided...
+make sure to check, and modify if necessary, the user,
+group, and directory found in the script. Also, you may need to adjust
+command-line arguments for starting the filter(s).  Then you can copy it
+to /etc/init.d/dkimproxy and use it like any other init script.</li>
+</ol>
+</p>
+
+
+[% END %]

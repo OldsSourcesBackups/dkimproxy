@@ -1,0 +1,239 @@
+[% WRAPPER common.tt2
+	title = "DKIMproxy - Frequently Asked Questions" %]
+<p>Back to DKIMproxy <a href="support.html">support page</a>.</p>
+
+<p>
+Here are some frequently asked questions, with answers.
+</p>
+
+<ul>
+<!--
+<li><a href="#signall">How do I configure Postfix to sign ALL authorized
+outgoing mail?</a></li>
+-->
+<li><a href="#notsigned">Why are my messages not getting signed?</a></li>
+<li><a href="#sendmail">How do I sign email submitted locally using sendmail?</a></li>
+<li><a href="#verifiednotsigned">
+Outgoing mail is getting an Authentication-Results header instead
+of the expected DomainKey-Signature. Verifiers report "no signature".
+What's going on?</a></li>
+<li><a href="#onlysign">
+My server is only used for sending email.  Can I make it sign
+messages on port 25 instead of port 587 as used in the example?</a></li>
+<li><a href="#tlserror">Outgoing messages get stuck in the queue before
+getting signed.  The Postfix log files report TLS handshake error. What
+causes this?</a></li>
+<li><a href="#connectfailure">I get "socket connect failure: Connection
+refused" or "socket connect failure: Invalid argument". What causes this?
+</a></li>
+</ul>
+
+<!--
+<a name="signall">
+<h2>How do I configure Postfix to sign ALL authorized outgoing mail?</h2>
+<p>
+Currently, the instructions you'll find describe how to configure Postfix
+to sign all mail submitted to the <tt>submission</tt> port (port 587)
+and has a valid From: address in the message headers. This works, because
+the <tt>smtpd</tt> instance listening on port 587 can block unauthorized
+mail.
+</p>
+<p>
+So the first related question is:
+<b>how to sign email accepted on port 25?</b>
+</p>
+<p>
+The real question is, how to sign <em>only authorized email</em> accepted
+on port 25... The trick is you must configure Postfix to only apply the
+DK-signing content filter to authorized emails. This is complicated, since
+there are many ways an authorized sender could be determined.
+</p>
+<p>
+Here is an example- it will work ONLY IF you have an alternate content filter
+to send unauthorized emails to, AND it will work ONLY IF your alternate
+content filter reinjects messages using SMTP (<em>not sendmail</em>).
+It assumes authorized users are
+determined by <tt>permit_mynetworks</tt> and
+<tt>permit_sasl_authenticated</tt>.
+</p>
+main.cf:
+<pre class="programlisting">
+  # set the default content filter to be the DomainKeys-signing filter
+  content_filter = dksign
+
+  # for any incoming email not authorized to relay, override the content
+  # filter with the SPAM filter
+  smtpd_recipient_restrictions =
+      permit_mynetworks
+      permit_sasl_authenticated
+      check_recipient_access regexp:/etc/postfix/always_use_spamfilter
+      reject_unauth_destination
+</pre>
+
+always_use_spamfilter:
+<pre class="programlisting">
+  # anytime this file is checked, the result should be "FILTER spamfilter..."
+  # this entry should match a content filter defined in master.cf
+  /./               FILTER spamfilter:localhost:10025
+</pre>
+
+<p>A second related question is:
+<b>how to sign email submitted locally using <tt>sendmail</tt>?</b>
+</p>
+<p>
+Try adding the <tt>content_filter</tt> option to the <tt>pickup</tt>
+interface in <tt>master.cf</tt>.
+</p>
+
+master.cf:
+<pre class="programlisting">
+pickup    fifo  n       -       n       60      1       pickup
+    -o content_filter=dksign
+</pre>
+
+<p>Finally:
+<b>how to sign Postfix-generated email (e.g. delivery status notifications)?</b>
+</p>
+<p>
+Good question. I think this is impossible, since as far as I know,
+you cannot subject Postfix-generated mail to a content filter
+(without using a second Postfix instance).
+</p>
+-->
+
+<h2><a name="notsigned">
+Why are my messages not getting signed?</a></h2>
+<p>
+The most common reason for messages not getting signed is that your
+outbound mail is not going through DKIMproxy. If you use the setup
+recommended on this site, you will need to configure your mail
+client (e.g. Thunderbird, etc.) to use port 587 to submit mail.
+This is a change from the usual default of port 25.
+</p>
+<p>
+See the next question if your mail client uses the <tt>sendmail</tt>
+command-line interface (rather than SMTP) to submit mail.
+</p>
+<p>
+If your mail <em>is</em> going through DKIMproxy, then check your
+mail log file for an explanation. DKIMproxy will write to the log
+file for every message it relays.
+</p>
+
+<h2><a name="sendmail">
+How do I sign email submitted locally using <tt>sendmail</tt>?</a></h2>
+<p>
+Email submitted using Postfix <tt>sendmail</tt> on the same server as
+dkimproxy will not get signed unless you add the 
+<tt>content_filter</tt> option to the <tt>pickup</tt>
+interface in <tt>master.cf</tt>.
+</p>
+
+<div>
+master.cf:
+<pre class="programlisting">
+pickup    fifo  n       -       n       60      1       pickup
+    -o content_filter=dksign:[127.0.0.1]:10027
+</pre>
+</div>
+
+
+<h2><a name="verifiednotsigned">
+Outgoing mail is getting an Authentication-Results header instead
+of the expected DomainKey-Signature. Verifiers report "no signature".
+What's going on?</a></h2>
+<p>
+Your outgoing mail is going through the
+DKIMproxy <em>verifier</em> (dkimproxy.in) instead of the
+DKIMproxy <em>signer</em> (dkimproxy.out). Messages are verified or signed
+depending on which Postfix port you submit the mail on. If you followed
+my instructions, Postfix port 25 mail gets <em>verified</em> (this is the
+port other MTAs use to send mail to you) and Postfix port 587 mail gets
+<em>signed</em>. Most email clients (e.g. Thunderbird) default to port 25,
+so you should change that to port 587. (Port 587 is the standard mail
+submission port according to
+<a href="http://www.ietf.org/rfc/rfc2476.txt">RFC 2476</a>.)
+</p>
+
+<h2><a name="onlysign">
+My server is only used for sending email.  Can I make it sign
+messages on port 25 instead of port 587 as used in the example?</a></h2>
+<p>
+Yes. In your master.cf, look at the example for using the submission port,
+and add those same parameters to the smtp service. This will configure
+Postfix to reject incoming mail, so only use this fix if you really only
+send mail with your server. E.g. you might have...
+</p>
+<pre class="programlisting">
+smtp  inet  n     -       n       -       -       smtpd
+    -o smtpd_etrn_restrictions=reject
+    -o smtpd_sasl_auth_enable=yes
+    -o content_filter=dksign:[127.0.0.1]:10027
+    -o receive_override_options=no_address_mappings
+    -o smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject
+submission  inet  n     -       n       -       -       smtpd
+    -o smtpd_etrn_restrictions=reject
+    -o smtpd_sasl_auth_enable=yes
+    -o content_filter=dksign:[127.0.0.1]:10027
+    -o receive_override_options=no_address_mappings
+    -o smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject
+</pre>
+
+<h2><a name="tlserror">
+Outgoing messages get stuck in the queue before getting signed.
+The Postfix log files report TLS handshake error. What causes this?</a></h2>
+<p>
+Postfix is trying to use TLS (encryption) when sending email through
+the content filter. This won't work. You'll need to configure your
+post-dksign-smtpd server to not announce TLS support, or configure your
+pre-dksign-smtp client to not use TLS.
+</p>
+<p>
+This example shows how to configure the post-dksign-smtpd server to not
+announce TLS support.
+</p>
+
+<div>
+master.cf:
+<pre class="programlisting">
+#
+# service for accepting messages FROM the DomainKeys signing filter
+#
+127.0.0.1:10028 inet  n  -      n       -       10      smtpd
+    <b>-o smtpd_use_tls=no</b>
+    -o content_filter=
+    -o receive_override_options=no_unknown_recipient_checks,no_header_body_checks
+    -o smtpd_helo_restrictions=
+    -o smtpd_client_restrictions=
+    -o smtpd_sender_restrictions=
+    -o smtpd_recipient_restrictions=permit_mynetworks,reject
+    -o mynetworks=127.0.0.0/8
+    -o smtpd_authorized_xforward_hosts=127.0.0.0/8
+</pre>
+</div>
+
+<h2><a name="connectfailure">
+I get "socket connect failure: Connection
+refused" or "socket connect failure: Invalid argument". What causes this?
+</a></h2>
+<p>
+You are running dkimproxy.in and/or dkimproxy.out, and you connect to the
+listening port, but the connection is terminated immediately. Furthermore,
+you get the following output from dkimproxy:
+</p>
+<pre>
+./dkimproxy.in: socket connect failure: Connection refused
+</pre>
+<p>
+(On some platforms, the error is <tt>socket connect failure:
+Invalid argument</tt>.)
+</p>
+<p>
+The filter is unable to connect to its "destination" port. Normally, Postfix
+should be listening on this port. Make sure you have added the appropriate
+entries to master.cf for the listening port and have restarted Postfix.
+</p>
+
+<p>Last updated: 2008-07-17</p>
+
+[% END %]

@@ -1,0 +1,73 @@
+[% WRAPPER common.tt2
+	title => "Setting up the outbound proxy with Postfix" %]
+<p>Back to DKIMproxy <a href="usage.html">usage documentation</a>.</p>
+
+<p>
+This is an example on connecting Postfix to dkimproxy.out for signing
+outbound messages. This example uses Postfix's "After-Queue filter" feature.
+We trigger the filter on messages sent via SMTP on port 587
+(the <tt>submission</tt> port). Messages that trigger the filter get
+sent to port 10027 where dkimproxy.out is listening.
+Dkimproxy.out processes the message and forwards the connection back to
+Postfix on port 10028.
+</p>
+<p>
+Note- I used port 587 as the trigger here, rather than port 25,
+because only authorized outgoing email should be signed. Typically port 25
+is used to receive incoming email (which should not get a signature).
+Port 587 on the other hand, can be locked down to only allow outgoing email.
+</p>
+
+<p>
+In master.cf we modify the "submission" smtp listener service (it runs on
+port 587). We add parameters telling Postfix to filter these messages
+to port 10027 (where dkimproxy.out is listening) and to only allow
+messages from our network and users who can authenticate using SASL.
+We create a "transport" named dksign which is used to deliver messages to
+the filter.  Finally, we create a smtp listener for receiving processed
+messages from dkimproxy.out on port 10028.
+</p>
+<p>
+<tt>/etc/postfix/master.cf</tt>:
+<pre class="programlisting">
+#
+# modify the default submission service to specify a content filter
+# and restrict it to local clients and SASL authenticated clients only
+#
+submission  inet  n     -       n       -       -       smtpd
+    -o smtpd_etrn_restrictions=reject
+    -o smtpd_sasl_auth_enable=yes
+    -o content_filter=dksign:[127.0.0.1]:10027
+    -o receive_override_options=no_address_mappings
+    -o smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject
+
+#
+# specify the location of the DKIM signing proxy
+# Note: we allow "4" simultaneous deliveries here; high-volume sites may
+#   want a number higher than 4.
+# Note: the smtp_discard_ehlo_keywords option requires Postfix 2.2 or
+#   better. Leave it off if your version does not support it.
+#
+dksign    unix  -       -       n       -       4       smtp
+    -o smtp_send_xforward_command=yes
+    -o smtp_discard_ehlo_keywords=8bitmime,starttls
+
+#
+# service for accepting messages FROM the DKIM signing proxy
+#
+127.0.0.1:10028 inet  n  -      n       -       10      smtpd
+    -o content_filter=
+    -o receive_override_options=no_unknown_recipient_checks,no_header_body_checks
+    -o smtpd_helo_restrictions=
+    -o smtpd_client_restrictions=
+    -o smtpd_sender_restrictions=
+    -o smtpd_recipient_restrictions=permit_mynetworks,reject
+    -o mynetworks=127.0.0.0/8
+    -o smtpd_authorized_xforward_hosts=127.0.0.0/8
+</pre>
+</p>
+<p>
+Execute <b>postfix reload</b> for Postfix to respond to changes in
+<tt>/etc/postfix/master.cf</tt>.
+</p>
+[% END %]
