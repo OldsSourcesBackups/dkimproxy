@@ -29,9 +29,9 @@ Desired features:
  - document use of min_servers and max_servers options on help page
  - perform fewer passes over the message data
  - add a DomainKey-Signature only when the message's sender matches an
-   available domain
+   available domain (DONE)
  - alert the client if unable to connect to the relay server
-   (syslog, a 450 greeting, etc)
+   (syslog, a 450 greeting, etc) (DONE)
 
 Possibly desired features:
  - sign/verify in the same program - although...
