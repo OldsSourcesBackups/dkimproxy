@@ -602,7 +602,7 @@ dkimproxy.out - SMTP proxy for adding DKIM signatures to email
       --signature=dkim|domainkeys
       --keyfile=FILENAME
       --selector=SELECTOR
-      --method=simple|nowsp|relaxed|nofws
+      --method=simple|relaxed|nofws
       --domain=DOMAIN
       --identity=IDENTITY
 
@@ -666,11 +666,11 @@ server sends out mailing list messages and you want to generate
 different signatures depending on which mailing list is sending
 messages. See the section below titled L</"LIST-ID MAP FILE">.
 
-=item B<--method=simple|nowsp|relaxed|nofws>
+=item B<--method=simple|relaxed|nofws>
 
 This option specifies the canonicalization algorithm to use for signing
-messages. For DKIM signatures, the options are C<simple>, C<nowsp>, or
-C<relaxed>; the default is C<relaxed>. For DomainKeys signatures, the
+messages. For DKIM signatures, the options are C<simple>, C<relaxed>,
+and C<relaxed/relaxed>; the default is C<relaxed>. For DomainKeys signatures, the
 options are C<simple> and C<nofws>; the default is C<nofws>.
 
 =item B<--pidfile=PIDFILE>
