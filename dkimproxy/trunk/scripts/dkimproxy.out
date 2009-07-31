@@ -253,7 +253,7 @@ sub check_signature_options
 	{
 		# check method argument
 		$options->{method} ||= "relaxed";
-		unless (grep { $options->{method} eq $_ } qw(simple relaxed nowsp))
+		unless (grep { $options->{method} eq $_ } qw(simple relaxed simple/simple simple/relaxed relaxed/simple relaxed/relaxed nowsp))
 		{
 			pod2usage("$prefix: invalid method $options->{method}");
 		}
