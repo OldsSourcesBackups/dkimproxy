@@ -1,0 +1,47 @@
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+	id S1752972AbZG1RC4 (ORCPT <rfc822;jlong@messiah.edu>);
+	Tue, 28 Jul 2009 13:02:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbZG1RC4
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 28 Jul 2009 13:02:56 -0400
+Received: from outbound-mail-10.bluehost.com ([69.89.17.210]:54784 "HELO
+	outbound-mail-10.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752489AbZG1RCz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 13:02:55 -0400
+Received: (qmail 22280 invoked by uid 0); 28 Jul 2009 17:02:55 -0000
+Received: from unknown (HELO box514.bluehost.com) (74.220.219.114)
+  by outboundproxy1.bluehost.com with SMTP; 28 Jul 2009 17:02:55 -0000
+Received: from [75.111.28.251] (helo=jbarnes-g45)
+	by box514.bluehost.com with esmtpsa (TLSv1:AES128-SHA:128)
+	(Exim 4.69)
+	(envelope-from <jbarnes@virtuousgeek.org>)
+	id 1MVq4l-0005fb-Cx; Tue, 28 Jul 2009 11:02:55 -0600
+Date:	Tue, 28 Jul 2009 10:02:50 -0700
+From:	Jesse Barnes <jbarnes@virtuousgeek.org>
+To:	linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Matthew handling PCI patches until Aug. 6th
+Message-ID: <20090728100250.72a62800@jbarnes-g45>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+Sender:	linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List:	linux-kernel@vger.kernel.org
+
+I'm heading out on vacation for the next week or so and asked Matthew
+to herd any urgent PCI patches during that time.  So please Cc Matthew
+Wilcox <matthew@wil.cx> on anything you think that might need to get
+into 2.6.31.
+
+Thanks,
+-- 
+Jesse Barnes, Intel Open Source Technology Center
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
