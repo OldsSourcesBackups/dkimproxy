@@ -1,0 +1,172 @@
+[% WRAPPER common.tt2 %]
+
+
+<h2 id="usage">Using DKIMproxy</h2>
+<p>
+DKIMproxy can be used to add DKIM support to any environment which uses
+SMTP to deliver email messages. First, you will need to decide whether
+you want to use DKIM/DomainKeys for <em>signing</em> outbound messages,
+<em>verifying</em> inbound messages, or both. You will need to configure
+your mail server to pass messages for signing or verifying to DKIMproxy,
+which will process the message and deliver it on to a predetermined
+SMTP address/port.
+</p>
+<p>
+If you follow the instructions below, you will have the inbound
+(signature-verifying) proxy installed as a Before-Queue filter to
+verify inbound mail received on port 25,
+and the outbound (signing) proxy installed as an After-Queue filter
+to sign outgoing mail received on port 587. This means all of your
+users, when configuring their SMTP server, should specify port 587.
+Another method of supporting signing and verifying is to configure Postfix
+to listen on two different
+IP addresses, configuring one IP address for verification and the other
+IP address for signing.
+</p>
+<p>
+<strong>
+Note:
+Please read and understand the Postfix documentation on
+<a href="http://www.postfix.org/CONTENT_INSPECTION_README.html">
+content filters</a>
+before attempting to use dkimproxy with Postfix.
+</strong>
+</p>
+
+
+<h2>Using DKIMproxy to sign outbound messages</h2>
+<p>
+The outbound proxy adds a digital signature to the header of each
+message it processes. To compute the signature, it needs access to an
+OpenSSL private key.
+In addition, in needs to know the name of the key selector
+being used, and what domain it should sign messages for. This
+information is specified with command-line arguments to dkimproxy.out.
+</p>
+<p>
+But first, let's generate a private/public key pair and publish the
+public key in DNS.
+</p>
+<ol>
+<li>Generate a private/public key pair using OpenSSL:
+<pre>
+openssl genrsa -out private.key 1024
+openssl rsa -in private.key -pubout -out public.key
+</pre>
+This creates the files <tt>private.key</tt> and <tt>public.key</tt> in the
+current directory, containing the private key and public key. Make sure
+<tt>private.key</tt> is not world-readable, but still readable by the
+<tt>dkim</tt> user.
+</li>
+<li>Pick a selector name... e.g. <tt>selector1</tt></li>
+<li>Put the public-key data in DNS, in your domain, using the selector name
+you picked. Take the contents of the <tt>public.key</tt> file and remove
+the PEM header and footer, and concatenate the lines of the file into
+one big line. Then create a TXT entry, like this:
+<pre>
+selector1._domainkey IN TXT "k=rsa; t=s; p=MHwwDQYJK ... OprwIDAQAB"</pre>
+where <tt>selector1</tt> is the name of the selector chosen in the last
+step and the <tt>p=</tt> parameter contains the public-key as one long
+string of characters.</li>
+</ol>
+
+<p>Now, configure command-line arguments for dkimproxy.out startup:</p>
+<dl>
+<dt>--keyfile=KEYFILE</dt>
+<dd>this is required; specifies the file containing the private key</dd>
+<dt>--selector=SELECTOR</dt>
+<dd>this is required; specifies the name of the key selector</dd>
+<dt>--domain=DOMAIN</dt>
+<dd>this is required; specifies what domain(s) emails are signed for.
+If you want to sign for multiple domains, specify the domains separated
+by commas (see example below)</dd>
+<dt>--signature=SIGNATURE</dt>
+<dd>specify <tt>dkim</tt> to use the newer DKIM signatures; specify
+<tt>domainkeys</tt> to use the older Yahoo! DomainKey signatures.
+If not specified, the default is <tt>dkim</tt>.</dd>
+<dt>--method=METHOD</dt>
+<dd>METHOD selects the canonicalization method for signing. Examples are
+<tt>simple</tt>, <tt>relaxed</tt>, <tt>relaxed/relaxed</tt>.
+If not specified, the default is <tt>simple</tt>.</dd>
+<dt>--reject-error</dt>
+<dd>if specified, and an error occurs while generating a signature,
+a temporary rejection will be generated, and the sending system will have
+to try again later. Otherwise, the message will go through without being
+signing.</dd>
+</dl>
+
+<p>e.g.
+<pre>dkimproxy.out --keyfile=/usr/local/dkimproxy/private.key --selector=selector1 \
+        --domain=example.org,example.com --method=relaxed \
+        127.0.0.1:10027 127.0.0.1:10028</pre>
+</p>
+
+<p>
+Finally, you need to configure your mail server to filter outgoing,
+authorized messages only through the dkimproxy.out service on port 10027.
+</p>
+<ul>
+<li><a href="postfix-outbound-howto.html">How to do this with Postfix</a></li>
+</ul>
+
+
+<h2>Using DKIMproxy to verify incoming messages</h2>
+<p>
+First off, if you use
+<a href="http://spamassassin.apache.org/">SpamAssassin</a>, you may not
+want to use DKIMproxy for verifying messages. SpamAssassin includes a
+DKIM plugin which uses the same Mail::DKIM module to verify messages as
+DKIMproxy itself. All you need to do is install the Mail::DKIM module
+from this page and enable the plugin in SpamAssassin's config.
+</p>
+
+<p>Otherwise...</p>
+<p>
+The inbound proxy scans each message for DKIM and DomainKey signatures,
+attempting to verify any that it finds. To verify a signature, the proxy
+will query the sender's DNS for their public key. If the message has a
+valid signature, the message is "verified." The inbound proxy can be
+configured to reject messages that fail to verify (though this is not
+recommended at this time). Otherwise, it will add a header to the message
+indicating the result of the verification.
+</p>
+
+<p>
+Behavior of the inbound proxy is controlled using the following arguments:
+</p>
+<dl>
+<dt>--reject-fail</dt>
+<dd>(not recommended at this time)
+if specified, messages without a valid signature
+from domains with strict "sender signing policies"
+will be rejected.
+The sender will get an error message saying "DKIM - fail (bad signature)"
+or similar.
+Note: this applies to "hard" fails only. Soft fails, like when the sending
+domain is "testing" domain keys, or if they don't have a "sign-all"
+policy published, will still be accepted.</dd>
+<dt>--reject-error</dt>
+<dd>if specified, and an error occurs while verifying a signature,
+a temporary rejection will be generated, and the sending system will have
+to try again later. Otherwise, the message will go through without
+verification, unaltered.</dd>
+<dt>--hostname=HOSTNAME</dt>
+<dd>specifies the hostname used in the Authentication-Results header that
+gets added to a verified message</dd>
+</dl>
+<p>
+To manually start the inbound proxy:
+<pre>dkimproxy.in 127.0.0.1:10025 127.0.0.1:10026</pre>
+This starts the proxy listening on port 10025 and transmitting to port 10026.
+</p>
+
+<p>
+Now you need to configure your mail server to pass incoming messages
+through the dkimproxy.in service on port 10025 for verification.
+</p>
+<ul>
+<li><a href="postfix-inbound-howto.html">How to do this with Postfix</a></li>
+</ul>
+
+
+[% END %]

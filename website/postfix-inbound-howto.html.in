@@ -1,0 +1,60 @@
+[% WRAPPER common.tt2
+	title => "Setting up the inbound proxy with Postfix" %]
+<p>
+Back to DKIMproxy <a href="usage.html">usage documentation</a>.
+</p>
+
+<p>
+Here is an example on connecting Postfix to dkimproxy.in for verifying
+inbound messages. In this example, we are using the Postfix "Before-Queue
+filter" feature. Incoming SMTP traffic (on port 25) will be proxied to
+port 10025 where dkimproxy.in is listening. Dkimproxy.in processes the
+message and forwards the connection back to Postfix on port 10026.
+</p>
+<p>
+Note- I set this up as a Before-Queue filter for the hypothetical situation
+where a user wants Dkimproxy.in to reject failing messages. If you only
+want Dkimproxy.in to add a results header, then using an After-Queue filter
+is probably a better idea. If you don't know the difference between a
+Before-Queue filter and an After-Queue filter, be sure to read the Postfix
+documentation.
+</p>
+
+<p>
+In master.cf we modify the main smtp listener service (the one running on
+the "smtp" port, port 25). We add a parameter telling Postfix to
+proxy incoming connections to port 10025 (where dkimproxy.in is listening).
+Also, we create a smtp listener for receiving processed messages
+from dkimproxy.in on port 10026.
+</p>
+
+<p>
+<tt>/etc/postfix/master.cf</tt>:
+<pre class="programlisting">
+#
+# The main SMTP server. It receives incoming mail from the network
+# and passes it to the content filter on localhost port 10025.
+#
+smtp      inet  n       -       n       -       -       smtpd
+    -o smtpd_proxy_filter=127.0.0.1:10025
+    -o smtpd_client_connection_count_limit=10
+#
+# After-filter SMTP server. Receive mail from the DKIM verifying proxy on
+# localhost port 10026.
+#
+127.0.0.1:10026 inet n  -       n       -        -      smtpd
+    -o smtpd_authorized_xforward_hosts=127.0.0.0/8
+    -o smtpd_client_restrictions=
+    -o smtpd_helo_restrictions=
+    -o smtpd_sender_restrictions=
+    -o smtpd_recipient_restrictions=permit_mynetworks,reject
+    -o smtpd_data_restrictions=
+    -o mynetworks=127.0.0.0/8
+    -o receive_override_options=no_unknown_recipient_checks
+</pre>
+</p>
+<p>
+Execute <b>postfix reload</b> for Postfix to respond to changes in
+<tt>/etc/postfix/master.cf</tt>.
+</p>
+[% END %]
