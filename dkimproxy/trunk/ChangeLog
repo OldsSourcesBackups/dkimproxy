@@ -1,6 +1,8 @@
 2009-07-31: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.out: allow "relaxed/relaxed" to be specified as
    a canonicalization method (bug #2446042)
+ * tests/methods.t: a test script for testing the various --method
+   argument values (works with DKIM only)
 
 2009-07-30: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy.out: implement support for "listid_map", which
