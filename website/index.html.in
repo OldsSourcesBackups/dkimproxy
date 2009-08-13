@@ -41,7 +41,9 @@ GNU General Public License</a> as published by the Free Software Foundation.
 First of all, DKIMproxy 1.2 is available.
 (Actually, I posted it a few weeks ago, but neglected to write a
 news post for it.) Version 1.2 is just a minor update on 1.1,
-see the NEWS file or RELEASE_NOTES for more information. 
+see the <a href="NEWS.txt">NEWS</a> file or
+<a href="http://sourceforge.net/project/shownotes.php?release_id=696471">RELEASE_NOTES</a>
+for more information. 
 </p>
 <p>
 In other news, I am now providing Subversion access to my code

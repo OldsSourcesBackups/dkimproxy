@@ -1,0 +1,269 @@
+[% WRAPPER common.tt2
+	title => "Mail-DKIM and DKIMproxy - News Archive" %]
+
+<p>
+On this page I have archived all my old dkim-related news postings.
+</p>
+<p>Back to main <a href=".">DKIMproxy page</a>.</p>
+
+
+<p class="newsheader">2007-11-06 - DKIMproxy participates in
+Interoperability Event, and more</p>
+<p>
+DKIMproxy recently participated, along with 20 other organizations, in a
+DKIM Interoperability Testing Event at Alt-N Technologies in Dallas, TX.
+Although my participation was over the Internet, rather than in person,
+I still achieved quite a bit. The latest development release of the
+Mail::DKIM perl module (on CPAN) contains several fixes for problems
+discovered at the Interoperability event. These fixes will eventually
+improve not only DKIMproxy but also SpamAssassin which uses the same
+underlying module. 
+</p>
+<p>
+In other news, I've posted a test release of the next version of
+DKIMproxy! This test release introduces a number of long-awaited
+features, including 
+<ul>
+<li>the ability to add multiple signatures (i.e. a DomainKey signature
+AND a DKIM signature)</li>
+<li>the ability to use different keys (or other signature parameters)
+per domain</li>
+</ul>
+<p>
+To use this test release, you will need the latest development release
+of Mail::DKIM. An easy way to get both is go to
+<a href="http://dkimproxy.sourceforge.net"/>http://dkimproxy.sourceforge.net/</a>,
+and look for the "Download" section. There are links there that will
+take you directly to the latest versions. 
+</p>
+
+<p class="newsheader">2007-10-11 - DKIM-Proxy now on SourceForge</p>
+<p>
+Interest in DKIM-Proxy and Mail::DKIM has been heavier recently, so
+I finally decided to "bite the bullet" and move the project
+from my personal home page to SourceForge. Therefore, DKIM-Proxy
+now has a mailing list, as well as new forums and an issue tracker.
+If you want to get involved with DKIM-Proxy or Mail::DKIM, please
+subscribe to the mailing list and/or "monitor" the forums.
+</p>
+<p>
+The project page for DKIM-Proxy is
+<a href="http://sourceforge.net/projects/dkimproxy">
+http://sourceforge.net/projects/dkimproxy</a>.
+</p>
+
+
+<p class="newsheader">2007-07-31 - Mail::DKIM 0.28 available here for testing</p>
+<p>
+Version 0.28 contains a fix for a line-wrapping bug reported
+on <a href="http://dkim.meulie.net/">dkim.meulie.net</a>.
+</p>
+
+<p class="newsheader">2007-07-25 - Mail::DKIM 0.27 available here for testing</p>
+<p>
+In this release I've been working on better support for sender signing
+policies. I'll be posting it to CPAN in a week or two if no problems
+are noticed.
+</p>
+
+<p class="newsheader">2007-05-24 - dkimproxy 0.16 has been released</p>
+<p>
+This version of dkimproxy is supposed to let you control how many
+processes are running, with the --min_servers and --max_servers command-line
+options.
+</p>
+<p>
+Also, if you have 0.25 or better of Mail::DKIM, the signatures will be
+made "pretty", i.e. line-wrapped to less than 80 characters per line.
+</p>
+
+<p class="newsheader">2007-05-24 - Mail::DKIM 0.26 now available</p>
+<p>
+The DKIM spec has now been published as
+<a href="http://www.rfc-editor.org/rfc/rfc4871.txt">RFC 4871</a>.
+This RFC contains a change in what version number signatures should use.
+Please update your Mail::DKIM module to 0.26 so that these new "v=1"
+signatures are recognized and generated.
+</p>
+
+<p class="newsheader">2007-05-10 - Mail::DKIM 0.25 available here for testing</p>
+<p>
+This release limits which headers are signed in an outgoing message.
+This will create more reliable signatures.
+</p>
+<p>
+I'll post it on CPAN later this week.
+</p>
+
+<p class="newsheader">2007-05-01 - Forum now available</p>
+<p>
+There is now a DKIM-Proxy forum at
+<a href="http://dkim.meulie.net/">dkim.meulie.net</a>.
+Thank you Evert Meulie for offering to set this up.
+You can use this forum for questions about DKIM-proxy or the
+Mail::DKIM perl module. Also feel free to post general comments,
+suggestions, and patches. I'll try to keep an eye on the forum.
+</p>
+<p>
+Thanks also to those who responded with an offer of a mailing list.
+I might still take one of you up on the offer, e.g. for an "Announcements"
+mailing list. But for now, I'll wait and see if the forum meets
+our needs.
+</p>
+
+<p class="newsheader">2007-04-16 - Need for a mailing list</p>
+<p>
+For some time now I've recognized that I should setup a mailing list
+(or forum) for this project. I'm not very quick at responding to questions
+that come via email, and the only way I can announce new releases or new
+problems with dkimproxy is via this website.
+But I can't make up my mind whether to start a Sourceforge project, get a
+Yahoo!-groups mailing list, or something else? Feel free to send me
+your thoughts.
+</p>
+
+<p class="newsheader">2007-03-16 - Reorganized Dkimproxy setup documentation</p>
+<p>
+Today I rearranged the setup documentation seen on this page. I've moved
+the Postfix-specific instructions to separate pages so that overall
+things are less Postfix-centric. I also put in a plug for using
+SpamAssassin for DKIM verification.
+</p>
+<p>
+Let me know what you think. Are things easier to follow? For comparison,
+I've saved the <a href="old-docs-06.html">old docs</a>.
+</p>
+
+<p class="newsheader">2007-03-13 - Mail::DKIM 0.24 available here for testing</p>
+<p>
+A bugfix release. I'll post it on CPAN later this week.
+Update 2007-03-15: I've now posted it on CPAN.</p>
+
+<p class="newsheader">2007-03-02 - dkimproxy 0.15 has been released</p>
+<p>
+Now that the Mail::DKIM module supports DomainKeys signatures as well as
+DKIM signatures, dkimproxy needed a way to select which type of signature
+to use. Version 0.15 has this capability... use the - signature argument
+to the dkimproxy.out script.
+</p>
+<p>
+Note: I'm still looking for a way to extend dkimproxy for doing multiple
+signatures. I figure I'll need to have dkimproxy read a configuration file
+to determine which signatures to apply and how to generate them.
+So now the main holdup is deciding the format of this configuration file.
+</p>
+
+<p class="newsheader">2007-02-28 - Mail::DKIM 0.23 now on CPAN</p>
+<p>
+I've uploaded version 0.23 to CPAN.
+</p>
+
+<p class="newsheader">2007-02-22 - Mail::DKIM 0.23 available here for testing</p>
+<p>
+This version contains a few fixes for DomainKeys support and improves
+some diagnostic messages. Also, DKIM signatures have been brought up-to-date
+with the latest spec. The signer module will now generate newer-style DKIM
+signatures (with v=0.5 tag).
+</p>
+<p>
+I'm still working on an update to dkimproxy that will allow generation
+of DomainKey signatures, or multiple signatures, which can be done by
+Mail::DKIM. The main reason for delay is that I can't decide on an
+appropriate configuration file format.
+</p>
+
+<p class="newsheader">2007-02-09 - Mail::DKIM 0.22 is now on CPAN</p>
+<p>
+I've posted version 0.22 of the Mail::DKIM module on CPAN.
+I'm still a little nervous about the addition of DomainKeys support...
+I suspect it may have a few surpises still in store.
+</p>
+
+<p class="newsheader">2007-01-19 - Mail::DKIM 0.22 available here for testing</p>
+<p>
+This version is another bugfix release, just fixing a few bugs.
+Again, if you're upgrading from 0.19 or below, this version introduces
+support for Yahoo! DomainKeys. Programmers using this module should take
+note that any recognized signature will make the message verify,
+so when Mail::DKIM says the message verified, you could have either a
+DKIM-Signature <em>or</em> a DomainKey-Signature (or both).
+</p>
+<p>
+Dkimproxy has not been updated yet to sign with Yahoo! DomainKeys
+signatures, or to sign with multiple signatures.
+</p>
+
+<p class="newsheader">2006-11-29 - Mail::DKIM 0.21 available here for testing</p>
+<p>
+This version fixes a few bugs found in version 0.20. Nothing else.
+But if you're upgrading from a version older than 0.20, see the notes
+below about changes in 0.20.
+</p>
+
+<p class="newsheader">2006-10-24 - Mail::DKIM 0.20 available here for testing</p>
+<p>
+This new version has support for
+<a href="http://antispam.yahoo.com/domainkeys">DomainKeys</a> signatures
+(yes, that's right),
+and for signing/verifying multiple signatures in one pass.
+See the What's New link <a href="#download">below</a> for details.
+</p>
+<p>
+Note that if you install this version, your DKIM-aware application could
+report a valid signature even if there's no DKIM-Signature! That's because
+the verifier recognizes DomainKey-Signatures as valid too.
+</p>
+
+<p class="newsheader">2006-09-21 - dkimproxy 0.14 now available</p>
+<p>
+A frequently requested feature was a sample initialization script that
+didn't require the startproc and killproc commands. Version 0.14 of
+dkimproxy includes this.
+</p>
+
+<p class="newsheader">2006-09-13 - Mail-DKIM 0.19 now available on CPAN</p>
+<p>
+Heh, after three months I finally get around to posting 0.19 on CPAN.
+Sorry for the delay.
+</p>
+
+<p class="newsheader">2006-06-15 - Mail-DKIM 0.19 available here for testing</p>
+<p>
+I was asked about running Mail-DKIM on Perl 5.6. After some investigation,
+I found it is possible, with two minor changes to the code. These
+changes are now available in version 0.19 of Mail-DKIM.
+</p>
+
+<p class="newsheader">2006-06-14 - Mail-DKIM 0.18 now available on CPAN</p>
+<p>
+I'm satisfied 0.18 does not introduce new bugs, so I'm posting it on
+CPAN.
+</p>
+
+<p class="newsheader">2006-06-08 - Mail-DKIM 0.18 available here for testing</p>
+<p>
+I finally figured out how to do signing/verifying without using the
+heavy-weight Crypt::RSA module, instead relying on Crypt::OpenSSL::RSA.
+This new release removes the dependency on the Crypt::RSA Perl module.
+</p>
+
+<p class="newsheader">2006-06-06 - Mail-DKIM 0.17 now available on CPAN</p>
+<p>
+I've been running 0.17 on my own server for several days now and have not
+seen any show-stoppers, so I've posted version 0.17 on CPAN.
+</p>
+
+<p class="newsheader">2006-05-26 - <a href="http://spamassassin.apache.org">SpamAssassin</a>
+version 3.1.2 released</p>
+<p>
+SpamAssassin 3.1.2 was released yesterday. One of its new features is support
+for my Mail::DKIM module. I'm flattered that the SpamAssassin folks
+would choose to provide support for my little-known module :).
+</p>
+<p>
+This has given me some motivation to spend some time improving Mail::DKIM.
+On this page you can now find version 0.17 (not yet released to CPAN)
+which has been updated to support the latest DKIM drafts.
+</p>
+
+[% END %]
