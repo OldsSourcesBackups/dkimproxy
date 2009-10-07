@@ -30,7 +30,7 @@ sub start_servers
 		)
 		or die "Error: cannot spawn dkimproxy.out process: $!\n";
 	}
-	elsif ($self->{proxy_pid} < 0)
+	elsif (not defined $self->{proxy_pid})
 	{
 		die "fork: $!\n";
 	}
