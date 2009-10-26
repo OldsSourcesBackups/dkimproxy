@@ -16,3 +16,9 @@ keyfile   /full/path/to/private.key
 
 # specify the selector (i.e. the name of the key record put in DNS)
 selector  selector1
+
+# control how many processes DKIMproxy uses
+#  - more information on these options (and others) can be found by
+#    running `perldoc Net::Server::PreFork'.
+#min_servers 5
+#min_spare_servers 2
