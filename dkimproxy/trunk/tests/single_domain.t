@@ -7,6 +7,7 @@ use TestHarnass;
 use Test::More tests => 3;
 
 my $tester = TestHarnass->new;
+$tester->make_private_key("/tmp/private.key");
 $tester->{proxy_args} = [
 		"--conf_file=single_domain.conf",
 		];
