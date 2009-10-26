@@ -79,3 +79,24 @@ $tester->make_private_key("/tmp/private.key");
 	$tester->shutdown_servers;
 	die $E if $E;
 }
+
+{
+	$tester->{proxy_args} = [
+		"--conf_file=methods1.cfg",
+		];
+	$tester->start_servers;
+
+	my @signatures;
+	eval {
+
+	@signatures = $tester->generate_signatures("msg1.txt");
+	ok(@signatures == 1, "should be one signature");
+	print "# " . $signatures[0]->as_string . "\n";
+	ok($signatures[0]->domain eq "domain1.example", "found expected d= argument");
+	ok($signatures[0]->method eq "relaxed/relaxed", "found expected c= argument");
+
+	};
+	my $E = $@;
+	$tester->shutdown_servers;
+	die $E if $E;
+}
