@@ -2,6 +2,8 @@
  * tests/TestHarnass.pm: create a test private key automatically
  * tests/multi_domain.t: test for correct behavior when multiple
    domains are specified as a comma-separated list in the config file
+ * tests/methods.t: test "relaxed/relaxed" when specified as part of
+   the signature option in the config file
 
 2009-08-12: Jason Long <jlong@messiah.edu>
  * lib/MySmtpProxyServer.pm: fix occassionally hung connections,
