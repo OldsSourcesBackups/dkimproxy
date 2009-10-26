@@ -1,3 +1,6 @@
+2009-10-26: Jason Long <jlong@messiah.edu>
+ * tests/TestHarnass.pm: create a test private key automatically
+
 2009-08-12: Jason Long <jlong@messiah.edu>
  * lib/MySmtpProxyServer.pm: fix occassionally hung connections,
    provided by Alex Wheeler (bug #2831645)

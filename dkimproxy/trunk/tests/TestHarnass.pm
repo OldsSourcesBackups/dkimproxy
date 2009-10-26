@@ -12,6 +12,16 @@ sub new
 	return $self;
 }
 
+sub make_private_key
+{
+	my $self = shift;
+	my ($filename) = @_;
+
+	return if (-f $filename);
+	system("openssl", "genrsa", "-out", $filename, "1024");
+	die if $? != 0;
+}
+
 sub start_servers
 {
 	my $self = shift;
