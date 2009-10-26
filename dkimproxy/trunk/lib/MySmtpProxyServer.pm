@@ -116,6 +116,10 @@ sub process_request
 		$self->handle_command($what)
 			or last;
 	}
+
+	# make sure the connection is closed; otherwise it hangs sometimes
+	$server->{in}->close;
+	$server->{out}->close;
 }
 
 =head2 handle_command() - handles a single SMTP command
