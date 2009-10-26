@@ -1,4 +1,8 @@
 2009-10-26: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy_out.conf.example: document the min_servers option,
+   etc.
+
+2009-10-26: Jason Long <jlong@messiah.edu>
  * tests/TestHarnass.pm: create a test private key automatically
  * tests/multi_domain.t: test for correct behavior when multiple
    domains are specified as a comma-separated list in the config file
