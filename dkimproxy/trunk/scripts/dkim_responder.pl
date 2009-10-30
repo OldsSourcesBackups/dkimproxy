@@ -180,7 +180,10 @@ subject.
 }
 
 # part one, literal text containing result of test
-my $PRODUCT = "Mail::DKIM " . $Mail::DKIM::VERSION;
+my $PRODUCT = "Mail::DKIM";
+my $VERSION = $Mail::DKIM::VERSION;
+my $PRODUCT_URL = "http://dkimproxy.sourceforge.net/";
+
 $top->attach(
 	Type => "text/plain",
 	Data => [
@@ -194,8 +197,8 @@ $top->attach(
 		"\n",
 		$hint_text,
 		"Thank you for using the dkimproxy DKIM Auto Responder.\n",
-		"This Auto Responder tests the verification routines of $PRODUCT.\n",
-		"For more information about Mail::DKIM, see http://jason.long.name/dkimproxy/\n",
+		"This Auto Responder tests the verification routines of $PRODUCT $VERSION.\n",
+		"For more information about $PRODUCT, see $PRODUCT_URL\n",
 		"\n",
 		"If you have any questions about this automated tester, or if you\n",
 		"received this message in error, please send a note to\n",
