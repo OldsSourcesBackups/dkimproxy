@@ -1,3 +1,7 @@
+2009-10-30: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_responder.pl: try to generate hints about why a message
+   fails
+
 2009-10-26: Jason Long <jlong@messiah.edu>
  * scripts/dkimproxy_out.conf.example: document the min_servers option,
    etc.
