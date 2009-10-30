@@ -143,6 +143,8 @@ if (@signatures > 1)
 	$verify_results_text .= "\n";
 }
 
+my $hint_text = check_for_hints();
+
 my $policy_results_text = "";
 for (my $i = 0; $i < @policies; $i++)
 {
@@ -190,6 +192,7 @@ $top->attach(
 		"auto-responder looks for ANY passing signature, including DomainKeys\n",
 		"signatures.\n",
 		"\n",
+		$hint_text,
 		"Thank you for using the dkimproxy DKIM Auto Responder.\n",
 		"This Auto Responder tests the verification routines of $PRODUCT.\n",
 		"For more information about Mail::DKIM, see http://jason.long.name/dkimproxy/\n",
@@ -254,4 +257,26 @@ sub debug_canonicalization
 	$canonicalized{$canonicalization}
 		||= { text => "", canon => $canonicalization };
 	$canonicalized{$canonicalization}->{text} .= $text;
+}
+
+sub check_for_hints
+{
+	my @hints;
+
+	if ($result_detail =~ /body has been altered/)
+	{
+		if (grep /^\./, @message_lines)
+		{
+			push @hints, "Your message contains lines beginning with a period, so check how\n   your implementation does dot stuffing.";
+		}
+	}
+
+	if (@hints)
+	{
+		return "*** WHY DID MY MESSAGE FAIL? ***\n"
+		. "Looking at your specific message, this auto-responder suggests\n"
+		. "checking the following:\n"
+		. join("", map " * $_\n", @hints). "\n";
+	}
+	return "";
 }
