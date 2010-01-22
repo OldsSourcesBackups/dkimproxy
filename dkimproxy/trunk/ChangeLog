@@ -1,4 +1,7 @@
 2010-01-22: Jason Long <jlong@messiah.edu>
+ * t/methods.t: test what happens when no "method" option is specified
+
+2010-01-22: Jason Long <jlong@messiah.edu>
  * scripts/dkim_responder.pl: slight wording change on hint
 
 2009-10-30: Jason Long <jlong@messiah.edu>
