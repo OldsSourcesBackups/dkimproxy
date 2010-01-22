@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use TestHarnass;
-use Test::More tests => 12;
+use Test::More tests => 15;
 
 my $tester = TestHarnass->new;
 $tester->make_private_key("/tmp/private.key");
@@ -73,6 +73,29 @@ $tester->make_private_key("/tmp/private.key");
 	print "# " . $signatures[0]->as_string . "\n";
 	ok($signatures[0]->domain eq "domain1.example", "found expected d= argument");
 	ok($signatures[0]->method eq "relaxed/relaxed", "found expected c= argument");
+
+	};
+	my $E = $@;
+	$tester->shutdown_servers;
+	die $E if $E;
+}
+
+{
+	$tester->{proxy_args} = [
+		"--domain=domain1.example",
+		"--keyfile=/tmp/private.key",
+		"--selector=s1",
+		];
+	$tester->start_servers;
+
+	my @signatures;
+	eval {
+
+	@signatures = $tester->generate_signatures("msg1.txt");
+	ok(@signatures == 1, "should be one signature");
+	print "# " . $signatures[0]->as_string . "\n";
+	ok($signatures[0]->domain eq "domain1.example", "found expected d= argument");
+	ok($signatures[0]->method eq "relaxed", "found expected c= argument");
 
 	};
 	my $E = $@;
