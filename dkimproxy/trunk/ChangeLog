@@ -1,4 +1,10 @@
 2010-01-22: Jason Long <jlong@messiah.edu>
+ * scripts/dkimproxy.out: implement new config options "dkim_method" and
+   "domainkeys_method", which specifies the canonicalization method to
+   use for the DKIM and DomainKeys signatures respectively. Also, fix
+   a bug in how signatures are generated when no "method" option is given.
+
+2010-01-22: Jason Long <jlong@messiah.edu>
  * t/methods.t: test what happens when no "method" option is specified
 
 2010-01-22: Jason Long <jlong@messiah.edu>
