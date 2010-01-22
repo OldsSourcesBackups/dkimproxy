@@ -56,6 +56,8 @@ my $keyfile;
 my $selector;
 my $domain_arg;
 my $identity_arg;
+my $dkim_method;
+my $domainkeys_method;
 my $method;
 my $debugtrace = undef;
 my $sender_mapfile;
@@ -89,6 +91,8 @@ sub options
 	$template->{signature} = \@signature_arg;
 	$template->{keyfile} = \$keyfile;
 	$template->{selector} = \$selector;
+	$template->{dkim_method} = \$dkim_method;
+	$template->{domainkeys_method} = \$domainkeys_method;
 	$template->{method} = \$method;
 	$template->{domain} = \$domain_arg;
 	$template->{identity} = \$identity_arg;
@@ -187,11 +191,6 @@ sub parse_signature_options
 {
 	my ($options_str) = @_;
 
-	my $options = {
-		keyfile => $keyfile,
-		selector => $selector,
-		method => $method,
-		};
 	my %option_aliases = (
 		key => "keyfile",
 		s => "selector",
@@ -207,7 +206,21 @@ sub parse_signature_options
 	{
 		die "invalid signature specifier: '$orig_options_str'\n";
 	}
-	$options->{signature} = $1;
+	my $signature_type = $1;
+
+	my $options = {
+		keyfile => $keyfile,
+		selector => $selector,
+		signature => $signature_type,
+		};
+	if ($signature_type eq "dkim")
+	{
+		$options->{method} ||= $dkim_method || $method || "relaxed";
+	}
+	elsif ($signature_type eq "domainkeys")
+	{
+		$options->{method} ||= $domainkeys_method || $method || "nofws";
+	}
 
 	if ($options_str =~ /^\((.*)\)$/)
 	{
@@ -252,7 +265,6 @@ sub check_signature_options
 	if ($options->{signature} eq "dkim")
 	{
 		# check method argument
-		$options->{method} ||= "relaxed";
 		unless (grep { $options->{method} eq $_ } qw(simple relaxed simple/simple simple/relaxed relaxed/simple relaxed/relaxed nowsp))
 		{
 			pod2usage("$prefix: invalid method $options->{method}");
@@ -261,7 +273,6 @@ sub check_signature_options
 	elsif ($options->{signature} eq "domainkeys")
 	{
 		# check method argument
-		$options->{method} ||= "nofws";
 		unless (grep { $options->{method} eq $_ } qw(simple nofws))
 		{
 			pod2usage("$prefix: invalid method $options->{method}");
@@ -351,7 +362,6 @@ sub handle_end_of_data
 		$dkim = Mail::DKIM::Signer->new(
 				Policy => \&signer_policy,
 				KeyFile => $keyfile,
-				Method => $method,
 				Selector => $selector,
 			);
 
