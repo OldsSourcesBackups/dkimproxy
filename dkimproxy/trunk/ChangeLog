@@ -1,3 +1,6 @@
+2010-01-22: Jason Long <jlong@messiah.edu>
+ * scripts/dkim_responder.pl: slight wording change on hint
+
 2009-10-30: Jason Long <jlong@messiah.edu>
  * scripts/dkim_responder.pl: try to generate hints about why a message
    fails
