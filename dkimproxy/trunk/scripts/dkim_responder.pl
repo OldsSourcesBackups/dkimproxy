@@ -270,7 +270,7 @@ sub check_for_hints
 	{
 		if (grep /^\./, @message_lines)
 		{
-			push @hints, "Your message contains lines beginning with a period, so check how\n   your implementation does dot stuffing.";
+			push @hints, "Your message contains lines beginning with a period, so check that\n   your implementation signs before dot stuffing.";
 		}
 	}
 
