@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use TestHarnass;
-use Test::More tests => 9;
+use Test::More tests => 12;
 
 my $tester = TestHarnass->new;
 $tester->make_private_key("/tmp/private.key");
