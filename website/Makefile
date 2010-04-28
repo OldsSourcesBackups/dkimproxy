@@ -10,16 +10,21 @@ html_files = \
 manual_files = \
 	dkimproxy.in.html \
 	dkimproxy.out.html
+misc_files = \
+	NEWS.txt
 
 include_files = common.tt2 nav.inc
 
-all: $(html_files) $(manual_files)
+all: $(html_files) $(misc_files) $(manual_files)
 
 upload: all
-	scp $(html_files) jasonlong,dkimproxy@web.sourceforge.net:htdocs/
+	scp $(html_files) $(misc_files) jasonlong,dkimproxy@web.sourceforge.net:htdocs/
 	scp $(manual_files) jasonlong,dkimproxy@web.sourceforge.net:htdocs/manual/
 
 $(html_files): %.html: %.html.in $(include_files)
 	ttml $< > $@
 $(manual_files): %.html: ../scripts/%
 	pod2html $< > $@
+
+NEWS.txt: ../NEWS
+	cp $< $@

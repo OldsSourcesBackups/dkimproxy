@@ -19,6 +19,7 @@ DKIMproxy is written in Perl. It requires the Mail::DKIM module, found
 on this page, as well as the following Perl modules:
 <ul>
 <li>Net::Server (use the latest version, if possible)</li>
+<li>Error</li>
 </ul>
 </p>
 
@@ -27,10 +28,10 @@ on this page, as well as the following Perl modules:
 
 <p>
 Download the Mail-DKIM Perl module:
-<a href="http://search.cpan.org/CPAN/authors/id/J/JA/JASLONG/Mail-DKIM-0.36.tar.gz">Version 0.36</a> [CPAN].
+<a href="http://search.cpan.org/CPAN/authors/id/J/JA/JASLONG/Mail-DKIM-0.38.tar.gz">Version 0.38</a> [CPAN].
 </p>
 <p>
-See <a href="http://search.cpan.org/src/JASLONG/Mail-DKIM-0.36/Changes">what's new in this release</a>.
+See <a href="http://search.cpan.org/src/JASLONG/Mail-DKIM-0.38/Changes">what's new in this release</a>.
 </p>
 <!--
 <p>
@@ -72,7 +73,7 @@ Download the current version of DKIMproxy:
 </p>
 <p>
 Download the <em>development</em> version of DKIMproxy:
-<a href="/dkimproxy-1.3beta1.tar.gz">Version 1.3beta1</a>.
+<a href="http://downloads.sourceforge.net/dkimproxy/dkimproxy-1.3beta2.tar.gz">Version 1.3beta2</a> [SourceForge].
 </p>
 <p>
 See <a href="NEWS.txt">what's new in this release</a>.
