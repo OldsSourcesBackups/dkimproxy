@@ -57,15 +57,22 @@ itself. It does NOT apply any signing policies.
 The following auto-responders are offered by others, and will test your
 signed messages against other implementations:
 </p>
-<ul>
-<li>dkim-test AT mtcc DOT com</li>
-<li>dktest AT exhalus DOT net</li>
-<li>dktest AT blackops DOT org</li>
-<li>sa-test AT sendmail DOT net</li>
+<table border="1">
+<tr><th>Address</th>
+<th>Implementation</th>
+<th>Status</th>
+</tr>
+<tr><td>sa-test AT sendmail DOT net</td><td>dkim-milter</td><td>checks DKIM and DomainKeys<!--last checked 2010-06-08--></td></tr>
+<tr><td>dktest AT exhalus DOT net</td><td>DKeyEvent</td><td>checks DKIM and DomainKeys<!--last checked 2010-06-08--></td></tr>
+<tr><td>dktest AT blackops DOT org</td><td>OpenDKIM filter</td><td>checks DKIM<!--last checked 2010-06-08--></td></tr>
+<tr><td>check-auth AT verifier DOT port25 DOT com</td><td>PowerMTA</td><td>checks DKIM and DomainKeys<!--last checked 2010-06-08--></td></tr>
+<tr><td>dkim-test AT altn DOT com</td><td>MDaemon</td><td>checks DKIM<!--last checked 2010-06-08--></td></tr>
+<tr><td>autorespond+dkim AT dk DOT elandsys DOT com</td><td>dkim-milter</td><td>checks DKIM<!--last checked 2010-06-08--></td></tr>
 <!--
+<tr><td>dkim-test AT mtcc DOT com</td><td>broken as of Jun 2010</td></tr>
 <li>dkim-test AT dkim DOT org (broken as of 2006-12-18... relaying denied?)</li>
 -->
-</ul>
+</table>
 
 <!--
 <p>
