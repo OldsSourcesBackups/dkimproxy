@@ -36,6 +36,23 @@ GNU General Public License</a> as published by the Free Software Foundation.
 
 <h2 id="news">News</h2>
 
+<p class="newsheader">2010-09-28 - DKIMproxy featured in GNU/Linux Magazine (French)</p>
+<p>
+Julien Vehent has written an article about DKIMproxy in the french issue
+of Gnu/Linux Magazine. The article is now available under the
+Creative Commons license, and thus he has published it on his wiki.
+</p>
+<p>
+The article has been translated to English. It features a very nice
+introduction and explanation to DKIM technology, and how DKIMproxy works.
+Check it out!
+</p>
+<p>
+<a href="http://wiki.linuxwall.info/doku.php/fr:ressources:dossiers:postfix:dkimproxy">Article in French</a>
+-
+<a href="http://wiki.linuxwall.info/doku.php/en:ressources:dossiers:postfix:dkimproxy">Article in English</a>
+</p>
+
 <p class="newsheader">2009-07-30 - DKIMproxy 1.2; Subversion access</p>
 <p>
 First of all, DKIMproxy 1.2 is available.
