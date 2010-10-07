@@ -1,19 +1,23 @@
 This file summarizes what's changed between releases of dkimproxy.
 See the ChangeLog file for the details.
 
-Version 1.3
+Version 1.3 - released 2010-10-07
+
+ - beta 2
 
  * Fixed a bug in how signatures were generated when no "method" option
-   is specified.
+   is specified
  * Added options "dkim_method" and "domainkeys_method" to supercede the
    existing "method" option; these options are specific to the DKIM and
    DomainKeys signatures.
+ * Improve man-page documentation of options.
 
  - beta 1
 
  * Added support for the "listid_map" option, which will generate
    signatures based on the "List-Id" header. This feature sponsored
    by Nguyen Tam Chinh and Damir Simunic.
+ * Some minor bugfixes (issue #2446042, #2831645)
 
 
 Version 1.2 - released 2009-07-12
