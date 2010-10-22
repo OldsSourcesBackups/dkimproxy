@@ -1,3 +1,8 @@
+2010-10-22: Jason Long <jason@long.name>
+ * scripts/dkimproxy.out: allow macros $sender, $senderdomain when
+   specifying the i= or d= signature options
+ * tests/macros.t: test use of $sender and $senderdomain macros
+
 2010-10-21: Jason Long <jason@long.name>
  * scripts/dkimproxy.in: change policy check to use policies() api
    which is only available in Mail::DKIM 0.34 and better

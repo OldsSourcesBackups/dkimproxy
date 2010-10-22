@@ -1,6 +1,17 @@
 This file summarizes what's changed between releases of dkimproxy.
 See the ChangeLog file for the details.
 
+Version 1.4
+
+ - beta 1
+
+ * Implement macros $sender and $senderdomain which can be used when
+   specifying signature options i= and d=. One potential use of this is
+   being able to sign any message using that message's sender domain,
+   rather than having to specify every possible domain in DKIMproxy's
+   configuration file.
+
+
 Version 1.3 - released 2010-10-07
 
  - beta 2
