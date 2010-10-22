@@ -769,10 +769,10 @@ signature to the message. In addition, per-signature parameters can be
 specified by enclosing the comma-separated options in parenthesis after
 the signature type, e.g.
 
-  --signature=dkim(c=relaxed,key=private.key)
+  --signature=dkim(c=relaxed,key=/path/to/private.key)
 
 The syntax for specifying per-signature options is described in more
-detail in the section below titled L</"SENDER MAP FILE">.
+detail in the section below titled L</"SIGNATURE OPTIONS">.
 
 =item B<--user=USER>
 
@@ -814,32 +814,26 @@ is equivalent to
   dkimproxy.out --domain=example.org,example.com --keyfile=private.key \
                 --selector=postfix --signature=dkim
 
-=head1 SENDER MAP FILE
+=head1 SIGNATURE OPTIONS
 
-If you want to use different signature properties depending on the
-sender of the message being signed, use a "sender map file". This
-is a lookup file containing sender email addresses on the left
-and signature properties on the right. E.g.
+When specifying a signature type, you may optionally specify
+per-signature options within parenthesis after the signature type.
+E.g. if you say
 
-  # sign my mail with a EXAMPLE.COM dkim signature
-  jason@long.name  dkim(d=example.com)
+  dkim(d=example.com,c=relaxed,a=rsa-sha1)
 
-  # sign WIDGET.EXAMPLE mail with a default domainkeys signature
-  widget.example   domainkeys
+Then DKIMproxy will add a "DKIM" signature with domain C<example.com>,
+using the C<relaxed> canonicalization method,
+and the C<rsa-sha1> algorithm.
 
-  # sign EXAMPLE.ORG mail with both a domainkeys and dkim signature
-  example.org      dkim(c=relaxed,a=rsa-sha256), domainkeys(c=nofws)
-
-Right-hand values in a sender map file is a comma-separated list of
-signature types. Each signature type may have a comma-separated list
-of parameters enclosed in parenthesis. The following signature
-parameters are recognized:
+The following signature options are recognized:
 
 =over
 
 =item key
 
-the private key file to use
+the private key file to use.
+You must specify the full path to the private key file.
 
 =item a, algorithm
 
@@ -851,40 +845,25 @@ the canonicalization method to use
 
 =item d, domain
 
-the domain to use, default is to use the domain matched in the file.
-You may also use a macro such as C<$senderdomain>. See the section
-on L</"MACROS">.
+the domain to use, default is to use whichever domain was matched
+(i.e. one of the domains specified in the --domain argument,
+or the domain found in the sender map file.)
+
+You may also use macros for this parameter, such as C<$senderdomain>.
+See the section on L</"MACROS"> for more information.
 
 =item i, identity
 
 the identity to use, default is to not include an i= parameter.
-You may use a macro here, such as C<$sender>.
+
+You may also use macros for this parameter, such as C<$sender>.
+See the section on L</"MACROS"> for more information.
 
 =item s, selector
 
 the selector to use
 
 =back
-
-=head1 LIST-ID MAP FILE
-
-This works very much like a sender map file, except it selects based
-on the "List-Id" header rather than the "Sender" or "From" header.
-You can match on the full list-id value, or just a suffix.
-Here is an example file:
-
-  kernel.org                   dkim(d=kernel.org)
-  xorg-devel.lists.x.org       dkim(d=lists.x.org)
-  dev.spamassassin.apache.org  dkim(d=apache.org)
-
-For details on the syntax of the right-hand values, see
-L</"SENDER MAP FILE"> above.
-
-If no "List-Id" header is found in the message to be signed, or no
-entry in the map file matches the found "List-Id" header,
-then DKIMproxy will proceed as if no listid_map option was specified.
-That is, it will add the default signature (if a "domain" or
-"signature" option was specified), or leave the message as is.
 
 =head1 MACROS
 
@@ -904,6 +883,48 @@ From header).
 Substitutes the domain part of the sender's email address.
 
 =back
+
+=head1 SENDER MAP FILE
+
+If you want to use different signature properties depending on the
+sender of the message being signed, use a "sender map file". This
+is a lookup file containing sender email addresses on the left
+and signature properties on the right. E.g.
+
+  # sign my mail with a EXAMPLE.COM dkim signature
+  jason@long.name  dkim(d=example.com)
+
+  # sign WIDGET.EXAMPLE mail with a default domainkeys signature
+  widget.example   domainkeys
+
+  # sign EXAMPLE.ORG mail with both a domainkeys and dkim signature
+  example.org      dkim(c=relaxed,a=rsa-sha256), domainkeys(c=nofws)
+
+Right-hand values in a sender map file is a comma-separated list of
+signature types. Each signature type may have a comma-separated list
+of parameters enclosed in parenthesis. See L</"SIGNATURE OPTIONS"> for
+more information about the recognized parameters.
+
+=head1 LIST-ID MAP FILE
+
+This works very much like a sender map file, except it selects based
+on the "List-Id" header rather than the "Sender" or "From" header.
+You can match on the full list-id value, or just a suffix.
+Here is an example file:
+
+  kernel.org                   dkim(d=kernel.org)
+  xorg-devel.lists.x.org       dkim(d=lists.x.org)
+  dev.spamassassin.apache.org  dkim(d=apache.org)
+
+The syntax of the right-hand values is the same as a sender map file,
+i.e. a comma-separated list of signatures to add to the message.
+For more details, see L</"SIGNATURE OPTIONS"> above.
+
+If no "List-Id" header is found in the message to be signed, or no
+entry in the map file matches the found "List-Id" header,
+then DKIMproxy will proceed as if no listid_map option was specified.
+That is, it will add the default signature (if a "domain" or
+"signature" option was specified), or leave the message as is.
 
 =head1 AUTHOR
 
