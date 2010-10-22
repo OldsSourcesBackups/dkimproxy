@@ -23,11 +23,6 @@ Version 1.3 - released 2010-10-07
    DomainKeys signatures.
  * Improve man-page documentation of options.
 
- - beta 2
-
- * Removed the dkimsign.pl and dkimverify.pl test scripts, which are
-   really maintained in the separate Mail::DKIM package
-
  - beta 1
 
  * Added support for the "listid_map" option, which will generate
