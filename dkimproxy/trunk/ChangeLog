@@ -1,3 +1,8 @@
+2010-10-21: Jason Long <jason@long.name>
+ * scripts/dkimsign.pl, dkimverify.pl: remove these no-longer-
+   maintained test scripts... they are now maintained in the Mail::DKIM
+   package
+
  -- VERSION 1.3 --
 
 2010-01-22: Jason Long <jlong@messiah.edu>
