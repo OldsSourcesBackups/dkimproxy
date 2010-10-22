@@ -672,10 +672,17 @@ dkimproxy.out - SMTP proxy for adding DKIM signatures to email
 
 =head1 DESCRIPTION
 
-dkimproxy.out listens on the IP address and TCP port specified by its
-first argument (the "listen" port), and sends the traffic it receives
-onto the second argument (the "relay" port), with messages getting
-modified to have a DKIM or DomainKeys signature.
+This is the "outbound" part of DKIMproxy, used for adding
+DKIM/DomainKey signatures to "outbound" email messages. This program
+listens on a particular TCP port (specified by the "listen" option),
+and sends the traffic it receives on to a destination TCP address/port
+(specified by the "relay" option), with messages getting modified to
+have a DKIM and/or DomainKeys signature added.
+
+DKIMproxy offers a number of options that determine how it generates
+signatures for the messages it processes. It can also vary its behavior
+according to the sender of the message it is processing. Read about
+the "sender map file" if you want to vary behavior according to sender.
 
 =head1 OPTIONS
 
@@ -694,6 +701,10 @@ that domain,
 if it can. If multiple domains are specified, DKIMproxy will try to
 match the domain to the message's sender, and only generate a signature
 that will match the sender's domain.
+
+This argument can be omitted if you specify a domain option as part
+of the "signature" option, or if you are using a sender map file or
+a list-id map file.
 
 =item B<--group=GROUP>
 
@@ -904,6 +915,19 @@ Right-hand values in a sender map file is a comma-separated list of
 signature types. Each signature type may have a comma-separated list
 of parameters enclosed in parenthesis. See L</"SIGNATURE OPTIONS"> for
 more information about the recognized parameters.
+
+Please note that DKIMproxy tries hard to match a given message to an
+entry in the sender map file. If the full domain of the message's sender
+is not in the file, it tries each parent domain of the message's sender
+until a match is found.
+E.g. if the sender map file contains the following contents:
+
+  a.my.example     dkim(key=key1)
+  my.example       dkim(key=key2)
+
+Then a message from user1@a.my.example will be signed with key key1.
+A message from user2@b.my.example will be signed with key2.
+A message from user3@your.example will not be signed.
 
 =head1 LIST-ID MAP FILE
 
