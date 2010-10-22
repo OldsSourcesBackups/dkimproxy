@@ -240,39 +240,26 @@ sub handle_end_of_data
 	}
 
 	my $policy_result = "none";
+	my $found_reject;
 	eval
 	{
-		my $policy = $dkim->fetch_author_policy;
-		$policy_result = $policy->apply($dkim);
+		foreach my $policy ($dkim->policies())
+		{
+			$policy_result = $policy->apply($dkim);
+			if ($policy_result eq "reject")
+			{
+				$found_reject = "rejected by " . $policy->name . " policy";
+			}
+		}
 	};
 	if ($@)
 	{
 		$policy_result = "error";
 	}
-
-	if ($policy_result eq "reject" && $reject_fail)
+	if ($found_reject && $reject_fail)
 	{
 		# failed
 		$server->fail("550 5.7.1 DKIM - $verify_detail");
-		return 0;
-	}
-
-	# evaluate the DomainKey policy
-	my $dk_policy_result = "none";
-	eval
-	{
-		my $dk_policy = $dkim->fetch_sender_policy;
-		$dk_policy_result = $dk_policy->apply($dkim);
-	};
-	if ($@)
-	{
-		$dk_policy_result = "error";
-	}
-
-	if ($dk_policy_result eq "reject" && $reject_fail)
-	{
-		# failed
-		$server->fail("550 5.7.1 DomainKeys - $verify_detail");
 		return 0;
 	}
 

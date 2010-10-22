@@ -1,4 +1,9 @@
 2010-10-21: Jason Long <jason@long.name>
+ * scripts/dkimproxy.in: change policy check to use policies() api
+   which is only available in Mail::DKIM 0.34 and better
+ * configure.ac: update prereqs: version 0.34 of DKIM is now required
+
+2010-10-21: Jason Long <jason@long.name>
  * scripts/dkimsign.pl, dkimverify.pl: remove these no-longer-
    maintained test scripts... they are now maintained in the Mail::DKIM
    package
