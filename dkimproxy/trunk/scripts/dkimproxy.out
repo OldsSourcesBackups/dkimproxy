@@ -1,6 +1,7 @@
 #!/usr/bin/perl -I../lib
 #
 # This file is part of DKIMproxy, an SMTP-proxy implementing DKIM.
+# Copyright (c) 2010 Jason Long.
 # Copyright (c) 2005-2009 Messiah College.
 # Written by Jason Long <jlong@messiah.edu>.
 #
@@ -456,6 +457,44 @@ sub split_by_commas
 	return @result;
 }
 
+sub interpret_macros
+{
+	my ($options, $signer, $key) = @_;
+	my $subst_fn;
+	$subst_fn = sub {
+			my ($macro) = @_;
+			if ($macro eq "key")
+			{
+				return $key;
+			}
+			elsif ($macro eq "sender")
+			{
+				my $sender = $signer->message_sender->address;
+				return $sender;
+			}
+			elsif ($macro =~ /^(.*)domain$/s)
+			{
+				my $tmp = $subst_fn->($1);
+				$tmp = $1 if $tmp =~ /\@([^\@]+)$/;
+				return $tmp;
+			}
+			else
+			{
+				die "Invalid macro found in signature option: \$$macro\n";
+			}
+		};
+
+	foreach my $option (qw(domain identity))
+	{
+		if (defined $options->{$option})
+		{
+			$options->{$option} =~ s/\$(\w+)/$subst_fn->($1)/es;
+			$options->{$option} =~ s/\$\$/\$/;
+		}
+	}
+	return $options;
+}
+
 sub get_signature_options
 {
 	my $signer = shift;
@@ -477,6 +516,7 @@ sub get_signature_options
 				}
 				my @result = split_by_commas($result);
 				return
+					map { interpret_macros($_, $signer, $key) }
 					map { +{ domain => $key, %$_ } }
 					map { parse_signature_options($_) } @result;
 			}
@@ -494,27 +534,32 @@ sub get_signature_options
 			$key = $1 if $key =~ /\@(.*)$/;
 			my @result = split_by_commas($result);
 			return
+				map { interpret_macros($_, $signer, $key) }
 				map { +{ domain => $key, %$_ } }
 				map { parse_signature_options($_) } @result;
 		}
 	}
 
-	# if multiple domains were specified in the --domain argument,
-	# pick one of those domains to use
 	my $domain = $domain_arg;
-	my @domains = split /,/, $domain;
-	if (@domains > 1)
+	if (defined($domain))
 	{
-		# determine which of the available domains to use based
-		# on the domain of the "sender" of this message
-		my $sender_domain = $signer->message_sender->host;
-		$domain = best_domain($sender_domain, @domains)
-			or return ();
+		# if multiple domains were specified in the --domain argument,
+		# pick one of those domains to use
+		my @domains = split /,/, $domain;
+		if (@domains > 1)
+		{
+			# determine which of the available domains to use based
+			# on the domain of the "sender" of this message
+			my $sender_domain = $signer->message_sender->host;
+			$domain = best_domain($sender_domain, @domains)
+				or return ();
+		}
 	}
 
-	return map {
-		+{ domain => $domain, %$_ }
-		} @default_signatures;
+	return
+		map { interpret_macros($_, $signer, $domain) }
+		map { +{ domain => $domain, %$_ } }
+		@default_signatures;
 }
 
 # my $signature_domain = best_domain($message_domain, @key_domains);
@@ -806,11 +851,14 @@ the canonicalization method to use
 
 =item d, domain
 
-the domain to use, default is to use the domain matched
+the domain to use, default is to use the domain matched in the file.
+You may also use a macro such as C<$senderdomain>. See the section
+on L</"MACROS">.
 
 =item i, identity
 
-the identity to use, default is to not include an i= parameter
+the identity to use, default is to not include an i= parameter.
+You may use a macro here, such as C<$sender>.
 
 =item s, selector
 
@@ -837,6 +885,25 @@ entry in the map file matches the found "List-Id" header,
 then DKIMproxy will proceed as if no listid_map option was specified.
 That is, it will add the default signature (if a "domain" or
 "signature" option was specified), or leave the message as is.
+
+=head1 MACROS
+
+When specifying signature options, specifically the "domain"
+and "identity" options, you may want to substitute values from
+the message being signed. The following macros are available:
+
+=over
+
+=item $sender
+
+Substitutes the sender's email address (as found in the Sender or
+From header).
+
+=item $senderdomain
+
+Substitutes the domain part of the sender's email address.
+
+=back
 
 =head1 AUTHOR
 
