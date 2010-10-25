@@ -10,6 +10,8 @@ Version 1.4
    being able to sign any message using that message's sender domain,
    rather than having to specify every possible domain in DKIMproxy's
    configuration file.
+ * The $sender macro can also be used to specify that i= parameters of
+   generated signatures should have the sender's email address in it.
 
 
 Version 1.3 - released 2010-10-07

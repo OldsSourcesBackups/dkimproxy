@@ -1,21 +1,16 @@
-Release 1.3
+Release 1.4
 
-This is the official release of version 1.3. This release contains
-a few minor bugfixes since version 1.2, and one new feature. New
-deployments should use this new version, but existing deployments are
-free to continue using 1.2. There is no urgent reason to upgrade.
+This is a beta release of version 1.4.
 
 
-What's New (since 1.2)
+What's New (since 1.3)
 
-   The "listid_map" option has been added. With this option, you can
-   have DKIMproxy generate signatures based on the "List-Id" header
-   of outgoing messages. This header is used if your server sends out
-   mailing list traffic. You can use this header to determine which
-   mailing list is being distributed, and have DKIMproxy generate
-   different signatures for different mailing lists. For more
-   information, run `perldoc scripts/dkimproxy.out' and look for
-   the "LIST-ID MAP FILE" section.
+   See the NEWS file for details.
+
+   Note: the minimum version requirement for the Mail::DKIM module,
+   which this program depends on, has changed from 0.29 to 0.34,
+   which means you might need to upgrade Mail::DKIM before you can
+   update dkimproxy to this version.
 
 
 Installing
