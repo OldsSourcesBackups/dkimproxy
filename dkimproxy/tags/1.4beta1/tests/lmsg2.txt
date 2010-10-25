@@ -1,0 +1,67 @@
+Received: from gabe.freedesktop.org (localhost [127.0.0.1])
+	by gabe.freedesktop.org (Postfix) with ESMTP id 82AA69EDC1;
+	Sat, 25 Jul 2009 16:21:04 -0700 (PDT)
+X-Original-To: xorg-devel@lists.freedesktop.org
+Delivered-To: xorg-devel@lists.freedesktop.org
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.155])
+	by gabe.freedesktop.org (Postfix) with ESMTP id D19159E9B4
+	for <xorg-devel@lists.freedesktop.org>;
+	Sat, 25 Jul 2009 16:21:00 -0700 (PDT)
+Received: by fg-out-1718.google.com with SMTP id l26so645599fgb.20
+	for <xorg-devel@lists.freedesktop.org>;
+	Sat, 25 Jul 2009 16:20:59 -0700 (PDT)
+Received: by 10.86.84.12 with SMTP id h12mr1134076fgb.21.1248564059621;
+	Sat, 25 Jul 2009 16:20:59 -0700 (PDT)
+Received: from ?192.168.2.2? (pD9E64390.dip.t-dialin.net [217.230.67.144])
+	by mx.google.com with ESMTPS id 12sm7040765fgg.24.2009.07.25.16.20.57
+	(version=SSLv3 cipher=RC4-MD5); Sat, 25 Jul 2009 16:20:58 -0700 (PDT)
+Message-ID: <4A6B9358.5050807@gmail.com>
+Date: Sun, 26 Jul 2009 01:20:56 +0200
+From: Thomas Jaeger <thjaeger@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+MIME-Version: 1.0
+To: "X.Org Devel List" <xorg-devel@lists.freedesktop.org>, 
+	Peter Hutterer <peter.hutterer@who-t.net>
+Subject: XI2 SD grabs
+X-Enigmail-Version: 0.95.7
+X-BeenThere: xorg-devel@lists.x.org
+X-Mailman-Version: 2.1.9
+Precedence: list
+List-Id: "X.Org development list" <xorg-devel.lists.x.org>
+List-Unsubscribe: <http://lists.x.org/mailman/listinfo/xorg-devel>,
+	<mailto:xorg-devel-request@lists.x.org?subject=unsubscribe>
+List-Archive: <http://lists.x.org/archives/xorg-devel>
+List-Post: <mailto:xorg-devel@lists.x.org>
+List-Help: <mailto:xorg-devel-request@lists.x.org?subject=help>
+List-Subscribe: <http://lists.x.org/mailman/listinfo/xorg-devel>,
+	<mailto:xorg-devel-request@lists.x.org?subject=subscribe>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Sender: xorg-devel-bounces@lists.x.org
+Errors-To: xorg-devel-bounces@lists.x.org
+
+Hi Peter,
+
+Sorry for bringing this up so late, I hadn't noticed this earlier
+because easystroke is still causing mysterious server crashes. In commit
+0c0ef42292f4c910c73b308cd75d77637312da53, you removed the code that was
+responsible for detaching slave devices when a grab was activated to
+bring things more in line with how XI1 grabs worked.  I'd argue that the
+old XI2 way was the right way to go about things and that sending core
+events during XI2 grabs is less than ideal:  The point of XI2 grabs is
+to get complete control over the device; if other clients should still
+receive events, it would suffice to select for events.  It is very
+difficult right now for the grabbing client to ensure that other clients
+don't receive any core events, at least in the case of passive grabs and
+probably inherently racy.
+
+I don't understand why gimp thinks it needs device grabs at all, but if
+compatibility is an issue, I think it would be better to treat XI1 and
+XI2 grabs differently and only detach the device for the latter.
+
+Thanks,
+Tom
+_______________________________________________
+xorg-devel mailing list
+xorg-devel@lists.x.org
+http://lists.x.org/mailman/listinfo/xorg-devel
