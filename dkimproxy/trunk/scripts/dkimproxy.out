@@ -694,17 +694,26 @@ If specified, the server will run in the background.
 
 =item B<--domain=DOMAIN>
 
-Use this argument to specify what domain(s) you can sign for. You may
-specify multiple domains by separating them with commas. If a single
-domain is specified, DKIMproxy will sign every message it sees with
-that domain,
-if it can. If multiple domains are specified, DKIMproxy will try to
-match the domain to the message's sender, and only generate a signature
-that will match the sender's domain.
+This argument serves two purposes. First, it selects which messages
+(of all those DKIMproxy sees) that should be signed. Second, it
+specifies what d= value to put in the generated signatures.
 
-This argument can be omitted if you specify a domain option as part
-of the "signature" option, or if you are using a sender map file or
-a list-id map file.
+You can specify multiple domains by separating them with commas.
+If only one domain is specified, DKIMproxy will sign ALL messages, and
+it will use the specified domain as the d= value of all generated
+signatures.
+
+If two or more domains are specified, DKIMproxy will only sign messages
+which have a sender matching one of these domains. It will use the
+matched domain as the d= value of the generated signature.
+
+Please note that the d= value of the generated signature can also be
+specified using signature options (see L</"SIGNATURE OPTIONS"). The
+signature options will override the value specified here.
+
+Therefore, if you want to sign all messages, and you are specifying
+a d= value as part of the "signature" argument, or within a sender map
+file or list-id map file, you can omit the "domain" argument.
 
 =item B<--group=GROUP>
 
