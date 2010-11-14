@@ -9,7 +9,7 @@ Version 1.4
    specifying signature options i= and d=. One potential use of this is
    being able to sign any message using that message's sender domain,
    rather than having to specify every possible domain in DKIMproxy's
-   configuration file.
+   configuration file. This feature sponsored by yalnark.
  * The $sender macro can also be used to specify that i= parameters of
    generated signatures should have the sender's email address in it.
 
