@@ -1,3 +1,6 @@
+2010-11-14: Jason Long <jason@long.name>
+ * tests/listid_map.t: add test for when keyfile is not specified
+
 2010-10-22: Jason Long <jason@long.name>
  * scripts/dkimproxy.out: allow macros $sender, $senderdomain when
    specifying the i= or d= signature options
