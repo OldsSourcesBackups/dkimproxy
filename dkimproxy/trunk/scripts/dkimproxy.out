@@ -240,6 +240,11 @@ sub parse_signature_options
 	return $options;
 }
 
+# This is only called at program startup time. It checks signature
+# options specified in the config file as part of the "signature"
+# option. It does not check signature options specified in a map file,
+# e.g. a sender map file or list-id map file.
+#
 sub check_signature_options
 {
 	my $self = shift;
