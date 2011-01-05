@@ -1,0 +1,4 @@
+kernel.org		     dkim(c=relaxed)
+xorg-devel.lists.x.org       dkim(c=relaxed)
+dev.spamassassin.apache.org  dkim(c=relaxed,d=apache.org)
+messiah.edu		     dkim(c=relaxed),domainkeys(c=nofws)
