@@ -3,15 +3,21 @@ See the ChangeLog file for the details.
 
 Version 1.4
 
- - beta 1
+ - beta 1 (not publicly released)
 
  * Implement macros $sender and $senderdomain which can be used when
-   specifying signature options i= and d=. One potential use of this is
-   being able to sign any message using that message's sender domain,
-   rather than having to specify every possible domain in DKIMproxy's
-   configuration file. This feature sponsored by yalnark.
- * The $sender macro can also be used to specify that i= parameters of
-   generated signatures should have the sender's email address in it.
+   specifying signature options i= and d=. Here are two potential uses
+   of these macros:
+    a. Specify i=$sender as a DKIM signature option. This will fill in
+       the message's sender email address as the i= value.
+    b. Specify d=$senderdomain as a signature option. This will tell
+       DKIMproxy to always sign using the message's sender domain. This
+       could be problematic since if you sign for a domain you do not
+       control the message will be invalid. Normally you should specify
+       the domains you control in the DKIMproxy config file and
+       DKIMproxy will decide which domain to sign with. If you have
+       many such domains though, then using $senderdomain might be
+       easier. This feature sponsored by yalnark.
 
 
 Version 1.3 - released 2010-10-07
