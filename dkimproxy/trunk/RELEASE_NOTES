@@ -5,7 +5,14 @@ This is a beta release of version 1.4.
 
 What's New (since 1.3)
 
-   See the NEWS file for details.
+   There is a new option for setting the i= tag on generated
+   signatures. By default the i= tag is ommitted, but you could specify
+   a value using "dkim(i=whatever)" in your signature option. The new
+   option is to specify "dkim(i=$sender)" which will substitute in the
+   email address of the sender of this particular message.
+
+   The $sender macro, as it is called, is not the only new macro. See
+   the NEWS file for details.
 
    Note: the minimum version requirement for the Mail::DKIM module,
    which this program depends on, has changed from 0.29 to 0.34,
