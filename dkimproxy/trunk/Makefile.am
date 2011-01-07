@@ -6,7 +6,8 @@ EXTRA_DIST = \
 	smtpprox.ChangeLog \
 	smtpprox.README \
 	smtpprox.TODO \
-	sample-dkim-init-script.sh
+	sample-dkim-init-script.sh \
+	dkimproxy.spec dkimproxy.spec.in
 
 rfcs = rfc4870.txt rfc4871.txt rfc2821.txt rfc5322.txt rfc4407.txt
 drafts = draft-ietf-dkim-ssp-09.txt
