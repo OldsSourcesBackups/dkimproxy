@@ -20,4 +20,5 @@ AC_OUTPUT([
 	lib/MSDW/Makefile
 	lib/MSDW/SMTP/Makefile
 	scripts/Makefile
+	dkimproxy.spec
 	])
