@@ -1,4 +1,4 @@
-Copyright 2005-2007 Messiah College. All rights reserved.
+Copyright 2005-2011 Messiah College. All rights reserved.
 
    See the README file for an overview of DKIMproxy.
 
@@ -15,7 +15,7 @@ DKIMproxy Requirements
    modules, and report an error if not found. You are on your own to
    install them. (Hint: use CPAN.)
 
-   Mail::DKIM can also be downloaded from http://jason.long.name/dkimproxy/,
+   Mail::DKIM can also be downloaded from http://dkimproxy.sourceforge.net/,
    which may have a more recent version than CPAN.
 
 
@@ -83,4 +83,4 @@ DKIMproxy Setup
    See http://dkimproxy.sourceforge.net/ for the details.
 
 
-This document last updated 2009-07-31.
+This document last updated 2011-01-05.
