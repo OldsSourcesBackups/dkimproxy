@@ -1,3 +1,8 @@
+2011-01-10: Jason Long <jlong@messiah.edu>
+ * configure.ac: update prereqs: Error module is no longer required
+
+ -- VERSION 1.4 --
+
 2010-11-14: Jason Long <jason@long.name>
  * tests/listid_map.t: add test for when keyfile is not specified
 
