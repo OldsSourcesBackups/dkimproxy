@@ -1,4 +1,8 @@
 2011-01-10: Jason Long <jlong@messiah.edu>
+ * dkimproxy.spec.in: we are now generating and including an RPM spec
+   file to make building an RPM package easier
+
+2011-01-10: Jason Long <jlong@messiah.edu>
  * configure.ac: update prereqs: Error module is no longer required
 
  -- VERSION 1.4 --

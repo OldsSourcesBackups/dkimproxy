@@ -1,14 +1,15 @@
 Name:		dkimproxy
 Version:	@VERSION@
 Release:	1%{?dist}
-Summary:	DKIMproxy smtp proxy implementing DKIM/DomainKeys standards
+Summary:	DKIMproxy
 
 Group:		System Environment/Daemons
 License:	GPLv2+
 URL:		http://dkimproxy.sourceforge.net
-Source0:	http://sourceforge.net/projects/dkimproxy/files/dkimproxy/%{version}/%{name}-%{version}.tar.gz/download
+Source0:	http://sourceforge.net/projects/dkimproxy/files/dkimproxy/%{version}/%{name}-%{version}.tar.gz
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
+BuildArch:	noarch
 BuildRequires:	perl-Mail-DKIM perl-Net-Server
 Requires:	perl-Mail-DKIM perl-Net-Server
 
@@ -21,7 +22,7 @@ DKIMproxy is an SMTP-proxy that implements the DKIM and DomainKeys standards, to
 
 
 %build
-%configure
+CFLAGS="$RPM_OPT_FLAGS" ./configure --prefix=/usr/local/dkimproxy --mandir=%{_mandir} --sysconfdir=/etc/dkimproxy
 make %{?_smp_mflags}
 
 
@@ -36,7 +37,10 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%doc
+%doc ChangeLog README AUTHORS NEWS
+/usr/local/dkimproxy/*
+%{_mandir}/man8/*
+/etc/dkimproxy/*
 
 
 
