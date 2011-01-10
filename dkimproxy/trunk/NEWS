@@ -5,6 +5,8 @@ Version 1.4.1
 
  * Fixed an extraneous check in the 'configure' script; it was checking
    for the "Error" perl module, which is not actually required.
+ * The source tarball now includes an RPM spec file to make building an
+   RPM package for DKIMproxy much easier.
 
 
 Version 1.4 - released 2011-01-04
