@@ -34,6 +34,13 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %clean
 rm -rf $RPM_BUILD_ROOT
 
+%pre
+# On install (but not upgrade) create a user account specifically for
+# DKIMproxy. Note: we leave the account even after package removal.
+if [ "$1" = "1" ]; then
+	/usr/sbin/useradd -r -s /sbin/nologin dkim 2>/dev/null || :
+fi
+
 
 %files
 %defattr(-,root,root,-)
