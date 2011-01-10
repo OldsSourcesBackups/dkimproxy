@@ -1,6 +1,12 @@
 This file summarizes what's changed between releases of dkimproxy.
 See the ChangeLog file for the details.
 
+Version 1.4.1
+
+ * Fixed an extraneous check in the 'configure' script; it was checking
+   for the "Error" perl module, which is not actually required.
+
+
 Version 1.4 - released 2011-01-04
 
  - beta 1 (not publicly released)
