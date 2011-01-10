@@ -1,4 +1,10 @@
 2011-01-10: Jason Long <jlong@messiah.edu>
+ * sample-dkim-init-script.sh: this sample SysV-style init script for
+   DKIMproxy is now modified at build time to use the paths the program
+   is built for; this makes using the script much easier. (In fact, in
+   future versions, this init script may get installed automatically.)
+
+2011-01-10: Jason Long <jlong@messiah.edu>
  * dkimproxy.spec.in: we are now generating and including an RPM spec
    file to make building an RPM package easier
 

@@ -9,14 +9,14 @@
 ### END INIT INFO
 
 ### BEGIN CONFIGURABLE BITS
-DKIMPROXYDIR=/usr/local/dkimproxy
 DKIMPROXYUSER=dkim
 DKIMPROXYGROUP=dkim
+PIDDIR="@localstatedir@/run"
 ### END CONFIGURABLE BITS
 
 ### IF YOU MOVE THE CONFIG FILES, CHANGE THIS:
-DKIMPROXY_IN_CFG="$DKIMPROXYDIR/etc/dkimproxy_in.conf"
-DKIMPROXY_OUT_CFG="$DKIMPROXYDIR/etc/dkimproxy_out.conf"
+DKIMPROXY_IN_CFG="@sysconfdir@/dkimproxy_in.conf"
+DKIMPROXY_OUT_CFG="@sysconfdir@/dkimproxy_out.conf"
 
 if [ ! '(' -f "$DKIMPROXY_IN_CFG" -o -f "$DKIMPROXY_OUT_CFG" ')' ]; then
 	echo "Error: one or both of the following files must be created:" >&2
@@ -37,10 +37,9 @@ DKIMPROXY_COMMON_ARGS="
 	--group=$DKIMPROXYGROUP
 	--daemonize"
 
-DKIMPROXY_IN_BIN="$DKIMPROXYDIR/bin/dkimproxy.in"
-DKIMPROXY_OUT_BIN="$DKIMPROXYDIR/bin/dkimproxy.out"
+DKIMPROXY_IN_BIN="@bindir@/dkimproxy.in"
+DKIMPROXY_OUT_BIN="@bindir@/dkimproxy.out"
 
-PIDDIR=$DKIMPROXYDIR/var/run
 DKIMPROXY_IN_PID=$PIDDIR/dkimproxy_in.pid
 DKIMPROXY_OUT_PID=$PIDDIR/dkimproxy_out.pid
 
