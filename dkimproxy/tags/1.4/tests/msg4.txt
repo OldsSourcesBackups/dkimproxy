@@ -1,0 +1,4 @@
+From: Smith <smith@foo.domain3.example>
+Subject: test 004
+
+sender is a subdomain of the configured domain
