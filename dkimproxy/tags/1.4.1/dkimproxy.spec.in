@@ -1,0 +1,70 @@
+Name:		dkimproxy
+Version:	@VERSION@
+Release:	1%{?dist}
+Summary:	DKIMproxy
+
+Group:		System Environment/Daemons
+License:	GPLv2+
+URL:		http://dkimproxy.sourceforge.net
+Source0:	http://sourceforge.net/projects/dkimproxy/files/dkimproxy/%{version}/%{name}-%{version}.tar.gz
+BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+
+BuildArch:	noarch
+BuildRequires:	perl-Mail-DKIM perl-Net-Server
+Requires:	perl-Mail-DKIM perl-Net-Server
+Autoreq:	0
+
+%description
+DKIMproxy is an SMTP-proxy that implements the DKIM and DomainKeys standards, to sign and verify email messages using digital signatures and DNS records. It can be used to add DKIM support to nearly any existing SMTP mail server.
+
+
+%prep
+%setup -q
+
+
+%build
+CFLAGS="$RPM_OPT_FLAGS" ./configure --prefix=/usr/local/dkimproxy --mandir=%{_mandir} --sysconfdir=/etc/dkimproxy
+make %{?_smp_mflags}
+
+
+%install
+rm -rf $RPM_BUILD_ROOT
+make install DESTDIR=$RPM_BUILD_ROOT
+install -D -m 755 sample-dkim-init-script.sh ${RPM_BUILD_ROOT}%{_initrddir}/dkimproxy
+
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%pre
+# On install (but not upgrade) create a user account specifically for
+# DKIMproxy. Note: we leave the account even after package removal.
+if [ "$1" = "1" ]; then
+	/usr/sbin/useradd -r -s /sbin/nologin dkim 2>/dev/null || :
+fi
+
+%post
+if [ "$1" = "1" ]; then   #first install
+	/sbin/chkconfig --add dkimproxy
+fi
+
+%preun
+if [ "$1" = "1" ]; then   #last uninstall
+	/sbin/service dkimproxy stop || :
+	/sbin/chkconfig --del dkimproxy
+fi
+
+
+%files
+%defattr(-,root,root,-)
+%doc ChangeLog README AUTHORS NEWS
+/usr/local/dkimproxy/*
+%{_mandir}/man8/*
+/etc/dkimproxy/*
+%{_initrddir}/dkimproxy
+
+
+
+
+%changelog
+

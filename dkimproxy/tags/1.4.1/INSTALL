@@ -1,0 +1,86 @@
+Copyright 2005-2011 Messiah College. All rights reserved.
+
+   See the README file for an overview of DKIMproxy.
+
+
+DKIMproxy Requirements
+======================
+
+   DKIMproxy is written in Perl. It requires the following Perl modules:
+
+   * Mail::DKIM (version 0.34 or later)
+   * Net::Server (version 0.91 or later; 0.93, 0.94 and 0.96 are known to work)
+
+   The configure script described below will check for these Perl
+   modules, and report an error if not found. You are on your own to
+   install them. (Hint: use CPAN.)
+
+   Mail::DKIM can also be downloaded from http://dkimproxy.sourceforge.net/,
+   which may have a more recent version than CPAN.
+
+
+Basic Installation
+==================
+
+   To install this package:
+
+  1. `cd' to the directory containing the package's source code and type
+     `./configure --prefix=' followed by the location in which you want
+     to install the filter. E.g.
+
+     ./configure --prefix=/usr/local/dkimproxy
+
+     You SHOULD specify a --prefix.
+
+  2. Type `make install' to install the programs and any data files and
+     documentation. This will install the filter scripts in $prefix/bin
+     and the Perl module files in $prefix/lib.
+
+  3. Create a Unix user/group dedicated to running DKIMproxy. E.g. dkim.
+
+  4. Copy the example configuration files in $prefix/etc.
+       dkimproxy_in.conf.example => dkimproxy_in.conf
+       dkimproxy_out.conf.example => dkimproxy_out.conf
+     Modify the parameters to suit your tastes.
+
+  5. Create a startup/shutdown script for the filter and install it in
+     the location normal for your distribution (e.g. /etc/init.d). A
+     sample script is provided... you can copy it as /etc/init.d/dkimproxy.
+     Be sure to check, and modify if necessary, the user, group, and paths
+     found in the script.
+
+
+
+DKIMproxy Setup
+===============
+
+   To create signatures, you will need to generate a private/public key
+   pair using OpenSSL. The following two commands generate two files:
+   private.key and public.key, containing the private and public keys
+   in Base64 format:
+
+       openssl genrsa -out private.key 1024
+       openssl rsa -in private.key -pubout -out public.key
+
+   Modify the permissions on private.key so that only the DKIMproxy user
+   can read it (the user created in step 3 above).
+
+   Pick a selector name... e.g. "selector1".
+
+   Put the public-key data in DNS, in your domain, using the selector
+   name you picked. Take the contents of the public.key file and remove
+   the PEM header and footer, and concatenate the lines of the file
+   into one big line. Then create a TXT entry, like this:
+
+   selector1._domainkey    IN  TXT  "k=rsa; t=s; p=MHwwDQYJK ... OprwIDAQAB"
+
+   where selector1 is the name of the selector chosen above and the p=
+   parameter contains the public-key as one long string of characters.
+
+
+   More information on setting up DKIMproxy is currently only available
+   online.
+   See http://dkimproxy.sourceforge.net/ for the details.
+
+
+This document last updated 2011-01-05.

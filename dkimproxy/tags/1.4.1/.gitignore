@@ -1,0 +1,12 @@
+Makefile
+Makefile.in
+aclocal.m4
+configure
+install-sh
+missing
+mkinstalldirs
+config.log
+config.status
+autom4te.cache
+dkimproxy.spec
+sample-dkim-init-script.sh
