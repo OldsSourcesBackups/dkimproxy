@@ -1,3 +1,7 @@
+2011-01-12: Jason Long <jlong@messiah.edu>
+ * dkimproxy.spec.in: set Autoreq=0 to avoid extraneous dependencies in
+   the generated RPM
+
 2011-01-10: Jason Long <jlong@messiah.edu>
  * sample-dkim-init-script.sh: this sample SysV-style init script for
    DKIMproxy is now modified at build time to use the paths the program
