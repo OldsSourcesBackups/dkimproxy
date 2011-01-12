@@ -1,0 +1,47 @@
+Received: (qmail 95557 invoked by uid 500); 23 Jul 2009 23:45:42 -0000
+Mailing-List: contact dev-help@spamassassin.apache.org; run by ezmlm
+Precedence: bulk
+list-help: <mailto:dev-help@spamassassin.apache.org>
+list-unsubscribe: <mailto:dev-unsubscribe@spamassassin.apache.org>
+List-Post: <mailto:dev@spamassassin.apache.org>
+List-Id: <dev.spamassassin.apache.org>
+Delivered-To: mailing list dev@spamassassin.apache.org
+Received: (qmail 95549 invoked by uid 99); 23 Jul 2009 23:45:42 -0000
+Received: from nike.apache.org (HELO nike.apache.org) (192.87.106.230)
+    by apache.org (qpsmtpd/0.29) with ESMTP; Thu, 23 Jul 2009 23:45:42 +0000
+X-ASF-Spam-Status: No, hits=-0.0 required=10.0
+	tests=SPF_PASS
+Received-SPF: pass (nike.apache.org: domain of sidney@sidney.com designates 64.142.19.5 as permitted sender)
+Received: from [64.142.19.5] (HELO b.mail.sonic.net) (64.142.19.5)
+    by apache.org (qpsmtpd/0.29) with ESMTP; Thu, 23 Jul 2009 23:45:32 +0000
+Received: from sidney-laptop.cs.auckland.ac.nz (sidney-laptop.cs.auckland.ac.nz [130.216.37.168])
+	(authenticated bits=0)
+	by b.mail.sonic.net (8.13.8.Beta0-Sonic/8.13.7) with ESMTP id n6NNj7j8021618
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO);
+	Thu, 23 Jul 2009 16:45:09 -0700
+Message-ID: <4A68F601.3060404@sidney.com>
+Date: Fri, 24 Jul 2009 11:45:05 +1200
+From: Sidney Markowitz <sidney@sidney.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+MIME-Version: 1.0
+To: me@stevendagostino.com
+CC: dev@spamassassin.apache.org
+Subject: Re: open-whois false positive on SpamAssassin
+References: <59164.1248144252@stevendagostino.com>
+In-Reply-To: <59164.1248144252@stevendagostino.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Virus-Checked: Checked by ClamAV on apache.org
+
+me@stevendagostino.com wrote, On 21/7/09 2:44 PM NZST:
+> I'm not sure what to do here, but Spam Assassin has me on the open-whois 
+> list somehow (not sure how), but it's killing my SA score, and I've been 
+> reading that it's a cybersquatter that casues false positives for 
+> people. How do I resolve this issue? Thanks.
+
+This should be fixed as of around the time that you posted, subject to 
+sites getting the rule updates. See
+
+https://issues.apache.org/SpamAssassin/show_bug.cgi?id=6157
+
+  -- sidney
