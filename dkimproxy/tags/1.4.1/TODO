@@ -1,0 +1,55 @@
+Bugs:
+ - dkimproxy fails to set the listening port with Net::Server v0.90.10
+   (FIXED- set required version to be 0.91)
+ - dkimproxy prints out "Becoming sub class of "Net::Server::PreFork";
+   caused by 2007-05-15 bugfix
+ - "listen" argument has two meanings
+
+Possible bugs:
+ - if signature fails on an email using a subdomain of the key's domain,
+   policy lookup should be for key's domain, not sender domain (i.e.
+   sender domain should only be used if the key domain doesn't match,
+   or there is no signature) (WONTFIX)
+ - the auto responder will fail if the signed message had been analyzed by
+   spamassassin, and spamassassin analyzes it again after it got signed,
+   causing the spamassassin headers to change... it would be nice if the
+   auto-responder can check the signature(s) for "known bad" headers,
+   and give a warning to the user if their message got signed by one
+   of those headers. Known bad headers include: "X-Spam-*", "Return-Path"
+ - verify creates an empty Authentication-Results header if no
+   signatures found
+ - if you start dkimproxy.in using the init script, then delete its
+   config file, the init script will not stop the daemon
+
+Desired features:
+ - support use of multiple signatures, selectors, private keys, etc.
+   (the signing process would use a lookup table of some sort, using the
+   sender address's domain to pick signature attributes to use)
+   (FIXED)
+ - document use of min_servers and max_servers options on help page
+ - perform fewer passes over the message data
+ - add a DomainKey-Signature only when the message's sender matches an
+   available domain (DONE)
+ - alert the client if unable to connect to the relay server
+   (syslog, a 450 greeting, etc) (DONE)
+
+Possibly desired features:
+ - sign/verify in the same program - although...
+     - messages coming from within the organization should be signed
+     - messages coming from outside should be verified
+   having one program do both actions requires it to know which way the
+   message is going, a decision I don't want to be responsible for
+ - use LMTP and/or unix sockets to filter mail (requested by Leif Bergman)
+
+DKIM support:
+ - verifier
+     - allow more control over selecting which signature to use
+     - allow more control over handling non-passing DKIM messages
+       (i.e. look up the sender policy and apply)
+     - allow more control over handling passing DKIM messages
+       (i.e. use a pluggable reputation system)
+ - filters
+     - determine way to indicate what headers should be removed
+
+Testing:
+ - test what happens if DNS is unavailable when fetching key or domain policy

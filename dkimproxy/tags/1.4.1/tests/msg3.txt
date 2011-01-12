@@ -1,0 +1,5 @@
+From: Jason Long <jlong@domain3.example>
+Subject: test 003
+
+depending on which config file is being tested,
+this should or should not be signed

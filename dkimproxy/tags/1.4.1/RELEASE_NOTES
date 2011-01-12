@@ -1,0 +1,68 @@
+Release 1.4.1
+
+This is the release of version 1.4.1. This update release contains a
+.spec file to make it easier to build an RPM, and it removes the
+check for the "Error" module, which is not actually being used.
+
+
+What's New (since 1.3)
+
+   There is a new option for setting the i= tag on generated
+   signatures. By default the i= tag is ommitted, but you could specify
+   a value using "dkim(i=whatever)" in your signature option. The new
+   option is to specify "dkim(i=$sender)" which will substitute in the
+   email address of the sender of this particular message.
+
+   The $sender macro, as it is called, is not the only new macro. See
+   the NEWS file for details.
+
+   Note: the minimum version requirement for the Mail::DKIM module,
+   which this program depends on, has changed from 0.29 to 0.34,
+   which means you might need to upgrade Mail::DKIM before you can
+   update dkimproxy to this version.
+
+
+Installing
+
+   As usual, installation instructions are in the INSTALL file.
+   You will need the accompanying release of my Mail::DKIM module.
+
+   If you are upgrading from a version prior to 1.0, please consult
+   the release notes for version 1.0 as well.
+
+
+Changes
+
+   If you are upgrading from a version prior to 1.0, please take note
+   of the following changes.
+
+ * The documentation and sample init script have been changed to use
+   "dkim" as the name of the user/group that dkimproxy can run as,
+   and "/usr/local/dkimproxy" as the installation prefix. Upgraders
+   do not need to adopt these new values, but will need to translate
+   as they follow the documentation.
+
+ * Dkimproxy.out will, in certain cases, now add a signature to
+   messages that it would not before. If you start dkimproxy.out
+   and specify just one domain for the --domain argument, and do
+   not specify --signature=domainkeys, then dkimproxy.out will
+   ALWAYS add a DKIM signature, no matter the message's sender's
+   domain.
+
+
+Known Issues
+
+ * The verifier (dkimproxy.in) adds an Authentication-Results header
+   with no information if the message being verified has no signatures.
+
+
+Comments/Suggestions
+
+  Send comments/suggestions to the dkimproxy-users mailing list on
+  SourceForge. Or, you can add a bug or feature request to the SourceForge
+  tracker system. Or, you can post a message in one of the DKIMproxy
+  SourceForge forums.
+
+  Finally, as a last resort, you can email the author directly,
+  Jason Long <jason@long.name>.
+
